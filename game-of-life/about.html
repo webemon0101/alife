@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ライフゲーム — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body>
+<nav><a href="../index.html">← 図鑑トップ</a><a href="index.html">シミュレーターに戻る →</a></nav>
+<article>
+  <h1>コンウェイのライフゲーム</h1>
+  <p class="lead">「生」と「死」の2状態、周囲8セル、同時更新。この小さな規則から、止まるもの・振動するもの・移動するものが生まれます。</p>
+  <h2>まずは1世代ずつ見てみよう</h2>
+  <ol>
+    <li>パターン標本から「ブリンカー」を選び、「この配置で始める」を押します。</li>
+    <li>「1世代進める」を押すと、横一列の3セルが縦一列になります。もう一度押すと元に戻ります。</li>
+    <li>「グライダー」を同じように試し、4世代後の形と位置を比べてください。</li>
+    <li>「すべて消す」で空にし、自分でセルを描いて再生してみましょう。</li>
+  </ol>
+  <h2>標準ルール：B3/S23</h2>
+  <p>各セルは上下左右と斜めの、周囲8セルの生存数を数えます。自分自身は数に含めません。</p>
+  <div class="eqn">死セル ＋ 生きた隣人3個 → 誕生（Birth）<br>生セル ＋ 生きた隣人2個または3個 → 生存（Survival）<br>それ以外 → 死セル</div>
+  <p>すべてのセルは、同じ世代の盤面を見て<strong>同時に</strong>更新されます。先に更新したセルの結果を、ほかのセルの判定へ混ぜません。</p>
+  <p>このルールを短く書いたのが <code>B3/S23</code> です。変化の途中に乱数は使いません。同じ配置・ルール・境界条件なら、同じ経過を再現できます。</p>
+  <h2>パターン標本</h2>
+  <ul>
+    <li><b>ブロック</b>：形が変わらない静止物体。</li>
+    <li><b>ブリンカー・ヒキガエル・ビーコン</b>：2世代で形が戻る振動子。</li>
+    <li><b>パルサー</b>：対称的な形が3世代で戻る振動子。</li>
+    <li><b>グライダー</b>：形を変えながら、4世代で斜めに1セル移動するパターン。</li>
+    <li><b>軽量宇宙船</b>：4世代で横に2セル移動するパターン。</li>
+    <li><b>Rペントミノ</b>：5セルから始まり、多くの世代にわたって複雑に変化する配置。</li>
+    <li><b>ゴスパーのグライダー銃</b>：30世代ごとにグライダーを放出する配置。</li>
+  </ul>
+  <p class="note">これらは標準ルールで、ほかの物体や端との干渉がないときの性質です。ルールを変えたり、別のパターンを重ねたりすると、同じ挙動になるとは限りません。</p>
+  <h2>操作と実験の戻し方</h2>
+  <ul>
+    <li><b>描く／消す</b>：クリック・タップ・ドラッグで1セルずつ編集します。編集すると停止し、世代数を0に戻します。</li>
+    <li><b>スタンプ</b>：選択中のパターンを追加します。「回転」で向きを変えられます。端付近ではパターンが盤面内に収まる位置へ寄せます。</li>
+    <li><b>キーボード</b>：盤面にフォーカスし、矢印キーで位置を選び、Enterで描画・スタンプ、Deleteで消去できます。</li>
+    <li><b>この配置で始める</b>：選択中のパターンで盤面を置き換え、停止します。現在のルールは維持します。</li>
+    <li><b>開始時に戻す</b>：直前の実験の開始配置へ戻ります。編集後に再生・1世代実行した場合は、その編集後の配置が開始配置です。ルールや境界を変更した場合は、変更時の配置から新しい実験になります。</li>
+    <li><b>ランダムに配置</b>：指定した生存率を確率として、盤面を新しく作ります。実際の生存率は試行ごとに少し変わります。</li>
+    <li><b>軌跡</b>：最近消えたセルを薄く表示します。軌跡は見た目だけで、生死の計算には入りません。</li>
+    <li><b>スマートフォン</b>：歯車で設定を開閉します。初期盤面は描きやすい48×36。標準・広い盤面にも切り替えられます。</li>
+    <li><b>PNG保存</b>：その時点の盤面を保存します。格子と軌跡は表示設定に従います。</li>
+  </ul>
+  <h2>端はどうなっている？</h2>
+  <p>「上下・左右の端をつなぐ」がONなら、右端の隣は左端、下端の隣は上端です。盤面がドーナツ状につながっているものとして計算します。OFFなら盤面の外は常に死セルとして扱います。</p>
+  <p class="note">このアプリは有限の盤面です。無限平面のライフゲームとは境界条件が違います。特にグライダー銃では、端を回って戻ったグライダーが銃に衝突し、壊すことがあります。長く観察するには盤面を広げたり、端の接続をOFFにしたりして比較してください。</p>
+  <h2>ルールを変える：Life-likeセルオートマトン</h2>
+  <p>誕生Bと生存Sの数字を自由に選べます。「隣人が何個のとき生まれるか／生き残るか」を変えて、異なる世界を比べられます。</p>
+  <ul>
+    <li><b>Conway（B3/S23）</b>：通常のライフゲーム。</li>
+    <li><b>HighLife（B36/S23）</b>：隣人6個でも誕生します。標準ルールと似ていますが、自己複製するパターンも知られています。</li>
+    <li><b>Seeds（B2/S）</b>：隣人2個で誕生し、生セルは次の世代に必ず死にます。</li>
+    <li><b>Day &amp; Night（B3678/S34678）</b>：生と死を反転した状況にも対応する対称性を持つルール。</li>
+  </ul>
+  <p>B0を選ぶと、隣人がいない死セルも誕生します。このアプリでは盤面全体の急な点滅を抑えるため、B0を含むルールの再生速度を最大2世代／秒に制限しています。</p>
+  <h2>Leniaとのつながり</h2>
+  <p>ライフゲームでは状態が0か1、時間も1世代ずつです。図鑑の<a class="inline" href="../lenia/index.html">Lenia</a>は連続値の状態と成長関数を使い、なめらかな生物のような形を扱います。「局所的な規則から全体の形が生まれる」という共通点を、両方のモデルで比べてみてください。</p>
+  <h2>参考資料</h2>
+  <ul class="refs">
+    <li><a class="inline" href="https://golly.sourceforge.io/Help/Algorithms/QuickLife.html" target="_blank" rel="noopener">Golly公式ヘルプ：QuickLife</a> — B/S表記、近傍、代表的なルール。</li>
+    <li><a class="inline" href="https://golly.sourceforge.io/Help/intro.html" target="_blank" rel="noopener">Golly公式ヘルプ：Introduction</a> — ライフゲームを探索するソフトウェアと背景。</li>
+    <li><a class="inline" href="https://conwaylife.com/wiki/Gosper_glider_gun" target="_blank" rel="noopener">LifeWiki：Gosper glider gun</a> — グライダー銃のパターン資料。</li>
+  </ul>
+  <p><a class="inline" href="index.html">シミュレーターで試す →</a></p>
+  <p class="refs">ClaudeALIFE ・ <a class="inline" href="../privacy.html">プライバシーポリシー</a></p>
+</article>
+</body>
+</html>

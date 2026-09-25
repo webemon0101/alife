@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>コンウェイのライフゲーム — ALIFE図鑑</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; position:relative; min-width:0;
+    background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+  }
+  #canvas{ display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+  #fps{ position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162; pointer-events:none; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  #menuToggle{
+    display:none; position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--panel-border);
+    color:var(--text); font-size:19px;
+    align-items:center; justify-content:center; cursor:pointer;
+  }
+  #sidebarBackdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40;
+  }
+  @media (max-width: 760px){
+    #menuToggle{ display:flex; }
+    #sidebar{
+      position:fixed; top:0; right:0; height:100%;
+      width:82vw; max-width:340px;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:50;
+      box-shadow:-10px 0 30px rgba(0,0,0,0.5);
+    }
+    #sidebar.open{ transform:translateX(0); }
+    #sidebarBackdrop.open{ display:block; }
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:44px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+
+  #app{height:100dvh;}#stage{display:flex;align-items:center;justify-content:center;padding:56px 16px 100px;}
+  #canvas{width:min(100%,calc((100dvh - 156px) * 4 / 3));height:auto;max-width:100%;max-height:100%;aspect-ratio:4/3;image-rendering:pixelated;outline-offset:3px;border:1px solid var(--panel-border);border-radius:6px;}
+  #stats{position:absolute;top:16px;left:18px;right:18px;display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+  #stats b{color:var(--text);font-weight:500;}#ruleStatus{color:var(--accent);}
+  #stageBottom{position:absolute;bottom:14px;left:16px;right:16px;text-align:center;}
+  #hint{font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:10px;}
+  .transport{display:flex;gap:8px;max-width:320px;margin:auto;}.transport button{min-height:40px;}
+  #sidebar h1{font-size:16px;}#notice{font-size:12px;line-height:1.7;color:var(--accent2);margin:0;min-height:20px;}
+  .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+  .tools button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#06201e;}
+  .card input[type=range]{display:block;width:100%;margin:0;min-height:20px;}
+  .check{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:12px;}
+  fieldset{border:0;margin:14px 0 0;padding:0;min-width:0;}legend{font-size:11px;color:var(--text-dim);padding:0;margin-bottom:8px;}
+  .ruleChecks{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;}
+  .ruleChecks label{position:relative;cursor:pointer;}.ruleChecks input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+  .ruleChecks span{display:grid;place-items:center;height:32px;background:#171b24;border:1px solid var(--panel-border);border-radius:4px;font-size:12px;}
+  .ruleChecks input:checked+span{background:var(--accent);color:#06201e;border-color:var(--accent);}
+  .ruleChecks input:focus-visible+span{outline:2px solid var(--accent2);outline-offset:2px;}
+  .smallLabel{display:block;font-size:11px;color:var(--text-dim);margin-bottom:6px;}
+  button:focus-visible,a:focus-visible,canvas:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent2);outline-offset:3px;}
+  @media(max-width:760px){#sidebar{width:86vw;max-width:340px;padding-top:66px;}#stage{padding:74px 8px 110px;}#stats{right:66px;gap:10px;font-size:11px;}#canvas{width:min(100%,calc((100dvh - 184px) * 4 / 3));}#menuToggle{height:44px;width:44px;}.tools button{min-height:42px;}.ruleChecks{grid-template-columns:repeat(5,1fr);gap:5px;}.ruleChecks span{height:40px;}}
+  @media(prefers-reduced-motion:reduce){#sidebar{transition:none;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <button id="menuToggle" aria-label="設定を開く" aria-controls="sidebar" aria-expanded="false">⚙</button>
+  <div id="sidebarBackdrop"></div>
+  <main id="stage" aria-label="ライフゲームの実験場">
+    <div id="stats"><span>世代 <b id="generation">0</b></span><span>生存 <b id="population">0</b></span><span id="ruleStatus">B3/S23</span></div>
+    <canvas id="canvas" tabindex="0" aria-label="セルを描く実験場。矢印キーで位置を選び、Enterで描画、Deleteで消去。">Canvas対応ブラウザで開いてください。</canvas>
+    <div id="stageBottom">
+      <div id="hint">ドラッグでセルを描く · 編集すると一時停止</div>
+      <div class="transport"><button id="playpause" class="primary">⏸ 一時停止</button><button id="step">1世代進める</button></div>
+    </div>
+  </main>
+  <aside id="sidebar" aria-label="ライフゲームの設定">
+    <div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;"><a class="navlink" href="../index.html" style="color:var(--text-dim)">← 図鑑トップ</a><a class="navlink" href="about.html" style="color:var(--accent)">使い方・理論背景 →</a></div>
+      <h1>コンウェイのライフゲーム</h1>
+      <p class="sub">生きるか、消えるか。周囲8セルだけを見て、すべてのセルが同時に次の世代へ進みます。</p>
+    </div>
+    <section class="card">
+      <h2><label for="pattern">パターン標本</label></h2>
+      <select id="pattern"><option value="gun">ゴスパーのグライダー銃</option><option value="block">ブロック（静止）</option><option value="blinker">ブリンカー（周期2）</option><option value="toad">ヒキガエル（周期2）</option><option value="beacon">ビーコン（周期2）</option><option value="pulsar">パルサー（周期3）</option><option value="glider">グライダー（移動）</option><option value="lwss">軽量宇宙船（移動）</option><option value="rpent">Rペントミノ（長い変化）</option></select>
+      <p class="note" id="patternInfo"></p>
+      <div class="btnrow"><button id="loadPattern">この配置で始める</button><button id="rotate">↻ 回転 0°</button></div>
+      <p class="note">パターンの説明は標準のB3/S23ルールでの性質です。「この配置で始める」は盤面を置き換えて停止します。</p>
+    </section>
+    <section class="card">
+      <h2>描いて試す</h2>
+      <div class="tools" role="group" aria-label="編集する道具"><button data-tool="draw" aria-pressed="true">▦ 描く</button><button data-tool="erase" aria-pressed="false">◯ 消す</button><button data-tool="stamp" aria-pressed="false">✚ スタンプ</button></div>
+      <p class="note">スタンプで選択中のパターンを追加できます。矢印キー＋Enterでも配置できます。</p>
+      <div class="btnrow"><button id="clear">すべて消す</button><button id="restore">開始時に戻す</button></div>
+    </section>
+    <section class="card">
+      <h2>ランダムな初期配置</h2>
+      <div class="row"><label for="density">生存率</label><output class="val" id="densityVal">25%</output></div>
+      <input id="density" type="range" min="5" max="70" step="5" value="25">
+      <button id="randomize" style="margin-top:10px;">🎲 ランダムに配置</button>
+    </section>
+    <section class="card">
+      <h2><label for="rulePreset">誕生・生存のルール</label></h2>
+      <select id="rulePreset"><option value="B3/S23">Conway — B3/S23</option><option value="B36/S23">HighLife — B36/S23</option><option value="B2/S">Seeds — B2/S</option><option value="B3678/S34678">Day &amp; Night — B3678/S34678</option><option value="custom">カスタム</option></select>
+      <fieldset><legend>誕生 B：死セルが生まれる隣接数</legend><div class="ruleChecks" id="birthChecks"></div></fieldset>
+      <fieldset><legend>生存 S：生セルが生き残る隣接数</legend><div class="ruleChecks" id="surviveChecks"></div></fieldset>
+      <p class="note">数字は周囲8セルのうち、生きているセルの数。変更すると配置を保持して停止します。</p>
+      <p class="note" id="ruleNote"></p>
+    </section>
+    <section class="card">
+      <h2>実験設定</h2>
+      <div class="row"><label for="speed">世代／秒</label><output class="val" id="speedVal">10</output></div>
+      <input id="speed" type="range" min="1" max="30" value="10">
+      <label class="check"><input id="wrap" type="checkbox" checked>上下・左右の端をつなぐ</label>
+      <label class="check"><input id="grid" type="checkbox" checked>格子線を表示</label>
+      <label class="check"><input id="trails" type="checkbox">消えたセルの軌跡を表示</label>
+      <div style="margin-top:12px;"><label class="smallLabel" for="size">盤面の大きさ（変更すると初期化）</label><select id="size"><option value="48">48 × 36（描きやすい）</option><option value="96" selected>96 × 72（標準）</option><option value="144">144 × 108（広い）</option></select></div>
+      <button id="snapshot" style="margin-top:12px;">⬇ PNGで保存</button>
+    </section>
+    <p id="notice" role="status" aria-live="polite"></p>
+    <div class="footer-note">ClaudeALIFE — Conway's Game of Life ・ <a href="../privacy.html" style="color:inherit;">プライバシーポリシー</a></div>
+  </aside>
+</div>
+<script>
+'use strict';
+// Synchronous, finite-grid Moore-neighborhood cellular automaton.
+const LifeCore = (() => {
+  class World {
+    constructor(width, height) {
+      this.width = width; this.height = height;
+      this.cells = new Uint8Array(width * height);
+      this.next = new Uint8Array(width * height);
+      this.birth = 1 << 3; this.survive = (1 << 2) | (1 << 3);
+      this.wrap = true; this.generation = 0;
+    }
+    step() {
+      const {width: w, height: h, cells, next, wrap, birth, survive} = this;
+      let population = 0, births = 0, deaths = 0;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        let n = 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue;
+          let nx = x + dx, ny = y + dy;
+          if (wrap) { nx = (nx + w) % w; ny = (ny + h) % h; }
+          else if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          n += cells[ny * w + nx];
+        }
+        const i = y * w + x, alive = ((cells[i] ? survive : birth) >> n) & 1;
+        next[i] = alive; population += alive;
+        if (alive && !cells[i]) births++;
+        if (!alive && cells[i]) deaths++;
+      }
+      this.cells = next; this.next = cells; this.generation++;
+      return {population, births, deaths};
+    }
+    clear() { this.cells.fill(0); this.next.fill(0); this.generation = 0; }
+    stamp(points, x, y) {
+      for (const [dx, dy] of points) {
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < this.width && ny < this.height) this.cells[ny * this.width + nx] = 1;
+      }
+    }
+  }
+  function ascii(rows) {
+    const cells = [];
+    rows.forEach((row, y) => [...row].forEach((v, x) => { if (v === 'O') cells.push([x, y]); }));
+    return cells;
+  }
+  const patterns = {
+    block: {name: 'ブロック', info: '静止する4セル。次の世代も同じ形です。', cells: ascii(['OO','OO'])},
+    blinker: {name: 'ブリンカー', info: '縦と横を交互に繰り返す、周期2の振動子。', cells: ascii(['OOO'])},
+    toad: {name: 'ヒキガエル', info: '6セルから始まる周期2の振動子。', cells: ascii(['.OOO','OOO.'])},
+    beacon: {name: 'ビーコン', info: '対角に接したブロックが点滅する、周期2の振動子。', cells: ascii(['OO..','OO..','..OO','..OO'])},
+    pulsar: {name: 'パルサー', info: '対称な形が3世代ごとに戻る振動子。', cells: ascii(['..OOO...OOO..','.............','O....O.O....O','O....O.O....O','O....O.O....O','..OOO...OOO..','.............','..OOO...OOO..','O....O.O....O','O....O.O....O','O....O.O....O','.............','..OOO...OOO..'])},
+    glider: {name: 'グライダー', info: '4世代で斜めに1セル進む、5セルの移動パターン。', cells: ascii(['.O.','..O','OOO'])},
+    lwss: {name: '軽量宇宙船', info: '4世代で横に2セル進む移動パターン。', cells: ascii(['.O..O','O....','O...O','OOOO.'])},
+    rpent: {name: 'Rペントミノ', info: 'わずか5セルから長く複雑に変化する初期配置。', cells: ascii(['.OO','OO.','.O.'])},
+    gun: {name: 'ゴスパーのグライダー銃', info: '30世代ごとにグライダーを放出します。端をつなぐと、放出したグライダーが戻って衝突することがあります。', cells: [[24,0],[22,1],[24,1],[12,2],[13,2],[20,2],[21,2],[34,2],[35,2],[11,3],[15,3],[20,3],[21,3],[34,3],[35,3],[0,4],[1,4],[10,4],[16,4],[20,4],[21,4],[0,5],[1,5],[10,5],[14,5],[16,5],[17,5],[22,5],[24,5],[10,6],[16,6],[24,6],[11,7],[15,7],[12,8],[13,8]]}
+  };
+  function rotate(points, turns) {
+    let out = points.map(p => [...p]);
+    for (let i = 0; i < turns; i++) out = out.map(([x,y]) => [-y,x]);
+    const minX = Math.min(...out.map(p => p[0])), minY = Math.min(...out.map(p => p[1]));
+    return out.map(([x,y]) => [x-minX,y-minY]);
+  }
+  function dimensions(points) { return {w: Math.max(...points.map(p => p[0])) + 1, h: Math.max(...points.map(p => p[1])) + 1}; }
+  return {World, patterns, rotate, dimensions};
+})();
+
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const {World, patterns, rotate, dimensions} = LifeCore;
+  const canvas = $('canvas'), ctx = canvas.getContext('2d', {alpha:false});
+  if (!ctx) { $('notice').textContent = 'Canvasを利用できません。別のブラウザでお試しください。'; return; }
+  const mobile = matchMedia('(max-width:760px)');
+  let world = new World(mobile.matches ? 48 : 96, mobile.matches ? 36 : 72);
+  let age = new Uint8Array(world.cells.length), startCells = world.cells.slice();
+  let running = false, generationStart = true, rotation = 0, tool = 'draw';
+  let cursor = null, pointer = null, previous = null, dirty = true;
+  let last = 0, accumulator = 0;
+  const CELL = 10;
+  function message(text) { $('notice').textContent = text; }
+  function invalidate() { dirty = true; }
+  function pause() { running = false; accumulator = 0; $('playpause').textContent = '▶ 再生'; invalidate(); }
+  function ruleString() {
+    const digits = mask => Array.from({length:9},(_,i)=>i).filter(i=>mask & (1<<i)).join('');
+    return 'B'+digits(world.birth)+'/S'+digits(world.survive);
+  }
+  function syncRules() {
+    const text = ruleString(); $('ruleStatus').textContent = text;
+    const found = [...$('rulePreset').options].some(o => o.value === text);
+    $('rulePreset').value = found ? text : 'custom';
+    for (let i = 0; i < 9; i++) {
+      $('birth'+i).checked = !!(world.birth & (1<<i));
+      $('survive'+i).checked = !!(world.survive & (1<<i));
+    }
+    $('ruleNote').textContent = world.birth & 1 ? 'B0を含むルールは、表示の急な点滅を抑えるため最大2世代／秒で進みます。' : '';
+    invalidate();
+  }
+  function resetCounters() { world.generation = 0; age.fill(0); generationStart = true; invalidate(); }
+  function rememberStart() { startCells = world.cells.slice(); generationStart = true; }
+  function currentPattern() { return rotate(patterns[$('pattern').value].cells, rotation); }
+  function placement(pos) {
+    const points = currentPattern(), {w,h} = dimensions(points);
+    return {points, x:Math.max(0,Math.min(world.width-w,pos.x-Math.floor(w/2))), y:Math.max(0,Math.min(world.height-h,pos.y-Math.floor(h/2)))};
+  }
+  function loadPattern() {
+    pause(); world.clear(); resetCounters();
+    const {points,x,y} = placement({x:world.width/2|0,y:world.height/2|0});
+    world.stamp(points,x,y); rememberStart(); cursor = null;
+    message('選択したパターンを配置しました。「再生」または「1世代進める」で観察できます。');
+  }
+  function patternInfo() { $('patternInfo').textContent = patterns[$('pattern').value].info; $('rotate').textContent = '↻ 回転 '+rotation*90+'°'; }
+  function advance() {
+    if (generationStart) { rememberStart(); generationStart = false; }
+    for (let i=0;i<age.length;i++) age[i] = world.cells[i] ? 12 : Math.max(0,age[i]-1);
+    world.step(); invalidate();
+  }
+  function render() {
+    ctx.fillStyle = '#090d14'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    const showGrid = $('grid').checked, trails = $('trails').checked;
+    const gap = showGrid ? 1 : 0;
+    let pop = 0;
+    for (let y=0;y<world.height;y++) for (let x=0;x<world.width;x++) {
+      const i = y*world.width+x;
+      if (world.cells[i]) {
+        pop++; ctx.fillStyle = '#69e2ca'; ctx.fillRect(x*CELL+gap,y*CELL+gap,CELL-gap,CELL-gap);
+      } else if (trails && age[i]) {
+        ctx.fillStyle = `rgba(71,113,122,${age[i]/18})`; ctx.fillRect(x*CELL+gap,y*CELL+gap,CELL-gap,CELL-gap);
+      }
+    }
+    if (showGrid) {
+      ctx.strokeStyle = '#19222e'; ctx.lineWidth = 0.65; ctx.beginPath();
+      for(let x=0;x<=world.width;x++){ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,canvas.height);}
+      for(let y=0;y<=world.height;y++){ctx.moveTo(0,y*CELL);ctx.lineTo(canvas.width,y*CELL);}
+      ctx.stroke();
+    }
+    if(cursor) {
+      if(tool === 'stamp') {
+        const {points,x,y} = placement(cursor); ctx.fillStyle='rgba(255,204,112,0.65)';
+        for(const [dx,dy] of points)ctx.fillRect((x+dx)*CELL+1,(y+dy)*CELL+1,CELL-1,CELL-1);
+      } else {
+        ctx.strokeStyle = '#ffcc70'; ctx.lineWidth=1.5;ctx.strokeRect(cursor.x*CELL+1,cursor.y*CELL+1,CELL-2,CELL-2);
+      }
+    }
+    $('generation').textContent = world.generation.toLocaleString('ja-JP');
+    $('population').textContent = pop.toLocaleString('ja-JP');
+    canvas.dataset.generation = String(world.generation); canvas.dataset.population = String(pop);
+    canvas.dataset.width = String(world.width); canvas.dataset.height = String(world.height);
+    dirty = false;
+  }
+  function resizeCanvas() { canvas.width = world.width*CELL;canvas.height=world.height*CELL;$('size').value=String(world.width);invalidate(); }
+  function edit(pos, forceErase=false) {
+    if (tool === 'stamp' && !forceErase) { const {points,x,y}=placement(pos); world.stamp(points,x,y); }
+    else {const i=pos.y*world.width+pos.x;world.cells[i]=(tool==='erase'||forceErase)?0:1;age[i]=0;}
+    // Any manual edit starts a new experiment, whose generation zero is reproducible.
+    world.generation=0;generationStart=true;invalidate();
+  }
+  function point(e) {
+    const rect=canvas.getBoundingClientRect();
+    return {x:Math.max(0,Math.min(world.width-1,Math.floor((e.clientX-rect.left)/rect.width*world.width))),y:Math.max(0,Math.min(world.height-1,Math.floor((e.clientY-rect.top)/rect.height*world.height)))};
+  }
+  function line(a,b) {
+    let x=a.x,y=a.y;const dx=Math.abs(b.x-x),dy=-Math.abs(b.y-y),sx=x<b.x?1:-1,sy=y<b.y?1:-1;let err=dx+dy;
+    while(true){edit({x,y});if(x===b.x&&y===b.y)break;const e=2*err;if(e>=dy){err+=dy;x+=sx;}if(e<=dx){err+=dx;y+=sy;}}
+  }
+  canvas.addEventListener('pointerdown',e=>{
+    if(pointer!==null||e.button!==0)return;e.preventDefault();pause();pointer=e.pointerId;canvas.setPointerCapture(pointer);canvas.focus({preventScroll:true});
+    cursor=previous=point(e);edit(cursor);message('編集中です。世代を0に戻しました。');
+  });
+  canvas.addEventListener('pointermove',e=>{
+    cursor=point(e);invalidate();
+    if(e.pointerId!==pointer||tool==='stamp')return;
+    line(previous,cursor);previous=cursor;
+  });
+  function endPointer(e){if(e.pointerId===pointer){pointer=null;previous=null;rememberStart();if(e.pointerType==='touch')cursor=null;invalidate();}}
+  canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);canvas.addEventListener('lostpointercapture',endPointer);
+  canvas.addEventListener('pointerleave',()=>{if(pointer===null){cursor=null;invalidate();}});
+  canvas.addEventListener('keydown',e=>{
+    if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter','Delete','Backspace'].includes(e.key))return;
+    e.preventDefault();cursor=cursor||{x:world.width/2|0,y:world.height/2|0};
+    if(e.key==='Enter'||e.key==='Delete'||e.key==='Backspace'){pause();edit(cursor,e.key!=='Enter');rememberStart();}
+    else {cursor.x=Math.max(0,Math.min(world.width-1,cursor.x+(e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0)));cursor.y=Math.max(0,Math.min(world.height-1,cursor.y+(e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0)));}
+    invalidate();
+  });
+  $('playpause').addEventListener('click',()=>{if(running)pause();else{running=true;accumulator=0;$('playpause').textContent='⏸ 一時停止';message('');}});
+  $('step').addEventListener('click',()=>{pause();advance();});
+  $('loadPattern').addEventListener('click',loadPattern);
+  $('pattern').addEventListener('change',()=>{rotation=0;patternInfo();chooseTool('stamp');});
+  $('rotate').addEventListener('click',()=>{rotation=(rotation+1)%4;patternInfo();invalidate();});
+  $('clear').addEventListener('click',()=>{pause();world.clear();resetCounters();rememberStart();message('盤面を空にしました。セルを描いてみてください。');});
+  $('restore').addEventListener('click',()=>{pause();world.cells.set(startCells);resetCounters();message('直前の実験の開始配置に戻しました。');});
+  $('density').addEventListener('input',()=>{$('densityVal').textContent=$('density').value+'%';});
+  $('randomize').addEventListener('click',()=>{pause();world.clear();resetCounters();const density=Number($('density').value)/100;world.cells.forEach((_,i)=>{world.cells[i]=Math.random()<density?1:0;});rememberStart();message('ランダムな配置を作りました。再生して変化を観察できます。');});
+  $('speed').addEventListener('input',()=>{$('speedVal').textContent=$('speed').value;accumulator=0;});
+  $('grid').addEventListener('change',invalidate);$('trails').addEventListener('change',invalidate);
+  $('wrap').addEventListener('change',()=>{pause();world.wrap=$('wrap').checked;resetCounters();rememberStart();message(world.wrap?'上下・左右の端をつなぎました。':'端の外は死セルとして扱います。');});
+  $('size').addEventListener('change',()=>{const width=Number($('size').value),{birth,survive,wrap}=world;world=new World(width,width*3/4);Object.assign(world,{birth,survive,wrap});age=new Uint8Array(world.cells.length);resizeCanvas();loadPattern();message('盤面サイズを変更し、選択中のパターンを配置しました。');});
+  function changedRule(){pause();resetCounters();rememberStart();syncRules();message('ルールを変更しました。配置を保持して停止中です。');}
+  for(const [group,property] of [['birth','birth'],['survive','survive']])for(let n=0;n<=8;n++){
+    const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');
+    input.type='checkbox';input.id=group+n;input.setAttribute('aria-label',(group==='birth'?'誕生':'生存')+'：隣接'+n+'セル');span.textContent=n;
+    label.append(input,span);$(group+'Checks').append(label);
+    input.addEventListener('change',()=>{if(input.checked)world[property]|=1<<n;else world[property]&=~(1<<n);changedRule();});
+  }
+  $('rulePreset').addEventListener('change',()=>{
+    if($('rulePreset').value==='custom')return;
+    const [b,s]=$('rulePreset').value.split('/');
+    const mask=text=>[...text.slice(1)].reduce((m,n)=>m|(1<<Number(n)),0);
+    world.birth=mask(b);world.survive=mask(s);changedRule();
+  });
+  function chooseTool(value){tool=value;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tool===tool)));$('hint').textContent=tool==='stamp'?'クリック／タップでパターンを追加 · 編集すると一時停止':tool==='erase'?'ドラッグでセルを消す · 編集すると一時停止':'ドラッグでセルを描く · 編集すると一時停止';invalidate();}
+  document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{chooseTool(b.dataset.tool);if(mobile.matches)drawer(false);}));
+  $('snapshot').addEventListener('click',()=>{const saved=cursor;cursor=null;render();const link=document.createElement('a');link.download='game-of-life-generation-'+world.generation+'.png';link.href=canvas.toDataURL('image/png');link.click();cursor=saved;invalidate();});
+  function drawer(open){$('sidebar').classList.toggle('open',open);$('sidebarBackdrop').classList.toggle('open',open);$('sidebar').inert=mobile.matches&&!open;$('menuToggle').textContent=open?'×':'⚙';$('menuToggle').setAttribute('aria-expanded',String(open));$('menuToggle').setAttribute('aria-label',open?'設定を閉じる':'設定を開く');}
+  $('menuToggle').addEventListener('click',()=>drawer(!$('sidebar').classList.contains('open')));$('sidebarBackdrop').addEventListener('click',()=>drawer(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sidebar').classList.contains('open')){drawer(false);$('menuToggle').focus();}});
+  mobile.addEventListener('change',()=>drawer(false));
+  document.addEventListener('visibilitychange',()=>{last=0;accumulator=0;});
+  function loop(now){
+    const elapsed=last?Math.min(now-last,250):0;last=now;
+    if(running&&!document.hidden){const rate=Math.min(Number($('speed').value),world.birth&1?2:30);accumulator+=elapsed;let n=0;while(accumulator>=1000/rate&&n<8){advance();accumulator-=1000/rate;n++;}if(n===8)accumulator=0;}
+    if(dirty)render();requestAnimationFrame(loop);
+  }
+  resizeCanvas();syncRules();patternInfo();loadPattern();drawer(false);message('グライダー銃を観察中。下のボタンで停止し、1世代ずつ確かめられます。');
+  running=!matchMedia('(prefers-reduced-motion:reduce)').matches;$('playpause').textContent=running?'⏸ 一時停止':'▶ 再生';
+  requestAnimationFrame(loop);
+})();
+
+</script>
+</body>
+</html>
