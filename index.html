@@ -16,6 +16,19 @@
 
   gtag('config', 'G-6SYSH72RB4');
 </script>
+<meta name="description" content="ALIFE Zukan — a collection of browser-based Artificial Life simulators: Gray-Scott reaction-diffusion, Lenia, Boids, Particle Life, Conway's Game of Life, and Physarum. Play with the equations directly, no install needed.">
+<link rel="canonical" href="https://hamzworkerz.com/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hamzworkerz.com/">
+<meta property="og:title" content="ALIFE Zukan — Artificial Life Simulators in Your Browser">
+<meta property="og:description" content="A collection of browser-based Artificial Life simulators: Gray-Scott reaction-diffusion, Lenia, Boids, Particle Life, Conway's Game of Life, and Physarum.">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ALIFE Zukan — Artificial Life Simulators in Your Browser">
+<meta name="twitter:description" content="Gray-Scott, Lenia, Boids, Particle Life, Game of Life, Physarum — play with the equations directly in your browser.">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
 <style>
   :root{
     --bg:#0b0d12;
@@ -43,6 +56,9 @@
   }
   header p{
     font-size:14px; color:var(--text-dim); line-height:1.8; max-width:640px; margin:0;
+  }
+  header p.en{
+    margin-top:14px; padding-top:14px; border-top:1px solid var(--panel-border);
   }
   main{
     max-width:1080px; margin:0 auto; padding:16px 24px 80px;
@@ -88,6 +104,9 @@
   .card p{
     font-size:12px; color:var(--text-dim); line-height:1.6; margin:0;
   }
+  .card p.en{
+    font-size:11px; color:#5b6272; margin-top:2px;
+  }
   .card.disabled{
     cursor:default; opacity:0.45; filter:grayscale(0.4);
   }
@@ -108,8 +127,13 @@
 <body>
 <header>
   <h1>ALIFE図鑑</h1>
-  <p>人工生命(Artificial Life)の各モデルを、ブラウザで動かして遊べるシミュレーターとしてまとめた個人的な標本箱。
-  カードを選ぶとそのモデルのシミュレーターが開きます。各ページ内から使い方・理論背景の解説にも飛べます。</p>
+  <p>人工生命(Artificial Life)の各モデルを、ブラウザで動かして遊べるシミュレーターとしてまとめた標本箱。
+  カードを選ぶとそのモデルのシミュレーターが開きます。各ページ内から使い方・理論背景の解説にも飛べます。
+  スマートフォンでは、各シミュレーターページ右上の⚙アイコンをタップすると操作パネル(スライダー)が開きます。</p>
+  <p class="en">ALIFE Zukan is a collection of Artificial Life simulators — Gray-Scott reaction-diffusion, Lenia,
+  Boids, Particle Life, Conway's Game of Life, and Physarum — built to run and play with directly in your browser.
+  Pick a card below to open its simulator; each page links to a write-up covering how to use it and the theory
+  behind it. On mobile, tap the ⚙ icon in the top-right corner of any simulator page to open its control panel.</p>
 </header>
 <main>
   <div class="grid">
@@ -120,6 +144,7 @@
         <span class="tag">Cellular Automaton</span>
         <h2>コンウェイのライフゲーム</h2>
         <p>周囲8セルの生死だけから、静止・振動・移動するパターンが生まれる。グライダー銃を観察し、セルを描いて誕生・生存ルールも実験。</p>
+        <p class="en">The classic cellular automaton: still lifes, oscillators, and gliders emerge from one simple rule.</p>
       </div>
     </a>
 
@@ -129,6 +154,7 @@
         <span class="tag">Reaction-Diffusion</span>
         <h2>Gray-Scott 散逸構造</h2>
         <p>反応拡散方程式による自己組織化パターン。Feed/Kill rateで斑点・迷路・カオスなど多様な模様が生まれる、非平衡開放系の基本モデル。</p>
+        <p class="en">A reaction-diffusion system. Tune feed/kill rates for spots, mazes, or spatiotemporal chaos.</p>
       </div>
     </a>
 
@@ -138,6 +164,7 @@
         <span class="tag">Continuous Cellular Automaton</span>
         <h2>Lenia</h2>
         <p>Game of Lifeを連続化した、なめらかで生物的な自己組織化パターン。Orbiumなど多様な"種"が発見されている。</p>
+        <p class="en">A continuous generalization of Conway's Life. Smooth, lifelike "creatures" like Orbium glide and rotate.</p>
       </div>
     </a>
 
@@ -147,6 +174,7 @@
         <span class="tag">Multi-Agent</span>
         <h2>Particle Life</h2>
         <p>種類ごとの引力・斥力行列だけから、群れ・追いかけ合い・膜状の塊など多様な"生態"が生まれる。ルールをランダム化するたびに別の世界になる。</p>
+        <p class="en">A random attraction/repulsion matrix between particle types is enough to spawn flocks, chases, and cell-like clusters.</p>
       </div>
     </a>
 
@@ -156,6 +184,7 @@
         <span class="tag">Multi-Agent</span>
         <h2>Boids</h2>
         <p>分離・整列・結合という3つの局所ルールだけから、群れ行動が創発するCraig Reynolds(1986)の古典モデル。</p>
+        <p class="en">Craig Reynolds' 1986 classic: separation, alignment, and cohesion are enough to produce flocking.</p>
       </div>
     </a>
 
@@ -165,10 +194,11 @@
         <span class="tag">Chemotaxis / Self-Organization</span>
         <h2>Physarum 粘菌</h2>
         <p>化学物質の跡を感知して進む粒子から、脈のような網目が育つ。餌や障害物を配置し、ネットワークの形成と再編成を観察。</p>
+        <p class="en">Particles that sense and follow chemical trails grow into vein-like networks, slime-mold style.</p>
       </div>
     </a>
   </div>
 </main>
-<footer>ClaudeALIFE — 個人的なALIFE研究・実験のまとめ ・ <a href="privacy.html" style="color:inherit;">プライバシーポリシー</a></footer>
+<footer>hamzALIFE — ALIFE研究・実験のまとめ ・ <a href="privacy.html" style="color:inherit;">プライバシーポリシー</a></footer>
 </body>
 </html>
