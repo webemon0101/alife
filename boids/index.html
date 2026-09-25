@@ -460,24 +460,51 @@
   });
 
   // ---------- main loop ----------
+  // Physics runs on a fixed timestep (matching the 60fps assumption the force
+  // constants were tuned under), decoupled from however fast this particular
+  // machine can actually render. A slow device just renders choppier instead
+  // of the whole simulation running in slow motion; a fast device doesn't run
+  // it in fast-forward either. MAX_STEPS_PER_FRAME + dropping leftover backlog
+  // prevents a "spiral of death" if a machine falls far behind.
   randomizeMatrix();
   initParticles();
 
-  let lastT=performance.now(), fpsAccum=0;
-  function loop(){
-    if(!paused){
-      if(mode==='boids') stepBoids(); else stepPL();
+  const FIXED_DT_MS = 1000/60;
+  const MAX_STEPS_PER_FRAME = 5;
+  let lastFrameTime = null;
+  let accumulator = 0;
+  let fpsAccum=0, fpsWindowStart=0;
+
+  function loop(currentTime){
+    if(lastFrameTime===null){
+      lastFrameTime = currentTime;
+      fpsWindowStart = currentTime;
+      requestAnimationFrame(loop);
+      return;
     }
+    const dtMs = Math.min(currentTime - lastFrameTime, 250); // clamp huge gaps (e.g. tab was backgrounded)
+    lastFrameTime = currentTime;
+    accumulator += dtMs;
+
+    if(!paused){
+      let stepsRun = 0;
+      while(accumulator >= FIXED_DT_MS && stepsRun < MAX_STEPS_PER_FRAME){
+        if(mode==='boids') stepBoids(); else stepPL();
+        accumulator -= FIXED_DT_MS;
+        stepsRun++;
+      }
+      if(stepsRun===MAX_STEPS_PER_FRAME) accumulator = 0; // drop backlog rather than spiral
+    }
+
     render();
-    const now = performance.now();
     fpsAccum++;
-    if(now-lastT>500){
-      fpsEl.textContent = (fpsAccum*1000/(now-lastT)).toFixed(0)+' fps · N='+N;
-      fpsAccum=0; lastT=now;
+    if(currentTime-fpsWindowStart>500){
+      fpsEl.textContent = (fpsAccum*1000/(currentTime-fpsWindowStart)).toFixed(0)+' fps · N='+N;
+      fpsAccum=0; fpsWindowStart=currentTime;
     }
     requestAnimationFrame(loop);
   }
-  loop();
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
