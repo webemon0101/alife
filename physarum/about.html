@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physarum 粘菌 — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body>
+<nav><a href="../index.html">← 図鑑トップ</a><a href="index.html">シミュレーターに戻る →</a></nav>
+<article>
+  <h1>Physarum 粘菌</h1>
+  <p class="lead">「跡を残す」「跡をたどる」という局所的なやり取りから、全体のネットワークが生まれる。粘菌に着想を得た粒子モデルの実験場です。</p>
+  <h2>使い方</h2>
+  <ul>
+    <li><b>網目形成</b>：一様に散らした粒子が、自分たちの化学物質の跡に集まって構造を作ります。少し待って模様の成長を観察してください。</li>
+    <li><b>餌場を結ぶ</b>：5つの持続する誘引源を配置します。粒子の集まり方や経路が、餌のない場合からどう変わるか比較できます。</li>
+    <li><b>障害物</b>：壁と餌が置かれた状態から開始します。壁の隙間を広げたり、新しい壁を描いたりして、経路の変化を観察できます。</li>
+    <li><b>餌を置く</b>：クリック／タップで追加します（最大32個）。餌は食べ尽くされず、取り除くまで化学物質を供給し続けます。</li>
+    <li><b>壁・跡・消しゴム</b>：ドラッグして描きます。壁は粒子の移動と化学物質の拡散を遮ります。消しゴムは壁・餌・跡を消します。粒子そのものは消さないので、跡は再び現れることがあります。</li>
+    <li><b>一時停止</b>：停止中も実験場を編集できます。「やり直す」で現在のパラメータのまま、選択中のプリセットの初期配置に戻せます。停止状態は保持されます。</li>
+    <li><b>スマートフォン</b>：右上の歯車で設定を開閉します。動きが重い場合は粒子数や実験速度を下げてください。</li>
+    <li><b>PNGで保存</b>：現在の実験場を画像として保存します。</li>
+  </ul>
+  <h2>粘菌と、このモデルの関係</h2>
+  <p>真正粘菌 <i>Physarum polycephalum</i> の変形体は、多数の核を持つ一つの細胞として広がり、輸送ネットワークを形成します。この画面の粒子は独立した粘菌の個体ではなく、集団的な輸送や走化性を表す計算上の要素です。</p>
+  <p>Jeff Jonesの粒子ベースの研究に着想を得て、3方向の感知、旋回、移動、化学物質の放出、拡散・減衰を組み合わせています。本ページは仕組みを体験するための独自の簡略実装で、論文の全条件を再現したものではありません。</p>
+  <h2>一つの粒子がすること</h2>
+  <ol>
+    <li>進行方向の前方と、左右に角度を付けた位置で化学物質の濃度を読む。</li>
+    <li>前方が最も濃ければ直進。左または右が濃ければ、その方向へ旋回する。前方が両側より薄ければ左右どちらかにランダムに旋回する。</li>
+    <li>1格子分進む。移動先が壁・境界・別の粒子にふさがれていたら、その場で向きを変える。</li>
+    <li>移動に成功した位置に化学物質を放出する。</li>
+  </ol>
+  <p>濃い跡に粒子が集まり、そこへさらに跡を残す正のフィードバックと、拡散・蒸発による平滑化と忘却が同時に働きます。粒子同士が全体の地図を共有することはありません。</p>
+  <h2>化学物質の更新</h2>
+  <div class="eqn">C̃ = C + 粒子の放出 + 餌からの供給<br>C<sub>次</sub> = (1 − e) × [(1 − d) C̃ + d × 近傍平均(C̃)]</div>
+  <p><code>d</code> は拡散の強さ、<code>e</code> は1ステップ当たりの蒸発率です。近傍平均には自身と周囲8格子を使います。壁の内部は濃度0とし、壁・外周との境界では流出を抑えます。感知の際も壁の向こう側を直接読まないようにしています。</p>
+  <p class="note">計算は360×360格子、通常速度で1秒当たり30ステップを目標に進みます。処理が追いつかない端末では実時間より遅くなります。粒子数は一定で、繁殖・死・遺伝・進化は扱っていません。</p>
+  <h2>パラメータで何が変わる？</h2>
+  <ul>
+    <li><b>センサー距離</b>：どのくらい先の跡を読むか。細かな構造と大きな構造の形成に影響します。</li>
+    <li><b>センサー角度／旋回角度</b>：どの方向を見て、どの程度曲がるか。蛇行、集中、網目などの挙動が変わります。</li>
+    <li><b>拡散</b>：跡が周囲へ広がる強さ。離れた粒子が跡を見つけやすくなる一方、細い模様はぼやけます。</li>
+    <li><b>蒸発</b>：古い跡が消える速さ。小さいほど履歴が残り、大きいほど最近の通り道が強調されます。</li>
+    <li><b>粒子数</b>：混雑と化学物質の供給量が変わります。変更時は粒子と跡を初期化しますが、描いた壁と餌は保持します。</li>
+  </ul>
+  <h2>試してみる実験</h2>
+  <ol>
+    <li>網目が育ったら一時停止し、消しゴムで一本の跡を横切るように消す。再開すると、同じ道が戻るか、別の道ができるか？</li>
+    <li>餌場の一つを消し、別の場所に置く。以前の跡が残る時間は、蒸発率によってどう変わるか？</li>
+    <li>餌への通り道に壁を描く。隙間を開けたとき、どのような経路が育つか？</li>
+  </ol>
+  <p class="note">ネットワークができても、最短経路や最適解を保証するものではありません。「餌場を結ぶ」は観察のテーマで、すべての餌場が必ず接続されるという意味ではありません。再編成の結果は初期配置とパラメータによって変わります。</p>
+  <h2>参考文献</h2>
+  <ul class="refs">
+    <li>Jeff Jones (2010), “Characteristics of Pattern Formation and Evolution in Approximations of Physarum Transport Networks,” <i>Artificial Life</i>, 16(2), 127–153. <a class="inline" href="https://doi.org/10.1162/artl.2010.16.2.16202" target="_blank" rel="noopener">DOI</a></li>
+    <li>Jeff Jones, “The Emergence and Dynamical Evolution of Complex Transport Networks from Simple Low-Level Behaviours.” <a class="inline" href="https://arxiv.org/abs/1503.06579" target="_blank" rel="noopener">著者論文（arXiv掲載2015）</a></li>
+  </ul>
+  <p><a class="inline" href="index.html">シミュレーターで試す →</a></p>
+  <p class="refs">ClaudeALIFE ・ <a class="inline" href="../privacy.html">プライバシーポリシー</a></p>
+</article>
+</body>
+</html>

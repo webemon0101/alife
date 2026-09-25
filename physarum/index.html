@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physarum 粘菌シミュレーター</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; position:relative; min-width:0;
+    background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+  }
+  #canvas{ display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+  #fps{ position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162; pointer-events:none; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  #menuToggle{
+    display:none; position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--panel-border);
+    color:var(--text); font-size:19px;
+    align-items:center; justify-content:center; cursor:pointer;
+  }
+  #sidebarBackdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40;
+  }
+  @media (max-width: 760px){
+    #menuToggle{ display:flex; }
+    #sidebar{
+      position:fixed; top:0; right:0; height:100%;
+      width:82vw; max-width:340px;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:50;
+      box-shadow:-10px 0 30px rgba(0,0,0,0.5);
+    }
+    #sidebar.open{ transform:translateX(0); }
+    #sidebarBackdrop.open{ display:block; }
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:44px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+
+  #app{height:100dvh;} #stage{display:flex;align-items:center;justify-content:center;padding:54px 16px 64px;}
+  #canvas{width:min(100%, calc(100dvh - 118px));height:auto;max-width:100%;max-height:100%;aspect-ratio:1;image-rendering:auto;border:1px solid #232833;border-radius:8px;}
+  #hint{position:absolute;bottom:16px;left:16px;right:16px;text-align:center;font-size:12px;color:var(--text-dim);line-height:1.6;pointer-events:none;}
+  #fps{color:var(--text-dim);line-height:1.7;} #sidebar{width:340px;} #sidebar h1{font-size:17px;}
+  .tools{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .tools button[aria-pressed="true"]{background:var(--accent);color:#06201e;border-color:var(--accent);}
+  .control{margin-bottom:14px;} .control:last-child{margin-bottom:0;}
+  .control input[type=range]{display:block;width:100%;margin:0;min-height:20px;}
+  .control .row{margin-bottom:3px;} .check{font-size:12px;display:flex;gap:8px;align-items:center;}
+  button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent2);outline-offset:3px;}
+  #notice{margin:0;font-size:12px;line-height:1.6;color:var(--accent2);min-height:20px;}
+  @media(max-width:760px){#sidebar{width:86vw;max-width:340px;padding-top:66px;}#stage{padding:58px 8px 70px;}#menuToggle{width:44px;height:44px;} .tools button{min-height:40px;}}
+  @media(prefers-reduced-motion:reduce){#sidebar{transition:none;}}
+</style>
+</head>
+
+<body>
+<div id="app">
+  <button id="menuToggle" type="button" aria-label="設定を開く" aria-controls="sidebar" aria-expanded="false">⚙</button>
+  <div id="sidebarBackdrop"></div>
+  <main id="stage" aria-label="粘菌の実験場">
+    <span id="fps">準備中…</span>
+    <canvas id="canvas" width="360" height="360" aria-label="粘菌の軌跡。選択した道具で餌や障害物を配置できます。">このシミュレーターにはCanvas対応ブラウザが必要です。</canvas>
+    <div id="hint">餌を置く：クリック／タップで誘引源を追加</div>
+  </main>
+  <aside id="sidebar" aria-label="シミュレーション設定">
+    <div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;">
+        <a href="../index.html" class="navlink" style="color:var(--text-dim);">← 図鑑トップ</a>
+        <a href="about.html" class="navlink" style="color:var(--accent);">使い方・理論背景 →</a>
+      </div>
+      <h1>Physarum 粘菌</h1>
+      <p class="sub">跡を残し、その跡をたどる。小さな粒子の局所ルールから、脈のようなネットワークが育つ粘菌の簡略モデルです。</p>
+    </div>
+    <section class="card">
+      <h2><label for="preset">実験プリセット</label></h2>
+      <select id="preset"><option value="mesh">網目形成 — 自己組織化</option><option value="food">餌場を結ぶ — 5つの誘引源</option><option value="barriers">障害物 — 通り道を探す</option></select>
+      <div class="btnrow" style="margin-top:10px;"><button id="reset">🌱 やり直す</button><button id="playpause" class="primary">⏸ 一時停止</button></div>
+      <p class="note">模様は数秒〜数十秒かけて育ちます。プリセットの変更は設定と実験場を初期化します。</p>
+    </section>
+    <section class="card">
+      <h2>実験場に触れる</h2>
+      <div class="tools" role="group" aria-label="描画する道具">
+        <button data-tool="food" aria-pressed="true">● 餌を置く</button><button data-tool="wall" aria-pressed="false">▰ 壁を描く</button>
+        <button data-tool="erase" aria-pressed="false">◯ 消しゴム</button><button data-tool="trail" aria-pressed="false">〰 跡を描く</button>
+      </div>
+      <p class="note">餌は持続する誘引源です。消しゴムで壁・餌・跡を消し、ネットワークの変化を観察できます。</p>
+      <button id="clearEnvironment">壁と餌をすべて除く</button>
+    </section>
+    <section class="card" id="controls"><h2>局所ルール</h2>
+      <div class="control"><div class="row"><label for="count">粒子数</label><output class="val" id="countVal"></output></div><input id="count" type="range" min="2000" max="18000" step="1000" value="10000"></div>
+<div class="control"><div class="row"><label for="distance">センサー距離</label><output class="val" id="distanceVal"></output></div><input id="distance" type="range" min="3" max="24" step="1" value="9"></div>
+<div class="control"><div class="row"><label for="angle">センサー角度</label><output class="val" id="angleVal"></output></div><input id="angle" type="range" min="10" max="90" step="1" value="45"></div>
+<div class="control"><div class="row"><label for="turn">旋回角度</label><output class="val" id="turnVal"></output></div><input id="turn" type="range" min="5" max="90" step="1" value="45"></div>
+<div class="control"><div class="row"><label for="diffusion">拡散の強さ</label><output class="val" id="diffusionVal"></output></div><input id="diffusion" type="range" min="0" max="1" step="0.05" value="0.7"></div>
+<div class="control"><div class="row"><label for="decay">蒸発率</label><output class="val" id="decayVal"></output></div><input id="decay" type="range" min="0.005" max="0.12" step="0.005" value="0.03"></div>
+    </section>
+    <section class="card">
+      <h2>表示と速度</h2>
+      <div class="control"><div class="row"><label for="speed">実験速度</label><output class="val" id="speedVal">1×</output></div><input id="speed" type="range" min="0.5" max="2" step="0.5" value="1"></div>
+      <label class="check"><input id="showParticles" type="checkbox">粒子の位置を重ねる</label>
+      <button id="snapshot" style="margin-top:12px;">⬇ PNGで保存</button>
+    </section>
+    <section class="card">
+      <h2>仕組み</h2>
+      <div class="note" style="margin:0;">前・左・右で化学物質を感知 → 濃い方向へ曲がる → 移動して跡を残す。跡は拡散・蒸発します。<br>黄金色：跡　青緑：餌　灰色：壁</div>
+    </section>
+    <p id="notice" role="status" aria-live="polite"></p>
+    <div class="footer-note">ClaudeALIFE — Physarum / Jones-inspired model ・ <a href="../privacy.html" style="color:inherit;">プライバシーポリシー</a></div>
+  </aside>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const W = 360, SIZE = W * W, TAU = Math.PI * 2;
+  const canvas = $('canvas'), ctx = canvas.getContext('2d', {alpha: false});
+  if (!ctx) { $('notice').textContent = 'Canvasを利用できません。別のブラウザでお試しください。'; return; }
+  let field = new Float32Array(SIZE), next = new Float32Array(SIZE);
+  const walls = new Uint8Array(SIZE), occupied = new Int32Array(SIZE);
+  const frame = ctx.createImageData(W, W);
+  const palette = new Uint8Array(1024 * 3);
+  for (let i = 0; i < 1024; i++) {
+    const v = 1 - Math.exp(-(i / 4) / 22);
+    palette[i * 3] = 7 + 246 * v;
+    palette[i * 3 + 1] = 10 + 200 * v ** 1.3;
+    palette[i * 3 + 2] = 16 + 105 * v ** 2;
+  }
+  let px, py, heading, count = 0, foods = [], steps = 0, paused = false;
+  let tool = 'food', pointer = null, previousPoint = null;
+  const p = {count: 10000, distance: 9, angle: 45, turn: 45, diffusion: 0.7, decay: 0.03};
+  const defaults = {...p};
+  const presets = {
+    mesh: {...defaults},
+    food: {...defaults, distance: 14, angle: 35, turn: 30, decay: 0.025},
+    barriers: {...defaults, distance: 12, angle: 45, decay: 0.04}
+  };
+  const clamp = v => Math.max(0, Math.min(W - 1, v));
+  const at = (x, y) => (y | 0) * W + (x | 0);
+  function message(text) { $('notice').textContent = text; }
+
+  function spawn(i) {
+    // Bounded retries followed by a full scan keep even a fully painted world responsive.
+    let cell = -1;
+    for (let n = 0; n < 60; n++) {
+      const j = (Math.random() * SIZE) | 0;
+      if (!walls[j] && !occupied[j]) { cell = j; break; }
+    }
+    if (cell < 0) {
+      const start = (Math.random() * SIZE) | 0;
+      for (let n = 0; n < SIZE; n++) {
+        const j = (start + n) % SIZE;
+        if (!walls[j] && !occupied[j]) { cell = j; break; }
+      }
+    }
+    if (cell < 0) return false;
+    px[i] = cell % W + 0.5; py[i] = (cell / W | 0) + 0.5;
+    heading[i] = Math.random() * TAU; occupied[cell] = i + 1;
+    return true;
+  }
+  function resetParticles() {
+    field.fill(0); next.fill(0); occupied.fill(0); steps = 0;
+    px = new Float32Array(p.count); py = new Float32Array(p.count); heading = new Float32Array(p.count);
+    count = 0;
+    for (let i = 0; i < p.count; i++) { if (!spawn(i)) break; count++; }
+    if (count < p.count) message('空きスペースが少ないため、配置できる数の粒子で開始しました。');
+    addFoodSources(); render();
+  }
+  function clearCell(j) { field[j] = 0; next[j] = 0; }
+  function disc(x, y, radius, fn) {
+    for (let yy = Math.max(0, Math.floor(y - radius)); yy <= Math.min(W - 1, Math.ceil(y + radius)); yy++) {
+      for (let xx = Math.max(0, Math.floor(x - radius)); xx <= Math.min(W - 1, Math.ceil(x + radius)); xx++) {
+        if ((xx - x) ** 2 + (yy - y) ** 2 <= radius ** 2) fn(yy * W + xx);
+      }
+    }
+  }
+  function addFoodSources() {
+    for (const food of foods) disc(food.x, food.y, 6, j => {
+      if (!walls[j]) field[j] = Math.min(255, field[j] + 12);
+    });
+  }
+  function resetEnvironment() {
+    walls.fill(0); foods = [];
+    if ($('preset').value === 'food') {
+      for (let i = 0; i < 5; i++) {
+        const a = i * TAU / 5 - Math.PI / 2;
+        foods.push({x: W / 2 + Math.cos(a) * 115, y: W / 2 + Math.sin(a) * 115});
+      }
+    } else if ($('preset').value === 'barriers') {
+      foods = [{x: 50, y: 65}, {x: 180, y: 180}, {x: 310, y: 295}];
+      for (let y = 0; y < W; y++) for (let dx = -3; dx <= 3; dx++) {
+        if (y < 250) walls[y * W + 120 + dx] = 1;
+        if (y > 110) walls[y * W + 240 + dx] = 1;
+      }
+    }
+    message(''); resetParticles();
+  }
+  function sense(x, y, a) {
+    const dx = Math.cos(a), dy = Math.sin(a);
+    // Trace each grid-length sample so sensors cannot see food through thin walls.
+    for (let d = 1; d <= p.distance; d++) {
+      const sx = x + dx * d, sy = y + dy * d;
+      if (sx < 0 || sy < 0 || sx >= W || sy >= W || walls[at(sx, sy)]) return -1;
+    }
+    return field[at(x + dx * p.distance, y + dy * p.distance)];
+  }
+  function step() {
+    const sa = p.angle * Math.PI / 180, ra = p.turn * Math.PI / 180;
+    const start = Math.random() * count | 0;
+    for (let n = 0; n < count; n++) {
+      const i = (start + n) % count;
+      const x = px[i], y = py[i], old = at(x, y);
+      if (walls[old]) {
+        // Painted-over agents stay dormant until their cell is erased; do not teleport through walls.
+        continue;
+      }
+      let a = heading[i];
+      const f = sense(x, y, a), l = sense(x, y, a - sa), r = sense(x, y, a + sa);
+      if (f < l && f < r) a += Math.random() < 0.5 ? -ra : ra;
+      else if (l > r && l > f) a -= ra;
+      else if (r > l && r > f) a += ra;
+      const nx = x + Math.cos(a), ny = y + Math.sin(a);
+      if (nx >= 0 && ny >= 0 && nx < W && ny < W) {
+        const dest = at(nx, ny);
+        if (!walls[dest] && (!occupied[dest] || occupied[dest] === i + 1)) {
+          occupied[old] = 0; occupied[dest] = i + 1;
+          px[i] = nx; py[i] = ny;
+          field[dest] = Math.min(255, field[dest] + 5);
+        } else a = Math.random() * TAU;
+      } else a = Math.random() * TAU;
+      heading[i] = (a + TAU) % TAU;
+    }
+    addFoodSources();
+    const diffusion = p.diffusion, remain = 1 - p.decay;
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+      const j = y * W + x;
+      if (walls[j]) { next[j] = 0; continue; }
+      const c = field[j]; let sum = c;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const xx = x + dx, yy = y + dy;
+        const outside = xx < 0 || yy < 0 || xx >= W || yy >= W;
+        const blocked = outside || walls[yy * W + xx] || (dx && dy && (walls[y * W + xx] || walls[yy * W + x]));
+        sum += blocked ? c : field[yy * W + xx];
+      }
+      next[j] = ((1 - diffusion) * c + diffusion * sum / 9) * remain;
+    }
+    [field, next] = [next, field]; steps++;
+  }
+  function render() {
+    const data = frame.data;
+    for (let j = 0; j < SIZE; j++) {
+      const k = j * 4, c = Math.min(1023, field[j] * 4 | 0) * 3;
+      data[k] = walls[j] ? 72 : palette[c];
+      data[k + 1] = walls[j] ? 82 : palette[c + 1];
+      data[k + 2] = walls[j] ? 99 : palette[c + 2];
+      data[k + 3] = 255;
+    }
+    if ($('showParticles').checked) for (let i = 0; i < count; i++) {
+      const j = at(px[i], py[i]); if (walls[j]) continue;
+      data[j * 4] = 255; data[j * 4 + 1] = 242; data[j * 4 + 2] = 203;
+    }
+    ctx.putImageData(frame, 0, 0);
+    for (const food of foods) {
+      ctx.beginPath(); ctx.arc(food.x, food.y, 6, 0, TAU);
+      ctx.fillStyle = '#5ad1c7'; ctx.fill();
+      ctx.beginPath(); ctx.arc(food.x, food.y, 9, 0, TAU);
+      ctx.strokeStyle = '#b5fff0'; ctx.lineWidth = 1; ctx.stroke();
+    }
+    canvas.dataset.steps = String(steps);
+    canvas.dataset.particles = String(count);
+  }
+  function refresh() {
+    for (const key of Object.keys(p)) {
+      $(key).value = p[key];
+      $(key + 'Val').textContent = key === 'decay' ? (p[key] * 100).toFixed(1) + '%' :
+        key === 'angle' || key === 'turn' ? p[key] + '°' :
+        key === 'distance' ? p[key] + ' px' : p[key].toLocaleString('ja-JP');
+    }
+  }
+  for (const key of Object.keys(p)) $(key).addEventListener('input', () => {
+    p[key] = Number($(key).value); refresh();
+    if (key === 'count') { message('粒子と跡を初期化しました。壁と餌は保持しています。'); resetParticles(); }
+  });
+  $('preset').addEventListener('change', () => { Object.assign(p, presets[$('preset').value]); refresh(); resetEnvironment(); });
+  $('reset').addEventListener('click', resetEnvironment);
+  $('clearEnvironment').addEventListener('click', () => { walls.fill(0); foods = []; message('壁と餌を除きました。残った跡は徐々に変化します。'); render(); });
+  $('playpause').addEventListener('click', () => {
+    paused = !paused; accumulator = 0;
+    $('playpause').textContent = paused ? '▶ 再開' : '⏸ 一時停止';
+    render();
+  });
+  $('speed').addEventListener('input', () => { $('speedVal').textContent = $('speed').value + '×'; });
+  $('showParticles').addEventListener('change', render);
+  $('snapshot').addEventListener('click', () => {
+    render(); const a = document.createElement('a'); a.download = 'physarum.png'; a.href = canvas.toDataURL('image/png'); a.click();
+  });
+  const hints = {food: '餌を置く：クリック／タップで誘引源を追加', wall: '壁を描く：ドラッグして通り道を変える', erase: '消しゴム：ドラッグして壁・餌・跡を消す', trail: '跡を描く：ドラッグして化学物質の道を作る'};
+  document.querySelectorAll('[data-tool]').forEach(button => button.addEventListener('click', () => {
+    tool = button.dataset.tool;
+    document.querySelectorAll('[data-tool]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+    $('hint').textContent = hints[tool];
+    if (matchMedia('(max-width:760px)').matches) drawer(false);
+  }));
+  function point(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {x: clamp((e.clientX - rect.left) / rect.width * W), y: clamp((e.clientY - rect.top) / rect.height * W)};
+  }
+  function paint(pos) {
+    if (tool === 'food') {
+      if (walls[at(pos.x, pos.y)]) { message('壁の外に餌を置いてください。'); return; }
+      if (foods.some(f => Math.hypot(f.x - pos.x, f.y - pos.y) < 14)) return;
+      if (foods.length >= 32) { message('餌は最大32個です。消しゴムで減らせます。'); return; }
+      foods.push(pos); message('餌を追加しました。');
+    } else {
+      const radius = tool === 'erase' ? 12 : 5;
+      if (tool === 'erase' || tool === 'wall') foods = foods.filter(f => Math.hypot(f.x - pos.x, f.y - pos.y) > radius + 9);
+      disc(pos.x, pos.y, radius, j => {
+        if (tool === 'wall') { walls[j] = 1; clearCell(j); }
+        else if (tool === 'erase') { walls[j] = 0; clearCell(j); }
+        else if (!walls[j]) field[j] = Math.min(255, field[j] + 35);
+      });
+    }
+  }
+  canvas.addEventListener('pointerdown', e => {
+    if (pointer !== null || e.button !== 0) return;
+    e.preventDefault(); pointer = e.pointerId; canvas.setPointerCapture(pointer);
+    previousPoint = point(e); paint(previousPoint); render();
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (e.pointerId !== pointer || tool === 'food') return;
+    const pos = point(e), length = Math.hypot(pos.x - previousPoint.x, pos.y - previousPoint.y);
+    const segments = Math.max(1, Math.ceil(length / 2));
+    for (let s = 1; s <= segments; s++) paint({x: previousPoint.x + (pos.x - previousPoint.x) * s / segments, y: previousPoint.y + (pos.y - previousPoint.y) * s / segments});
+    previousPoint = pos; render();
+  });
+  function endPointer(e) { if (e.pointerId === pointer) { pointer = null; previousPoint = null; } }
+  canvas.addEventListener('pointerup', endPointer); canvas.addEventListener('pointercancel', endPointer); canvas.addEventListener('lostpointercapture', endPointer);
+  function drawer(open) {
+    $('sidebar').classList.toggle('open', open); $('sidebarBackdrop').classList.toggle('open', open);
+    $('menuToggle').setAttribute('aria-expanded', String(open));
+    $('menuToggle').setAttribute('aria-label', open ? '設定を閉じる' : '設定を開く');
+    $('menuToggle').textContent = open ? '×' : '⚙';
+    $('sidebar').inert = matchMedia('(max-width:760px)').matches && !open;
+  }
+  $('menuToggle').addEventListener('click', () => drawer(!$('sidebar').classList.contains('open')));
+  $('sidebarBackdrop').addEventListener('click', () => drawer(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { drawer(false); $('menuToggle').focus(); } });
+  window.addEventListener('resize', () => drawer($('sidebar').classList.contains('open')));
+  let last = 0, accumulator = 0, lastStats = 0, frameCount = 0;
+  document.addEventListener('visibilitychange', () => { last = 0; accumulator = 0; });
+  function loop(now) {
+    const elapsed = last ? Math.min(now - last, 100) : 0; last = now;
+    if (!paused && !document.hidden) {
+      accumulator += elapsed * Number($('speed').value);
+      let n = 0;
+      while (accumulator >= 1000 / 30 && n < 3) { step(); accumulator -= 1000 / 30; n++; }
+      if (n === 3) accumulator = 0;
+      if (n > 0) render();
+    }
+    frameCount++;
+    if (now - lastStats > 750) {
+      $('fps').textContent = `${Math.round(frameCount * 1000 / (now - lastStats))} fps · ${count.toLocaleString('ja-JP')} 粒子\n${steps.toLocaleString('ja-JP')} step${paused ? ' · 停止中' : ''}`;
+      frameCount = 0; lastStats = now;
+    }
+    requestAnimationFrame(loop);
+  }
+  refresh(); resetEnvironment(); drawer(false); requestAnimationFrame(loop);
+})();
+
+</script>
+</body>
+</html>
