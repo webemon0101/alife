@@ -473,7 +473,7 @@
   const playBtn = document.getElementById('playpause');
   playBtn.addEventListener('click', ()=>{ paused=!paused; playBtn.textContent = paused?'▶ 再生':'⏸ 一時停止'; });
 
-  document.getElementById('modeBoids').addEventListener('click', ()=>{
+  function activateBoids(){
     mode='boids';
     document.getElementById('modeBoids').classList.add('active');
     document.getElementById('modePL').classList.remove('active');
@@ -483,8 +483,8 @@
     document.getElementById('eqnPL').style.display='none';
     N = parseInt(nBoidsSlider.value);
     initParticles();
-  });
-  document.getElementById('modePL').addEventListener('click', ()=>{
+  }
+  function activatePL(){
     mode='pl';
     document.getElementById('modePL').classList.add('active');
     document.getElementById('modeBoids').classList.remove('active');
@@ -495,7 +495,9 @@
     N = parseInt(nPLSlider.value);
     randomizeMatrix();
     initParticles();
-  });
+  }
+  document.getElementById('modeBoids').addEventListener('click', activateBoids);
+  document.getElementById('modePL').addEventListener('click', activatePL);
 
   // ---------- main loop ----------
   // Physics runs on a fixed timestep (matching the 60fps assumption the force
@@ -505,7 +507,15 @@
   // it in fast-forward either. MAX_STEPS_PER_FRAME + dropping leftover backlog
   // prevents a "spiral of death" if a machine falls far behind.
   randomizeMatrix();
-  initParticles();
+  // Deep link: boids/index.html?mode=pl (or particle-life) opens straight into
+  // Particle Life instead of the Boids default, so it can have its own gallery
+  // card / shareable URL without duplicating the simulation code.
+  const startMode = new URLSearchParams(location.search).get('mode');
+  if(startMode==='pl' || startMode==='particle-life'){
+    activatePL();
+  } else {
+    initParticles();
+  }
 
   const FIXED_DT_MS = 1000/60;
   const MAX_STEPS_PER_FRAME = 5;
