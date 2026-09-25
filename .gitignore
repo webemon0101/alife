@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+gray-scott/droplet_snapshots/
+gray-scott/mitosis_snapshots/

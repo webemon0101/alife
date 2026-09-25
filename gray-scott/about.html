@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gray-Scott — 使い方・理論背景</title>
+<style>
+  :root{
+    --bg:#0b0d12;
+    --panel:#12151c;
+    --panel-border:#232833;
+    --text:#e6e9ef;
+    --text-dim:#8b93a3;
+    --accent:#5ad1c7;
+    --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif;
+    line-height:1.8;
+  }
+  nav{
+    max-width:760px; margin:0 auto; padding:28px 24px 0;
+    display:flex; gap:16px;
+  }
+  nav a{
+    font-size:12px; color:var(--text-dim); text-decoration:none;
+  }
+  nav a:hover{ color:var(--accent); }
+  article{
+    max-width:760px; margin:0 auto; padding:24px 24px 100px;
+  }
+  h1{
+    font-size:26px; margin:8px 0 4px; font-weight:700;
+  }
+  .lead{
+    color:var(--text-dim); font-size:14px; margin:0 0 40px;
+  }
+  h2{
+    font-size:18px; margin:48px 0 14px; padding-top:10px;
+    border-top:1px solid var(--panel-border);
+    font-weight:600;
+  }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{
+    font-size:14.5px; margin:26px 0 8px; color:var(--accent);
+  }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .card{
+    background:var(--panel); border:1px solid var(--panel-border);
+    border-radius:10px; padding:16px 20px; margin:16px 0;
+  }
+  .eqn{
+    font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px;
+    color:#c9cdd6; background:#0a0c11; border:1px solid var(--panel-border);
+    border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0;
+  }
+  table{
+    width:100%; border-collapse:collapse; font-size:12.5px; margin:14px 0;
+  }
+  th, td{
+    padding:7px 8px; border-bottom:1px solid var(--panel-border); text-align:left;
+  }
+  th{ color:var(--text-dim); font-weight:600; }
+  .note{
+    font-size:12px; color:var(--text-dim); background:#0f1219;
+    border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px;
+  }
+  a.inline{ color:var(--accent); }
+  code{
+    background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px;
+    border:1px solid var(--panel-border);
+  }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html">← 図鑑トップ</a>
+  <a href="index.html">シミュレーターに戻る →</a>
+</nav>
+<article>
+  <h1>Gray-Scott 散逸構造</h1>
+  <p class="lead">反応拡散系シミュレーターの使い方と、背景にある非平衡熱力学・散逸構造理論の解説。</p>
+
+  <h2>使い方</h2>
+  <ul>
+    <li><b>プリセット</b>：Mitosis・Coral・Worms など、Pearsonの分類にある代表的なパターンにワンクリックで切り替えられます。</li>
+    <li><b>Feed rate F / Kill rate k</b>：反応の根本パラメータ。スライダーで自由に動かせます。境界線のすぐ近くで劇的にパターンが変わることがあります。</li>
+    <li><b>キャンバス上のドラッグ</b>：クリックしたまま動かすと、その場所に新しい"種"（v成分）を追加できます。</li>
+    <li><b>系を閉じる</b>：ONにするとFを強制的に0にし、外部からの物質流入を止めます。パターンが崩壊していく様子は、開放系であることが構造維持の必要条件であることの直接的な観察です。</li>
+    <li><b>エントロピー / 散逸パネル</b>：下記「HとDの意味」を参照。</li>
+    <li><b>🔬 全プリセットを自動計測</b>：8つのプリセットを自動で切り替えながら、定常状態のH・Dを計測してテーブル化・CSV出力します。</li>
+  </ul>
+
+  <h2>Gray-Scott方程式とは</h2>
+  <div class="eqn">
+    ∂u/∂t = Du∇²u − uv² + F(1−u)<br>
+    ∂v/∂t = Dv∇²v + uv² − (F+k)v
+  </div>
+  <p>
+    u（基質）とv（触媒）という2つの化学物質の濃度場が、拡散しながら反応する系です。<code>uv²</code>という自己触媒的な反応項（vがvを触媒的に増やす）が、Turingパターンと同じ空間パターン形成の駆動力になります。
+  </p>
+  <p>
+    <code>F(1−u)</code>は外部から系にuが流入する速さ（開放系のソース項）、<code>(F+k)v</code>は系からvが排出される速さ（シンク項）です。この<b>FとkがGray-Scott系を非平衡開放系たらしめている核心</b>で、シミュレーターの「系を閉じる」トグルはこのFを0にするだけの操作です。
+  </p>
+
+  <h2>なぜ「散逸構造」なのか</h2>
+  <p>
+    1977年ノーベル化学賞のIlya Prigogineは、「熱力学的平衡から十分離れた開放系では、非線形な相互作用がエントロピーを環境に捨てながら自己組織化した構造（散逸構造）を安定に維持できる」ことを理論化しました。Bénard対流セルや、後述するベロウソフ・ジャボチンスキー反応が代表例です。
+  </p>
+  <p>
+    Gray-Scottのパターンも同じ枠組みで理解できます。<b>開放系(F&gt;0)</b>のときだけパターンが維持され、<b>系を閉じる(F=0)</b>と外部からの物質流入が止まり、パターンは徐々に崩れて熱力学的平衡（一様な状態）に緩和していきます。これはシミュレーター上で実際にトグルを切り替えて確認できます。
+  </p>
+
+  <h3>ベロウソフ・ジャボチンスキー反応との関係</h3>
+  <p>
+    実は、Prigogineが散逸構造理論を作る直接のきっかけになったのが、実際の化学反応である<b>ベロウソフ・ジャボチンスキー反応 (BZ反応)</b>です。シャーレに薄く広げると、ターゲットパターンや回転する渦巻き（スパイラル波）が実際に色の変化として現れます。数学的には「Oregonator」というBZ反応専用の反応拡散モデルがあり、Gray-Scottと同じ「反応項＋拡散項」の枠組みに属します。
+  </p>
+  <p>
+    そして普通のフラスコ（バッチ反応器）でBZ反応をやると、試薬が消費され尽くして振動が止まります——これはまさに「系を閉じる」トグルと同じ現象です。振動・パターンを永続的に維持するには、試薬を絶えず供給し続ける<b>CSTR（連続撹拌槽型反応器）</b>という装置が必要で、これが化学の世界における<code>F</code>の実体です。
+  </p>
+
+  <h2>Pearsonの分類とプリセット</h2>
+  <p>
+    Gray-ScottのF・kパラメータ空間は、Pearson (1993) がギリシャ文字で約12クラスに分類して以来、30年以上にわたって世界中で調べ尽くされています（<a class="inline" href="http://www.mrob.com/pub/comp/xmorphia/" target="_blank" rel="noopener">MROBのアーカイブ</a>に数千点の座標が公開）。このシミュレーターのプリセットはその代表的な座標です。
+  </p>
+  <table>
+    <thead><tr><th>プリセット</th><th>F</th><th>k</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><td>Mitosis</td><td>0.0367</td><td>0.0649</td><td>自己複製スポット（ただし種の形状に敏感）</td></tr>
+      <tr><td>Coral</td><td>0.0545</td><td>0.0620</td><td>珊瑚状の分岐パターン</td></tr>
+      <tr><td>Worms</td><td>0.0580</td><td>0.0650</td><td>虫状・迷路状パターン</td></tr>
+      <tr><td>Solitons</td><td>0.0300</td><td>0.0620</td><td>孤立した安定パターン</td></tr>
+      <tr><td>Spots</td><td>0.0250</td><td>0.0600</td><td>安定した斑点</td></tr>
+      <tr><td>Waves</td><td>0.0140</td><td>0.0410</td><td>波状・空間全体を占拠</td></tr>
+      <tr><td>Holes</td><td>0.0390</td><td>0.0580</td><td>穴状パターン</td></tr>
+      <tr><td>Chaos</td><td>0.0260</td><td>0.0510</td><td>渦巻き・脈動する時空カオス</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    同じ(F,k)の値でも、数値計算の離散化（格子解像度・ラプラシアンの重み・時間刻み幅）によって挙動が変わることがあります。これは分野で広く知られた性質で、実装のバグではありません。
+  </p>
+
+  <h2>HとD：エントロピーと散逸速度の指標</h2>
+  <p>
+    このシミュレーターは2種類の統計量をリアルタイムで計算しています。<b>この2つを混同しないことが重要</b>です。
+  </p>
+  <h3>H：パターンのShannonエントロピー</h3>
+  <p>
+    v場の値を32ビンのヒストグラムに分け、<code>H = −Σp·log(p)</code>で計算し、log(32)で正規化した空間的な「乱雑さ」の指標です。<b>構造（斑点・渦巻き）が形成されるとHはむしろ下がります</b>——これはSchrödingerの「負のエントロピーを食べて生きる」という話と同じ構図で、局所的な秩序（低エントロピー）は環境側により大きなエントロピー増加を押し付けることで成立します。
+  </p>
+  <h3>D：散逸(流束)速度の近似</h3>
+  <p>
+    <code>D ≈ 平均[F(1−u) + kv]</code>。系を流れる物質流束の大きさで、非平衡定常状態でのエントロピー生成速度の近似指標です。「系を閉じる」をONにすると<code>F=0</code>になりDは急落します。
+  </p>
+  <p>
+    実験的には、H（パターンの複雑さ）とD（散逸速度）はプリセット間でおおむね同じ順位で動く傾向が見られました（Waves &gt; Chaos &gt; Holes &gt; Spots &gt; Coral &gt; Solitons≈Worms &gt; Mitosis）。ただしこの2つは根っこでは「ドメイン中でどれだけの割合が反応中か」を反映しているという点で独立ではなく、解釈には注意が必要です。
+  </p>
+
+  <h2>Maximum Entropy Production Principle (MEPP) との関連</h2>
+  <p>
+    「非平衡から遠く離れた開放系では、可能な散逸構造のモードのうち、最もエントロピー生成速度が大きいものが安定化・選択される」という仮説（MEPP）が、非平衡熱力学で今も議論されています。Jeremy Englandの"dissipative adaptation"（散逸適応）理論は、これをより厳密な確率論的熱力学から導いた現代的な発展形です。ただしMEPPは証明された法則ではなく、反例や適用限界が指摘されている、あくまで仮説であることには注意が必要です。
+  </p>
+
+  <h2>膜・区画化という視点</h2>
+  <p>
+    Gray-ScottやLeniaの濃度場は連続的で、境界も同じ物質の濃淡にすぎません。これに対し、生命の本質を「膜で自己を外界から区切り、その膜自体を内部の代謝ネットワークが作り続けるシステム」とする立場が<b>オートポイエーシス理論</b>（Maturana &amp; Varela, 1974）で、ALifeの最初期のモデルの一つでもあります。
+  </p>
+  <p>
+    さらに、Zwicker, Seyboldt, Weber, Hyman, Jülicher (2016)は、<b>相分離（液−液相分離、Cahn-Hilliard型のシャープな界面）と非平衡化学反応を組み合わせるだけで、膜がなくても液滴が成長・分裂を繰り返す</b>ことをシミュレーションで示しました（"membraneless protocells"）。生命に必要な"不連続性"は、脂質膜という特別な物質ではなく、相分離が作る鋭い界面＋非平衡の化学反応という、より一般的な組み合わせで実現できる可能性を示唆しています。
+  </p>
+
+  <h2>参考文献</h2>
+  <ul class="refs">
+    <li>J. E. Pearson, "Complex Patterns in a Simple System," <i>Science</i>, 1993.</li>
+    <li><a class="inline" href="http://www.mrob.com/pub/comp/xmorphia/" target="_blank" rel="noopener">Reaction-Diffusion by the Gray-Scott Model: Pearson's Parameterization (MROB)</a></li>
+    <li>I. Prigogine, Nobel Prize in Chemistry 1977 lecture, "Time, Structure and Fluctuations."</li>
+    <li><a class="inline" href="http://www.scholarpedia.org/article/Belousov-Zhabotinsky_reaction" target="_blank" rel="noopener">Belousov-Zhabotinsky reaction — Scholarpedia</a></li>
+    <li>R. Swenson (1989); G. Dewar (2003) — Maximum Entropy Production Principle</li>
+    <li>J. England, "Statistical physics of self-replication," 2013（dissipative adaptation）</li>
+    <li>H. Maturana &amp; F. Varela, "Autopoiesis: the organization of living systems," 1974.</li>
+    <li>D. Zwicker et al., <a class="inline" href="https://arxiv.org/abs/1603.01571" target="_blank" rel="noopener">"Growth and Division of Active Droplets: A Model for Protocells,"</a> arXiv:1603.01571, 2016.</li>
+  </ul>
+</article>
+</body>
+</html>

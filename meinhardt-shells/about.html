@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meinhardt貝殻パターン — 使い方・理論背景</title>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin:14px 0; }
+  th, td{ padding:7px 8px; border-bottom:1px solid var(--panel-border); text-align:left; }
+  th{ color:var(--text-dim); font-weight:600; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html">← 図鑑トップ</a>
+  <a href="index.html">シミュレーターに戻る →</a>
+</nav>
+<article>
+  <h1>Meinhardt 貝殻パターン</h1>
+  <p class="lead">巻貝の色素パターンを反応拡散系で再現する、Hans Meinhardtのモデルの解説。</p>
+
+  <h2>使い方</h2>
+  <ul>
+    <li><b>モデル切り替え</b>：Activator-Substrate（2変数）とActivator-Inhibitor-Hormone（3変数）を切り替えられます。</li>
+    <li><b>プリセット</b>：Meinhardt &amp; Klinger (1992) 論文の図に対応する、実在の貝の模様（Stripes, Undulating waves, Traveling bands, Oliva porphyria, Conus marmoreus）を再現します。</li>
+    <li><b>キャンバスの見方</b>：横方向(x)が貝の成長端（周方向）、縦方向が時間＝貝の成長方向です。新しい行が下に追加され、画面全体が上にスクロールしていきます。つまり<b>1本の帯（1次元の反応拡散系）が時間とともに何をしたかの履歴</b>を、そのまま2次元画像として見ています。</li>
+  </ul>
+  <p class="note">
+    パラメータは元論文からできる限り正確に再構成していますが、原文のPDFはOCR抽出の都合上、一部の係数の対応関係が完全には検証できていません。方程式の構造・メカニズムは論文通りですが、厳密に同じ絵になるとは限りません。
+  </p>
+
+  <h2>なぜ「時間軸が空間軸」になるのか</h2>
+  <p>
+    巻貝は成長端（開口部の縁）に新しい殻の材料を継続的に分泌しながら成長します。色素パターンはこの成長端で一度だけ形成され、その後は殻の中に固定されて動きません。つまり殻の模様は、<b>成長端という1次元の反応拡散系が時間とともに何を計算したかの記録</b>そのものです。これが、貝殻の模様を「1次元の反応拡散系＋時間軸を2つ目の空間軸として使う」という、少し変わった方法でシミュレートできる理由です。
+  </p>
+
+  <h2>Activator-Substrateモデル</h2>
+  <div class="eqn">
+    ∂a/∂t = ρ·s·a²/(1+κa²) − μ_a·a + a₀ + Da∇²a<br>
+    ∂s/∂t = ρ₀ − ρ·s·a²/(1+κa²) − μ_s·s + Ds∇²s
+  </div>
+  <p>
+    a（活性化因子＝色素）の生産は自己触媒的（a²に比例）ですが、その材料となる基質sを消費しながら進みます。基質は外部から一定速度ρ₀で供給され、活性化因子に食われると減ります。<b>「阻害」が独立した阻害因子ではなく、材料の枯渇によって間接的に起きる</b>のがこのモデルの特徴です。κは高濃度での自己触媒の飽和、a₀はパターン形成のきっかけとなる微小な基礎生産です。
+  </p>
+  <table>
+    <thead><tr><th>プリセット</th><th>特徴</th><th>メカニズム</th></tr></thead>
+    <tbody>
+      <tr><td>Stripes</td><td>成長方向に平行な縦縞</td><td>ρに個体差(ノイズ)を与えるだけで、ほぼ一様な初期状態から周期的なパターンが自発的に形成される</td></tr>
+      <tr><td>Undulating waves</td><td>波打つ横線</td><td>ρを位置xの正弦関数にする(ρ=ρ(x))。場所ごとに局所的な振動周期が微妙に異なるため、線が波打つ</td></tr>
+      <tr><td>Traveling bands</td><td>進行する縞</td><td>ρ(x)の振幅を上げ、局所的に活性化因子の分解速度を上回る領域を作ると、進行波同士が衝突・消滅する縞模様になる</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Activator-Inhibitor-Hormoneモデル（3変数）</h2>
+  <div class="eqn">
+    ∂a/∂t = ρ·a²/((h+h₀)(1+κa²)) − μ_a·a + a₀ + Da∇²a<br>
+    ∂h/∂t = ρ_h + ρ·a²/(1+κa²) − c·h + Dh∇²h<br>
+    dc/dt = γ·(⟨a⟩ − c)
+  </div>
+  <p>
+    こちらは正真正銘の<b>a, h, cという3変数系</b>です。aは自身の触媒であると同時に、阻害因子hの生産も触媒します（第2式のρ·a²の項）。hはaの生産を1/(h+h₀)という形で抑制します——ここまではGray-Scott系と同じ「活性化因子・阻害因子」の枠組みです。
+  </p>
+  <p>
+    特徴的なのは3番目の変数c（ホルモン）です。cはh全体の分解速度を司る<b>大域的な変数</b>で、成長端全体での活性化因子の平均濃度⟨a⟩を監視し、それに向かってゆっくり緩和します（拡散が非常に速いため、空間的には常にほぼ一様とみなせる）。進行波の数が減ると⟨a⟩が下がり、それを感知したcも下がって阻害因子hの分解を加速、結果としてhが減って新しい波が発生しやすくなる——という<b>負のフィードバックによる自己制御機構</b>です。これにより、殻全体を通して進行波の本数がほぼ一定に保たれます（Oliva porphyriaの模様の特徴）。
+  </p>
+
+  <h2>色（RGB）で3変数を同時に見る、という発展</h2>
+  <p>
+    現在の表示はaだけを色にマッピングしていますが、a・h・cという独立な3つの変数がある以上、<b>3チャンネル(RGB)で同時に可視化する</b>ことに本当の情報的意味があります。将来的にa→赤、h→緑、c→背景の明るさ、のような割り当てにすれば、活性化因子と阻害因子の綱引きを1枚の画像から直接読み取れるようになります。
+  </p>
+
+  <h2>参考文献</h2>
+  <ul class="refs">
+    <li>H. Meinhardt, "Models for positional signalling, the threefold subdivision of segments and the pigmentation pattern of molluscs," <i>J. Embryol. Exp. Morphol.</i>, 83:289–311, 1984.</li>
+    <li>H. Meinhardt &amp; M. Klinger, "A model for pattern formation on the shells of molluscs," <i>J. Theoretical Biology</i>, 126:63–89, 1987.</li>
+    <li>H. Meinhardt, <i>The Algorithmic Beauty of Sea Shells</i>, Springer.</li>
+    <li>D. R. Fowler, H. Meinhardt, P. Prusinkiewicz, <a class="inline" href="https://algorithmicbotany.org/papers/shells.sig92.pdf" target="_blank" rel="noopener">"Modeling Seashells," SIGGRAPH 1992.</a>（本シミュレーターの方程式・パラメータの直接の出典）</li>
+    <li><a class="inline" href="http://www.scholarpedia.org/article/Gierer-Meinhardt_model" target="_blank" rel="noopener">Gierer-Meinhardt model — Scholarpedia</a></li>
+  </ul>
+</article>
+</body>
+</html>

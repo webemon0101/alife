@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lenia — 使い方・理論背景</title>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; margin:14px 0; }
+  th, td{ padding:7px 8px; border-bottom:1px solid var(--panel-border); text-align:left; }
+  th{ color:var(--text-dim); font-weight:600; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html">← 図鑑トップ</a>
+  <a href="index.html">シミュレーターに戻る →</a>
+</nav>
+<article>
+  <h1>Lenia</h1>
+  <p class="lead">Conwayのライフゲームを連続化した、生物的な自己組織化パターンが自発的に移動・回転するセルオートマトン。</p>
+
+  <h2>使い方</h2>
+  <ul>
+    <li><b>プリセット</b>：Orbium（球虫）の4つの亜種。全て同じ半径R=13のカーネルを使いますが、成長関数のμ・σが少し違うだけで、単尾・双尾・"炎"のような形の違う個体になります。</li>
+    <li><b>μ・σ・dtスライダー</b>：自由に動かせます。プリセットの値から少しでもズラすと、個体が安定して動き続けるか、崩壊して消えるか、分裂するかが大きく変わります。</li>
+    <li><b>キャンバスをクリック</b>：クリックした場所に、現在選択中の生物のコピーを配置します。複数の個体を衝突させたり、追加してみたりできます。</li>
+  </ul>
+  <p class="note">
+    Leniaの個体は、Gray-Scottの斑点のようにランダムなノイズから自発的に生まれるものではなく、<b>正確な初期パターン（種）を置いて初めて安定して動く</b>ことがほとんどです。今回のOrbiumデータは、Lenia開発者Bert Chan本人のリポジトリ(<a class="inline" href="https://github.com/Chakazul/Lenia" target="_blank" rel="noopener">Chakazul/Lenia</a>)から実際の値を復号して使っています。
+  </p>
+
+  <h2>方程式</h2>
+  <div class="eqn">
+    A(t+dt) = clip( A(t) + dt·G(K∗A), 0, 1 )<br>
+    G(u) = 2·exp(−(u−μ)²/2σ²) − 1<br>
+    K(r) = exp(4 − 4/(4r(1−r)))&nbsp;&nbsp;(0&lt;r&lt;1、半径Rで正規化)
+  </div>
+  <p>
+    Aは0〜1の連続値を取る1チャンネルの状態場です。Kは半径R=13のリング状カーネルで、中心(r=0)と外縁(r=1)でゼロ、中間(r≈0.5)でピークを持つ滑らかな山型をしています。K∗Aは近傍の加重平均で、これをuとして成長関数Gに通すと、-1〜+1の"成長率"が得られます。
+  </p>
+  <p>
+    <b>Conwayのライフゲームとの対比が本質</b>です。ライフゲームは状態(0/1)・空間(8近傍)・時間(世代)がすべて離散ですが、Leniaはこの3つすべてを連続化しています。その結果、グライダーのようなカクカクした移動パターンではなく、なめらかに滑空し、回転し、衝突すると弾かれ合ったり合体したりする、生物的な質感を持つ"生物(life form)"が生まれます。
+  </p>
+
+  <h2>プリセットの詳細</h2>
+  <table>
+    <thead><tr><th>名前</th><th>μ</th><th>σ</th><th>特徴</th></tr></thead>
+    <tbody>
+      <tr><td>Orbium unicaudatus</td><td>0.15</td><td>0.017</td><td>単尾。最も基本的なOrbium、直進しながらゆっくり回転</td></tr>
+      <tr><td>Orbium unicaudatus ignis</td><td>0.119</td><td>0.0148</td><td>"炎"型。中心が窪んだ形状で、より複雑な自己修復挙動</td></tr>
+      <tr><td>Orbium bicaudatus</td><td>0.15</td><td>0.014</td><td>双尾。2本の"尾"を引きずるように移動</td></tr>
+      <tr><td>Orbium bicaudatus ignis</td><td>0.12</td><td>0.0113</td><td>双尾＋炎型の組み合わせ</td></tr>
+    </tbody>
+  </table>
+
+  <h2>今後の発展：Flow-Lenia・ASAL</h2>
+  <p>
+    このシミュレーターはLeniaの最も基本的な単一チャンネル版です。以前話した発展形として：
+  </p>
+  <ul>
+    <li><b>Flow-Lenia</b>：質量保存則を導入し、局所的に継承可能なパラメータを持たせることで、種同士が相互作用し進化する仕組みを追加したもの</li>
+    <li><b>ASAL (Sakana AI)</b>：foundation modelを使って、μ・σ・カーネル形状などのパラメータ空間を自動探索し、面白い"生物"を発見する手法</li>
+  </ul>
+  <p>
+    今回のシミュレーターは、あなたが手でμ・σスライダーを動かして探索する"人力版ASAL"とも言えます。面白い個体を見つけたら、パラメータをメモしておくと良いかもしれません。
+  </p>
+
+  <h2>参考文献</h2>
+  <ul class="refs">
+    <li>B. W. Chan, "Lenia: Biology of Artificial Life," <i>Complex Systems</i>, 2019.</li>
+    <li><a class="inline" href="https://github.com/Chakazul/Lenia" target="_blank" rel="noopener">Chakazul/Lenia — GitHub（本シミュレーターのOrbiumデータの出典）</a></li>
+    <li><a class="inline" href="https://arxiv.org/pdf/2412.17799" target="_blank" rel="noopener">Automating the Search for Artificial Life with Foundation Models (ASAL)</a></li>
+    <li><a class="inline" href="https://arxiv.org/abs/2506.08569" target="_blank" rel="noopener">Flow-Lenia: Emergent evolutionary dynamics in mass conservative continuous cellular automata</a></li>
+  </ul>
+</article>
+</body>
+</html>

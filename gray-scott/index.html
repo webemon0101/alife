@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gray-Scott 散逸構造シミュレーター</title>
+<style>
+  :root{
+    --bg:#0b0d12;
+    --panel:#12151c;
+    --panel-border:#232833;
+    --text:#e6e9ef;
+    --text-dim:#8b93a3;
+    --accent:#5ad1c7;
+    --accent2:#e0a55a;
+    --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif;
+    overflow:hidden;
+  }
+  #app{
+    display:flex; height:100vh; width:100vw;
+  }
+  #stage{
+    flex:1; display:flex; align-items:center; justify-content:center;
+    position:relative; background:
+      radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+    min-width:0;
+  }
+  #glcanvas{
+    width:min(92vmin, 92vw - 340px);
+    height:min(92vmin, 92vw - 340px);
+    max-width:900px; max-height:900px;
+    image-rendering:auto;
+    border-radius:6px;
+    box-shadow:0 0 0 1px #1c2029, 0 20px 60px rgba(0,0,0,0.6);
+    cursor:crosshair;
+    touch-action:none;
+  }
+  #sidebar{
+    width:340px; flex-shrink:0;
+    background:var(--panel);
+    border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px;
+    overflow-y:auto;
+    display:flex; flex-direction:column; gap:16px;
+  }
+  h1{
+    font-size:15px; font-weight:600; margin:0 0 2px;
+    letter-spacing:0.02em;
+  }
+  .sub{
+    font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5;
+  }
+  .card{
+    background:#0f1219; border:1px solid var(--panel-border);
+    border-radius:8px; padding:12px 14px;
+  }
+  .card h2{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--text-dim); margin:0 0 10px; font-weight:600;
+  }
+  .row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px; margin-bottom:10px;
+  }
+  .row:last-child{margin-bottom:0;}
+  .row label{font-size:12.5px; color:var(--text); flex-shrink:0;}
+  .row .val{font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:48px; text-align:right;}
+  input[type=range]{
+    flex:1; margin:0 8px; accent-color:var(--accent);
+    height:4px;
+  }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer;
+    font-family:inherit;
+  }
+  select{width:100%;}
+  select:hover, button:hover{border-color:#3a4152;}
+  .btnrow{display:flex; gap:8px;}
+  .btnrow button{flex:1;}
+  button.primary{background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600;}
+  button.primary:hover{filter:brightness(1.08);}
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+  }
+  .switch{
+    position:relative; width:40px; height:22px; flex-shrink:0;
+  }
+  .switch input{opacity:0; width:0; height:0; position:absolute;}
+  .switch .slider{
+    position:absolute; inset:0; background:#2a3040; border-radius:22px;
+    transition:.15s; cursor:pointer;
+  }
+  .switch .slider:before{
+    content:""; position:absolute; width:16px; height:16px; left:3px; top:3px;
+    background:#c7ccd6; border-radius:50%; transition:.15s;
+  }
+  .switch input:checked + .slider{background:var(--danger);}
+  .switch input:checked + .slider:before{transform:translateX(18px); background:#fff;}
+  .note{
+    font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px;
+  }
+  .note b{color:var(--text);}
+  .eqn{
+    font-family: "Cambria Math", "STIX Two Math", serif; font-size:12px;
+    color:#c9cdd6; background:#0a0c11; border:1px solid var(--panel-border);
+    border-radius:6px; padding:10px 12px; line-height:1.8;
+  }
+  .footer-note{
+    font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px;
+  }
+  #surveyTable table{width:100%; border-collapse:collapse; font-size:10.5px;}
+  #surveyTable th, #surveyTable td{padding:4px 3px; border-bottom:1px solid var(--panel-border); text-align:right; white-space:nowrap;}
+  #surveyTable th:first-child, #surveyTable td:first-child,
+  #surveyTable th:nth-child(2), #surveyTable td:nth-child(2){text-align:left;}
+  #surveyTable img{width:30px; height:30px; border-radius:3px; vertical-align:middle; display:block;}
+  #surveyTable th{color:var(--text-dim); font-weight:600;}
+  #fps{
+    position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162;
+    font-variant-numeric:tabular-nums; pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <span id="fps">-- fps</span>
+    <canvas id="glcanvas" width="480" height="480"></canvas>
+  </div>
+
+  <div id="sidebar">
+    <div>
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <a href="../index.html" style="font-size:11px; color:var(--text-dim); text-decoration:none;">← 図鑑トップ</a>
+        <a href="about.html" style="font-size:11px; color:var(--accent); text-decoration:none;">使い方・理論背景 →</a>
+      </div>
+      <h1>Gray-Scott 散逸構造</h1>
+      <p class="sub">反応拡散系 (Reaction-Diffusion) による自己組織化パターンのリアルタイムシミュレーション。キャンバス上をドラッグすると種を追加できます。</p>
+    </div>
+
+    <div class="card">
+      <h2>プリセット</h2>
+      <select id="preset"></select>
+      <div class="btnrow" style="margin-top:10px;">
+        <button id="reseed">🌱 再シード</button>
+        <button id="clear">🗑 クリア</button>
+      </div>
+      <div class="btnrow" style="margin-top:8px;">
+        <button id="autoSurvey">🔬 全プリセットを自動計測</button>
+      </div>
+      <div id="surveyProgress" class="note" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <h2>パラメータ</h2>
+      <div class="row">
+        <label>Feed rate F</label>
+        <span class="val" id="fVal">0.000</span>
+      </div>
+      <input type="range" id="fSlider" min="0" max="0.08" step="0.0005" value="0.037" style="width:100%; margin:0 0 12px;">
+      <div class="row">
+        <label>Kill rate k</label>
+        <span class="val" id="kVal">0.000</span>
+      </div>
+      <input type="range" id="kSlider" min="0.02" max="0.075" step="0.0005" value="0.0649" style="width:100%; margin:0 0 12px;">
+      <div class="row">
+        <label>速度 (step/frame)</label>
+        <span class="val" id="speedVal">2</span>
+      </div>
+      <input type="range" id="speedSlider" min="1" max="12" step="1" value="2" style="width:100%;">
+    </div>
+
+    <div class="card">
+      <h2>非平衡開放系 ⇄ 平衡系</h2>
+      <div class="toggle-row">
+        <label style="font-size:12.5px;">系を閉じる (F を強制的に 0 に)</label>
+        <label class="switch">
+          <input type="checkbox" id="closeSystem">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="note">
+        <b>F</b> は外部から系に物質が流入する速さ（開放系のソース項）、<b>k</b> は系から排出される速さ（シンク項）です。
+        ONにすると F=0 となり物質の流入が止まり系は<b>閉じた系</b>になります。パターンが徐々に崩れ均一な状態（熱力学的平衡）に緩和していくのが、
+        散逸構造が「開放系であること」を必要条件とする様子の直接的な観察になります。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>エントロピー / 散逸</h2>
+      <div class="row" style="margin-bottom:4px;">
+        <label style="font-size:11.5px;">H: パターンのShannonエントロピー</label>
+        <span class="val" id="hVal">0.000</span>
+      </div>
+      <canvas id="entropyChart" width="300" height="64" style="width:100%; height:64px; display:block; border-radius:4px; background:#0a0c11; border:1px solid var(--panel-border);"></canvas>
+      <div class="row" style="margin:12px 0 4px;">
+        <label style="font-size:11.5px;">D: 散逸(流束)速度の近似</label>
+        <span class="val" id="dVal">0.000</span>
+      </div>
+      <canvas id="dissipationChart" width="300" height="64" style="width:100%; height:64px; display:block; border-radius:4px; background:#0a0c11; border:1px solid var(--panel-border);"></canvas>
+      <p class="note">
+        H はパターンの空間的な乱雑さ（構造ができると<b>下がる</b>）。D は F(1−u)+kv の平均で、系を流れる物質流束＝エントロピー生成速度の近似（<b>系を閉じる</b>をONにすると F=0 になり D が急落するはず）。
+        両者が逆方向に動くのが「局所秩序は下がっても全体の散逸は維持・増大する」という関係の直接観察になります。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>表示</h2>
+      <select id="palette">
+        <option value="0">Ink（濃淡）</option>
+        <option value="1">Coral（暖色）</option>
+        <option value="2">Viridis（科学配色）</option>
+      </select>
+      <div class="btnrow" style="margin-top:10px;">
+        <button id="playpause" class="primary">⏸ 一時停止</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>方程式</h2>
+      <div class="eqn">
+        ∂u/∂t = Du∇²u − uv² + F(1−u)<br>
+        ∂v/∂t = Dv∇²v + uv² − (F+k)v
+      </div>
+      <p class="note">u: 基質, v: 触媒。Du=0.16, Dv=0.08（固定）。境界はトーラス（周期境界）。</p>
+    </div>
+
+    <div class="card" id="surveyResultsCard" style="display:none;">
+      <h2>自動計測結果</h2>
+      <div id="surveyTable"></div>
+      <p class="note">σD が小さいほど定常（静止/安定パターン）、大きいほど脈動・カオス的に変化し続けていることを示します。</p>
+      <div class="btnrow" style="margin-top:10px;">
+        <button id="downloadCsv">⬇ CSVダウンロード</button>
+      </div>
+    </div>
+
+    <div class="footer-note">ClaudeALIFE — Gray-Scott reaction-diffusion</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('glcanvas');
+  const GRID = 480;
+  canvas.width = GRID; canvas.height = GRID;
+
+  const gl = canvas.getContext('webgl2', {antialias:false, preserveDrawingBuffer:true});
+  if(!gl){
+    document.getElementById('stage').innerHTML = '<p style="color:#e0665a;padding:20px;">このブラウザは WebGL2 に対応していません。</p>';
+    return;
+  }
+
+  const floatExt = gl.getExtension('EXT_color_buffer_float');
+
+  // ---------- shader helpers ----------
+  function compile(type, src){
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if(!gl.getShaderParameter(sh, gl.COMPILE_STATUS)){
+      console.error(gl.getShaderInfoLog(sh));
+      throw new Error('shader compile failed');
+    }
+    return sh;
+  }
+  function link(vsSrc, fsSrc){
+    const p = gl.createProgram();
+    gl.attachShader(p, compile(gl.VERTEX_SHADER, vsSrc));
+    gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fsSrc));
+    gl.linkProgram(p);
+    if(!gl.getProgramParameter(p, gl.LINK_STATUS)){
+      console.error(gl.getProgramInfoLog(p));
+      throw new Error('program link failed');
+    }
+    return p;
+  }
+
+  const VS = `#version 300 es
+  in vec2 aPos;
+  out vec2 vUv;
+  void main(){
+    vUv = aPos * 0.5 + 0.5;
+    gl_Position = vec4(aPos, 0.0, 1.0);
+  }`;
+
+  const FS_SIM = `#version 300 es
+  precision highp float;
+  uniform sampler2D uState;
+  uniform vec2 uTexel;
+  uniform float uF;
+  uniform float uK;
+  uniform float uDu;
+  uniform float uDv;
+  uniform vec2 uMouse;
+  uniform float uMouseRadius;
+  uniform float uPainting;
+  in vec2 vUv;
+  out vec4 outColor;
+
+  void main(){
+    vec2 uv = vUv;
+    vec4 c = texture(uState, uv);
+    float u = c.r;
+    float v = c.g;
+
+    vec2 t = uTexel;
+    vec4 n  = texture(uState, uv + vec2(0.0,  t.y));
+    vec4 s  = texture(uState, uv + vec2(0.0, -t.y));
+    vec4 e  = texture(uState, uv + vec2( t.x, 0.0));
+    vec4 w  = texture(uState, uv + vec2(-t.x, 0.0));
+    vec4 ne = texture(uState, uv + vec2( t.x,  t.y));
+    vec4 nw = texture(uState, uv + vec2(-t.x,  t.y));
+    vec4 se = texture(uState, uv + vec2( t.x, -t.y));
+    vec4 sw = texture(uState, uv + vec2(-t.x, -t.y));
+
+    float lapU = (n.r+s.r+e.r+w.r)*0.2 + (ne.r+nw.r+se.r+sw.r)*0.05 - u;
+    float lapV = (n.g+s.g+e.g+w.g)*0.2 + (ne.g+nw.g+se.g+sw.g)*0.05 - v;
+
+    float reaction = u * v * v;
+    float du = uDu * lapU - reaction + uF * (1.0 - u);
+    float dv = uDv * lapV + reaction - (uF + uK) * v;
+
+    float newU = clamp(u + du, 0.0, 1.0);
+    float newV = clamp(v + dv, 0.0, 1.0);
+
+    if(uPainting > 0.5){
+      float d = distance(uv, uMouse);
+      float brush = smoothstep(uMouseRadius, 0.0, d);
+      newV = clamp(newV + brush, 0.0, 1.0);
+      newU = clamp(newU - brush * 0.5, 0.0, 1.0);
+    }
+
+    outColor = vec4(newU, newV, 0.0, 1.0);
+  }`;
+
+  const FS_RENDER = `#version 300 es
+  precision highp float;
+  uniform sampler2D uState;
+  uniform int uPalette;
+  in vec2 vUv;
+  out vec4 outColor;
+
+  vec3 paletteInk(float v){
+    return mix(vec3(0.02,0.02,0.045), vec3(0.85,0.93,0.98), smoothstep(0.0,0.9,v));
+  }
+  vec3 paletteCoral(float v){
+    vec3 a = vec3(0.04,0.02,0.08);
+    vec3 b = vec3(0.85,0.32,0.18);
+    vec3 c = vec3(1.0,0.86,0.55);
+    float t1 = smoothstep(0.0,0.55,v);
+    float t2 = smoothstep(0.45,1.0,v);
+    return mix(mix(a,b,t1), c, t2*t2);
+  }
+  vec3 paletteViridis(float v){
+    vec3 c0 = vec3(0.267,0.005,0.329);
+    vec3 c1 = vec3(0.128,0.567,0.550);
+    vec3 c2 = vec3(0.993,0.906,0.144);
+    return v < 0.5 ? mix(c0,c1,v*2.0) : mix(c1,c2,(v-0.5)*2.0);
+  }
+
+  void main(){
+    float v = texture(uState, vUv).g;
+    vec3 col;
+    if(uPalette==0) col = paletteInk(v);
+    else if(uPalette==1) col = paletteCoral(v);
+    else col = paletteViridis(v);
+    outColor = vec4(col, 1.0);
+  }`;
+
+  const simProgram = link(VS, FS_SIM);
+  const renderProgram = link(VS, FS_RENDER);
+
+  // ---------- quad ----------
+  const quadBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -1,-1,  1,-1,  -1,1,
+     1,-1,  1,1,   -1,1
+  ]), gl.STATIC_DRAW);
+
+  function bindQuad(program){
+    const loc = gl.getAttribLocation(program, 'aPos');
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  // ---------- textures / framebuffers (ping-pong) ----------
+  let useFloat = !!floatExt;
+
+  function makeSeedData(){
+    const size = GRID*GRID*4;
+    let data;
+    if(useFloat) data = new Float32Array(size);
+    else data = new Uint8Array(size);
+    const maxV = useFloat ? 1.0 : 255;
+    for(let i=0;i<GRID*GRID;i++){
+      data[i*4+0] = maxV;   // u = 1
+      data[i*4+1] = 0;      // v = 0
+      data[i*4+2] = 0;
+      data[i*4+3] = maxV;
+    }
+    seedBlob(data);
+    return data;
+  }
+
+  function seedBlob(data){
+    const cx = GRID>>1, cy = GRID>>1;
+    const r = Math.max(4, Math.floor(GRID*0.03));
+    const maxV = useFloat ? 1.0 : 255;
+    for(let y=-r;y<=r;y++){
+      for(let x=-r;x<=r;x++){
+        const px = cx+x, py = cy+y;
+        if(px<0||py<0||px>=GRID||py>=GRID) continue;
+        if(x*x+y*y > r*r) continue;
+        const idx = (py*GRID+px)*4;
+        const val = 0.6 + Math.random()*0.4;
+        data[idx+1] = useFloat ? val : Math.floor(val*255);
+        data[idx+0] = useFloat ? 0.5 : 128;
+      }
+    }
+  }
+
+  function createStateTexture(initialData){
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    if(useFloat){
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, GRID, GRID, 0, gl.RGBA, gl.FLOAT, initialData);
+    } else {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, GRID, GRID, 0, gl.RGBA, gl.UNSIGNED_BYTE, initialData);
+    }
+    return tex;
+  }
+
+  function createFBO(tex){
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return {fbo, ok: status === gl.FRAMEBUFFER_COMPLETE};
+  }
+
+  let texA, texB, fboA, fboB;
+  function initTargets(){
+    const seed = makeSeedData();
+    texA = createStateTexture(seed);
+    texB = createStateTexture(null);
+    const rA = createFBO(texA);
+    const rB = createFBO(texB);
+    if(useFloat && (!rA.ok || !rB.ok)){
+      // fallback to unsigned byte if float FBO not renderable
+      useFloat = false;
+      gl.deleteTexture(texA); gl.deleteTexture(texB);
+      gl.deleteFramebuffer(rA.fbo); gl.deleteFramebuffer(rB.fbo);
+      const seed2 = makeSeedData();
+      texA = createStateTexture(seed2);
+      texB = createStateTexture(null);
+      fboA = createFBO(texA).fbo;
+      fboB = createFBO(texB).fbo;
+    } else {
+      fboA = rA.fbo; fboB = rB.fbo;
+    }
+  }
+  initTargets();
+
+  let readTex = texA, readFbo = fboA;
+  let writeTex = texB, writeFbo = fboB;
+  function swap(){
+    let t = readTex; readTex = writeTex; writeTex = t;
+    let f = readFbo; readFbo = writeFbo; writeFbo = f;
+  }
+
+  function reseed(){
+    const seed = makeSeedData();
+    gl.bindTexture(gl.TEXTURE_2D, readTex);
+    if(useFloat){
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, GRID, GRID, gl.RGBA, gl.FLOAT, seed);
+    } else {
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, GRID, GRID, gl.RGBA, gl.UNSIGNED_BYTE, seed);
+    }
+  }
+  function clearAll(){
+    const size = GRID*GRID*4;
+    let data = useFloat ? new Float32Array(size) : new Uint8Array(size);
+    const maxV = useFloat ? 1.0 : 255;
+    for(let i=0;i<GRID*GRID;i++){ data[i*4]=maxV; data[i*4+3]=maxV; }
+    gl.bindTexture(gl.TEXTURE_2D, readTex);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, GRID, GRID, gl.RGBA, useFloat?gl.FLOAT:gl.UNSIGNED_BYTE, data);
+  }
+
+  // ---------- uniforms ----------
+  const simU = {
+    uState: gl.getUniformLocation(simProgram, 'uState'),
+    uTexel: gl.getUniformLocation(simProgram, 'uTexel'),
+    uF: gl.getUniformLocation(simProgram, 'uF'),
+    uK: gl.getUniformLocation(simProgram, 'uK'),
+    uDu: gl.getUniformLocation(simProgram, 'uDu'),
+    uDv: gl.getUniformLocation(simProgram, 'uDv'),
+    uMouse: gl.getUniformLocation(simProgram, 'uMouse'),
+    uMouseRadius: gl.getUniformLocation(simProgram, 'uMouseRadius'),
+    uPainting: gl.getUniformLocation(simProgram, 'uPainting'),
+  };
+  const renderU = {
+    uState: gl.getUniformLocation(renderProgram, 'uState'),
+    uPalette: gl.getUniformLocation(renderProgram, 'uPalette'),
+  };
+
+  // ---------- UI state ----------
+  const PRESETS = [
+    {name:'Mitosis（分裂）',   F:0.0367, k:0.0649},
+    {name:'Coral（珊瑚）',     F:0.0545, k:0.0620},
+    {name:'Worms（虫状）',     F:0.0580, k:0.0650},
+    {name:'Solitons（孤立波）',F:0.0300, k:0.0620},
+    {name:'Spots（斑点・安定）',F:0.0250, k:0.0600},
+    {name:'Waves（波状）',     F:0.0140, k:0.0410},
+    {name:'Holes（穴）',       F:0.0390, k:0.0580},
+    {name:'Chaos（乱流）',     F:0.0260, k:0.0510},
+  ];
+
+  const presetSel = document.getElementById('preset');
+  PRESETS.forEach((p,i)=>{
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = p.name;
+    presetSel.appendChild(opt);
+  });
+  presetSel.value = 0;
+
+  const fSlider = document.getElementById('fSlider');
+  const kSlider = document.getElementById('kSlider');
+  const speedSlider = document.getElementById('speedSlider');
+  const fVal = document.getElementById('fVal');
+  const kVal = document.getElementById('kVal');
+  const speedVal = document.getElementById('speedVal');
+  const closeSystem = document.getElementById('closeSystem');
+  const paletteSel = document.getElementById('palette');
+  const playpauseBtn = document.getElementById('playpause');
+
+  let params = {F: parseFloat(fSlider.value), k: parseFloat(kSlider.value), steps: parseInt(speedSlider.value), palette: 0};
+  let paused = false;
+
+  function refreshLabels(){
+    fVal.textContent = params.F.toFixed(4);
+    kVal.textContent = params.k.toFixed(4);
+    speedVal.textContent = params.steps;
+  }
+  refreshLabels();
+
+  presetSel.addEventListener('change', ()=>{
+    const p = PRESETS[parseInt(presetSel.value)];
+    fSlider.value = p.F; kSlider.value = p.k;
+    params.F = p.F; params.k = p.k;
+    refreshLabels();
+    reseed();
+    resetMetricsHistory();
+  });
+  fSlider.addEventListener('input', ()=>{ params.F = parseFloat(fSlider.value); refreshLabels(); });
+  kSlider.addEventListener('input', ()=>{ params.k = parseFloat(kSlider.value); refreshLabels(); });
+  speedSlider.addEventListener('input', ()=>{ params.steps = parseInt(speedSlider.value); refreshLabels(); });
+  paletteSel.addEventListener('change', ()=>{ params.palette = parseInt(paletteSel.value); });
+
+  document.getElementById('reseed').addEventListener('click', ()=>{ reseed(); resetMetricsHistory(); });
+  document.getElementById('clear').addEventListener('click', ()=>{ clearAll(); resetMetricsHistory(); });
+  playpauseBtn.addEventListener('click', ()=>{
+    paused = !paused;
+    playpauseBtn.textContent = paused ? '▶ 再生' : '⏸ 一時停止';
+  });
+
+  // ---------- entropy / dissipation metrics ----------
+  const HIST_LEN = 180;
+  let entropyHistory = [];
+  let dissipationHistory = [];
+  const hValEl = document.getElementById('hVal');
+  const dValEl = document.getElementById('dVal');
+  const entropyCtx = document.getElementById('entropyChart').getContext('2d');
+  const dissipationCtx = document.getElementById('dissipationChart').getContext('2d');
+
+  function resetMetricsHistory(){
+    entropyHistory = [];
+    dissipationHistory = [];
+    hValEl.textContent = '0.000';
+    dValEl.textContent = '0.000';
+    entropyCtx.clearRect(0,0,entropyCtx.canvas.width,entropyCtx.canvas.height);
+    dissipationCtx.clearRect(0,0,dissipationCtx.canvas.width,dissipationCtx.canvas.height);
+  }
+
+  function drawChart(ctx, data, color){
+    const w = ctx.canvas.width, h = ctx.canvas.height;
+    ctx.clearRect(0,0,w,h);
+    if(data.length < 2) return;
+    let min = Math.min.apply(null, data);
+    let max = Math.max.apply(null, data);
+    if(max - min < 1e-9){ min -= 0.5; max += 0.5; }
+    const pad = (max-min)*0.1;
+    min -= pad; max += pad;
+    ctx.beginPath();
+    for(let i=0;i<data.length;i++){
+      const x = (i/(HIST_LEN-1)) * w;
+      const y = h - ((data[i]-min)/(max-min)) * h;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  function computeMetrics(){
+    gl.bindFramebuffer(gl.FRAMEBUFFER, readFbo);
+    let buffer;
+    if(useFloat){
+      buffer = new Float32Array(GRID*GRID*4);
+      gl.readPixels(0,0,GRID,GRID, gl.RGBA, gl.FLOAT, buffer);
+    } else {
+      buffer = new Uint8Array(GRID*GRID*4);
+      gl.readPixels(0,0,GRID,GRID, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    const N = GRID*GRID;
+    const bins = 32;
+    const hist = new Float64Array(bins);
+    let sumFlux = 0;
+    const Feff = closeSystem.checked ? 0.0 : params.F;
+    const k = params.k;
+    const scale = useFloat ? 1.0 : (1/255);
+
+    for(let i=0;i<N;i++){
+      const u = buffer[i*4+0]*scale;
+      const v = buffer[i*4+1]*scale;
+      let b = (v*bins)|0;
+      if(b>=bins) b = bins-1;
+      if(b<0) b = 0;
+      hist[b]++;
+      sumFlux += Feff*(1-u) + k*v;
+    }
+
+    let H = 0;
+    for(let i=0;i<bins;i++){
+      if(hist[i]>0){
+        const p = hist[i]/N;
+        H -= p*Math.log(p);
+      }
+    }
+    H /= Math.log(bins);
+    const D = sumFlux/N;
+
+    entropyHistory.push(H);
+    dissipationHistory.push(D);
+    if(entropyHistory.length > HIST_LEN) entropyHistory.shift();
+    if(dissipationHistory.length > HIST_LEN) dissipationHistory.shift();
+
+    hValEl.textContent = H.toFixed(3);
+    dValEl.textContent = D.toFixed(4);
+
+    drawChart(entropyCtx, entropyHistory, '#5ad1c7');
+    drawChart(dissipationCtx, dissipationHistory, '#e0a55a');
+  }
+
+  // ---------- automatic preset survey ----------
+  const AUTO_SPEED = 10;
+  const SURVEY_WAIT_MS = 8000;
+  const SAMPLE_TAIL = 12;
+
+  let surveying = false;
+  let surveyResults = [];
+
+  function mean(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
+  function stddev(arr){
+    const m = mean(arr);
+    return Math.sqrt(arr.reduce((a,b)=>a+(b-m)*(b-m),0)/arr.length);
+  }
+  function wait(ms){ return new Promise(res=>setTimeout(res, ms)); }
+
+  function renderSurveyTable(){
+    document.getElementById('surveyResultsCard').style.display = 'block';
+    const container = document.getElementById('surveyTable');
+    let html = '<table><thead><tr><th></th><th>プリセット</th><th>F</th><th>k</th><th>H</th><th>D</th><th>&sigma;D</th></tr></thead><tbody>';
+    surveyResults.forEach(r=>{
+      html += '<tr>'
+        + '<td><img src="'+r.thumbnail+'"></td>'
+        + '<td>'+r.name+'</td>'
+        + '<td>'+r.F.toFixed(4)+'</td>'
+        + '<td>'+r.k.toFixed(4)+'</td>'
+        + '<td>'+r.meanH.toFixed(3)+'</td>'
+        + '<td>'+r.meanD.toFixed(4)+'</td>'
+        + '<td>'+r.stdD.toFixed(5)+'</td>'
+        + '</tr>';
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function downloadCsv(){
+    let csv = 'preset,F,k,H,D,stdD\n';
+    surveyResults.forEach(r=>{
+      csv += r.name+','+r.F+','+r.k+','+r.meanH+','+r.meanD+','+r.stdD+'\n';
+    });
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'gray-scott-survey.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function runAutoSurvey(){
+    if(surveying) return;
+    surveying = true;
+    const btn = document.getElementById('autoSurvey');
+    const progressEl = document.getElementById('surveyProgress');
+    btn.disabled = true;
+    progressEl.style.display = 'block';
+
+    const prevF = fSlider.value, prevK = kSlider.value, prevSpeed = speedSlider.value;
+    const prevClosed = closeSystem.checked;
+    const wasPaused = paused;
+    paused = false;
+    closeSystem.checked = false;
+    speedSlider.value = AUTO_SPEED;
+    params.steps = AUTO_SPEED;
+    refreshLabels();
+
+    surveyResults = [];
+
+    for(let i=0;i<PRESETS.length;i++){
+      const p = PRESETS[i];
+      progressEl.textContent = '計測中... (' + (i+1) + '/' + PRESETS.length + ') ' + p.name;
+      fSlider.value = p.F; kSlider.value = p.k;
+      params.F = p.F; params.k = p.k;
+      refreshLabels();
+      reseed();
+      resetMetricsHistory();
+
+      await wait(SURVEY_WAIT_MS);
+
+      const hTail = entropyHistory.slice(-SAMPLE_TAIL);
+      const dTail = dissipationHistory.slice(-SAMPLE_TAIL);
+
+      surveyResults.push({
+        name: p.name, F: p.F, k: p.k,
+        meanH: hTail.length ? mean(hTail) : 0,
+        meanD: dTail.length ? mean(dTail) : 0,
+        stdD: dTail.length ? stddev(dTail) : 0,
+        thumbnail: canvas.toDataURL('image/png')
+      });
+
+      renderSurveyTable();
+    }
+
+    fSlider.value = prevF; kSlider.value = prevK; speedSlider.value = prevSpeed;
+    params.F = parseFloat(prevF); params.k = parseFloat(prevK); params.steps = parseInt(prevSpeed);
+    closeSystem.checked = prevClosed;
+    refreshLabels();
+    paused = wasPaused;
+
+    progressEl.style.display = 'none';
+    btn.disabled = false;
+    surveying = false;
+  }
+
+  document.getElementById('autoSurvey').addEventListener('click', runAutoSurvey);
+  document.getElementById('downloadCsv').addEventListener('click', downloadCsv);
+
+  // ---------- pointer / painting ----------
+  let painting = false;
+  let mouseUv = [0.5,0.5];
+  function updateMouseUv(clientX, clientY){
+    const rect = canvas.getBoundingClientRect();
+    const x = (clientX - rect.left) / rect.width;
+    const y = 1.0 - (clientY - rect.top) / rect.height;
+    mouseUv = [x,y];
+  }
+  canvas.addEventListener('pointerdown', (e)=>{
+    painting = true; updateMouseUv(e.clientX, e.clientY);
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e)=>{
+    if(painting) updateMouseUv(e.clientX, e.clientY);
+  });
+  canvas.addEventListener('pointerup', ()=>{ painting = false; });
+  canvas.addEventListener('pointerleave', ()=>{ painting = false; });
+
+  // ---------- render loop ----------
+  gl.viewport(0,0,GRID,GRID);
+  let lastT = performance.now();
+  let frameCount = 0, fpsAccum = 0, frameTick = 0;
+  const fpsEl = document.getElementById('fps');
+
+  function simStep(){
+    gl.bindFramebuffer(gl.FRAMEBUFFER, writeFbo);
+    gl.viewport(0,0,GRID,GRID);
+    gl.useProgram(simProgram);
+    bindQuad(simProgram);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, readTex);
+    gl.uniform1i(simU.uState, 0);
+    gl.uniform2f(simU.uTexel, 1/GRID, 1/GRID);
+    gl.uniform1f(simU.uF, closeSystem.checked ? 0.0 : params.F);
+    gl.uniform1f(simU.uK, params.k);
+    gl.uniform1f(simU.uDu, 0.16);
+    gl.uniform1f(simU.uDv, 0.08);
+    gl.uniform2f(simU.uMouse, mouseUv[0], mouseUv[1]);
+    gl.uniform1f(simU.uMouseRadius, 0.03);
+    gl.uniform1f(simU.uPainting, painting ? 1.0 : 0.0);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    swap();
+  }
+
+  function renderFrame(){
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0,0,GRID,GRID);
+    gl.useProgram(renderProgram);
+    bindQuad(renderProgram);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, readTex);
+    gl.uniform1i(renderU.uState, 0);
+    gl.uniform1i(renderU.uPalette, params.palette);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  function loop(){
+    if(!paused){
+      for(let i=0;i<params.steps;i++) simStep();
+    }
+    renderFrame();
+
+    frameTick++;
+    if(!paused && frameTick % 15 === 0){
+      computeMetrics();
+    }
+
+    const now = performance.now();
+    fpsAccum++;
+    if(now - lastT > 500){
+      const fps = (fpsAccum*1000/(now-lastT)).toFixed(0);
+      fpsEl.textContent = fps + ' fps' + (useFloat ? '' : ' (8bit)');
+      fpsAccum = 0; lastT = now;
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

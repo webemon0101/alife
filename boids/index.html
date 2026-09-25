@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boids / Particle Life シミュレーター</title>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; position:relative; min-width:0;
+    background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+  }
+  #canvas{ display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+  #fps{ position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162; pointer-events:none; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:44px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <span id="fps">-- fps</span>
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div id="sidebar">
+    <div>
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <a href="../index.html" class="navlink" style="color:var(--text-dim);">← 図鑑トップ</a>
+        <a href="about.html" class="navlink" style="color:var(--accent);">使い方・理論背景 →</a>
+      </div>
+      <h1>Boids / Particle Life</h1>
+      <p class="sub">単純な局所ルールを持つ多数のエージェントから、群れ行動や自己組織化パターンが創発するマルチエージェント系。キャンバスをクリック/ドラッグすると餌を与えられます。</p>
+    </div>
+
+    <div class="card">
+      <h2>モデル</h2>
+      <div class="modebtns">
+        <button id="modeBoids" class="active">Boids</button>
+        <button id="modePL">Particle Life</button>
+      </div>
+      <div class="btnrow" style="margin-top:8px;">
+        <button id="reset">🌱 リセット</button>
+        <button id="playpause" class="primary">⏸ 一時停止</button>
+      </div>
+    </div>
+
+    <div class="card" id="paramsBoids">
+      <h2>パラメータ (Boids)</h2>
+      <div class="row"><label>Separation（分離）</label><span class="val" id="sepVal">-</span></div>
+      <input type="range" id="sepSlider" min="0" max="3" step="0.05" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>Alignment（整列）</label><span class="val" id="aliVal">-</span></div>
+      <input type="range" id="aliSlider" min="0" max="3" step="0.05" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>Cohesion（結合）</label><span class="val" id="cohVal">-</span></div>
+      <input type="range" id="cohSlider" min="0" max="3" step="0.05" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>知覚半径</label><span class="val" id="radVal">-</span></div>
+      <input type="range" id="radSlider" min="15" max="150" step="1" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>最大速度</label><span class="val" id="spdVal">-</span></div>
+      <input type="range" id="spdSlider" min="1" max="8" step="0.1" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>個体数</label><span class="val" id="nBoidsVal">-</span></div>
+      <input type="range" id="nBoidsSlider" min="50" max="1200" step="10" style="width:100%;">
+    </div>
+
+    <div class="card" id="paramsPL" style="display:none;">
+      <h2>パラメータ (Particle Life)</h2>
+      <div class="row"><label>種類数 K</label><span class="val" id="kVal">-</span></div>
+      <input type="range" id="kSlider" min="2" max="8" step="1" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>相互作用半径</label><span class="val" id="plRadVal">-</span></div>
+      <input type="range" id="plRadSlider" min="20" max="200" step="1" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>反発帯 β</label><span class="val" id="betaVal">-</span></div>
+      <input type="range" id="betaSlider" min="0.1" max="0.6" step="0.01" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>力の強さ</label><span class="val" id="forceVal">-</span></div>
+      <input type="range" id="forceSlider" min="0.1" max="3" step="0.05" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>摩擦</label><span class="val" id="fricVal">-</span></div>
+      <input type="range" id="fricSlider" min="0" max="0.3" step="0.005" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>個体数</label><span class="val" id="nPLVal">-</span></div>
+      <input type="range" id="nPLSlider" min="100" max="1500" step="10" style="width:100%;">
+      <div class="btnrow" style="margin-top:10px;">
+        <button id="randomizeMatrix">🎲 ルールをランダム化</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>方程式</h2>
+      <div id="eqnBoids" style="font-size:11.5px; color:var(--text-dim); line-height:1.7;">
+        各個体は近傍のみを見て、<b>分離</b>(近すぎる相手から離れる)・<b>整列</b>(近傍の平均speedに合わせる)・<b>結合</b>(近傍の重心に寄る)の3ベクトルを合成して加速度とする。大域的な指揮者は存在しない。
+      </div>
+      <div id="eqnPL" style="display:none; font-size:11.5px; color:var(--text-dim); line-height:1.7;">
+        F(r) = r/β − 1 (r&lt;β, 常に反発) / A·(1−|2r−1−β|/(1−β)) (β≤r&lt;1)。type間の係数Aはランダムな行列。同じ種類数・力でも行列が変わるだけで挙動が激変する。
+      </div>
+    </div>
+
+    <div class="footer-note">ClaudeALIFE — Boids (Reynolds 1986) / Particle Life</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const fpsEl = document.getElementById('fps');
+
+  function resize(){
+    canvas.width = stage.clientWidth;
+    canvas.height = stage.clientHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let mode = 'boids';
+  let paused = false;
+
+  // ---------- particle state (shared) ----------
+  let N = 400;
+  let x, y, vx, vy, ptype;
+
+  // ---------- boids params ----------
+  const B = { sep:1.2, ali:1.0, coh:1.0, radius:55, maxSpeed:3.2 };
+
+  // ---------- particle life params ----------
+  let K = 5;
+  const PL = { radius:80, beta:0.3, forceScale:1.0, friction:0.05 };
+  let matrix = [];
+
+  function randomizeMatrix(){
+    matrix = [];
+    for(let i=0;i<K;i++){
+      const row = [];
+      for(let j=0;j<K;j++) row.push(Math.random()*2-1);
+      matrix.push(row);
+    }
+  }
+
+  function initParticles(){
+    x = new Float32Array(N); y = new Float32Array(N);
+    vx = new Float32Array(N); vy = new Float32Array(N);
+    ptype = new Int32Array(N);
+    for(let i=0;i<N;i++){
+      x[i] = Math.random()*canvas.width;
+      y[i] = Math.random()*canvas.height;
+      const ang = Math.random()*Math.PI*2;
+      const spd = mode==='boids' ? B.maxSpeed*0.5 : 0;
+      vx[i] = Math.cos(ang)*spd;
+      vy[i] = Math.sin(ang)*spd;
+      ptype[i] = Math.floor(Math.random()*K);
+    }
+  }
+
+  // ---------- spatial grid ----------
+  let cellSize = 60;
+  let gridMap = new Map();
+  function buildGrid(){
+    gridMap.clear();
+    cellSize = Math.max(20, mode==='boids' ? B.radius : PL.radius);
+    for(let i=0;i<N;i++){
+      const cx = Math.floor(x[i]/cellSize), cy = Math.floor(y[i]/cellSize);
+      const key = cx*100000 + cy;
+      let arr = gridMap.get(key);
+      if(!arr){ arr=[]; gridMap.set(key, arr); }
+      arr.push(i);
+    }
+  }
+  function forEachNeighbor(i, cb){
+    const cx = Math.floor(x[i]/cellSize), cy = Math.floor(y[i]/cellSize);
+    for(let dx=-1;dx<=1;dx++){
+      for(let dy=-1;dy<=1;dy++){
+        const key = (cx+dx)*100000 + (cy+dy);
+        const arr = gridMap.get(key);
+        if(arr) for(let k=0;k<arr.length;k++){ const j=arr[k]; if(j!==i) cb(j); }
+      }
+    }
+  }
+
+  // ---------- feeding interaction ----------
+  // Click drops a food pellet; agents within sensing range steer toward the
+  // nearest one and eat it down (shared amount depleted by nearby agents each
+  // frame) until it's gone. Dragging paints a trail of pellets.
+  let foods = []; // {x,y,amount}
+  let dragging = false, lastDropX=0, lastDropY=0;
+  const FOOD_DROP_MIN_DIST = 22;
+  const FOOD_SENSE_RADIUS = 280;
+  const FOOD_EAT_RADIUS = 14;
+  const FOOD_EAT_RATE = 0.03; // amount consumed per nearby agent per frame
+
+  function dropFood(px,py){
+    foods.push({x:px, y:py, amount:1.0});
+    if(foods.length>40) foods.shift();
+  }
+  function updateMouse(e){
+    const rect = canvas.getBoundingClientRect();
+    return [e.clientX-rect.left, e.clientY-rect.top];
+  }
+  canvas.addEventListener('pointerdown', e=>{
+    dragging = true;
+    const [mx,my] = updateMouse(e);
+    dropFood(mx,my); lastDropX=mx; lastDropY=my;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const [mx,my] = updateMouse(e);
+    if(Math.hypot(mx-lastDropX,my-lastDropY) > FOOD_DROP_MIN_DIST){
+      dropFood(mx,my); lastDropX=mx; lastDropY=my;
+    }
+  });
+  canvas.addEventListener('pointerup', ()=>{ dragging=false; });
+  canvas.addEventListener('pointerleave', ()=>{ dragging=false; });
+
+  function seekFood(i, senseR, strength){
+    if(foods.length===0) return [0,0];
+    let nearest=null, nearestD2=senseR*senseR;
+    for(let k=0;k<foods.length;k++){
+      const f=foods[k];
+      const dx=f.x-x[i], dy=f.y-y[i], d2=dx*dx+dy*dy;
+      if(d2<nearestD2){ nearestD2=d2; nearest=f; }
+    }
+    if(!nearest) return [0,0];
+    const d = Math.sqrt(nearestD2)||0.001;
+    if(d < FOOD_EAT_RADIUS) nearest.amount -= FOOD_EAT_RATE;
+    return [(nearest.x-x[i])/d*strength, (nearest.y-y[i])/d*strength];
+  }
+  function decayFoods(){
+    foods = foods.filter(f=>f.amount>0);
+  }
+
+  // ---------- boids step ----------
+  function stepBoids(){
+    buildGrid();
+    const R = B.radius, R2 = R*R;
+    const newVx = new Float32Array(N), newVy = new Float32Array(N);
+    for(let i=0;i<N;i++){
+      let sepX=0, sepY=0, sepN=0;
+      let aliX=0, aliY=0, aliN=0;
+      let cohX=0, cohY=0, cohN=0;
+      forEachNeighbor(i, j=>{
+        const dx=x[j]-x[i], dy=y[j]-y[i];
+        const d2 = dx*dx+dy*dy;
+        if(d2 < R2 && d2 > 0.01){
+          const d = Math.sqrt(d2);
+          sepX -= dx/d/d; sepY -= dy/d/d; sepN++;
+          aliX += vx[j]; aliY += vy[j]; aliN++;
+          cohX += x[j]; cohY += y[j]; cohN++;
+        }
+      });
+      let ax=0, ay=0;
+      if(sepN>0){ ax += (sepX/sepN)*B.sep*8; ay += (sepY/sepN)*B.sep*8; }
+      if(aliN>0){ ax += (aliX/aliN - vx[i])*B.ali*0.06; ay += (aliY/aliN - vy[i])*B.ali*0.06; }
+      if(cohN>0){ ax += (cohX/cohN - x[i])*B.coh*0.0015; ay += (cohY/cohN - y[i])*B.coh*0.0015; }
+
+      const margin=70;
+      if(x[i]<margin) ax += (margin-x[i])*0.03;
+      if(x[i]>canvas.width-margin) ax -= (x[i]-(canvas.width-margin))*0.03;
+      if(y[i]<margin) ay += (margin-y[i])*0.03;
+      if(y[i]>canvas.height-margin) ay -= (y[i]-(canvas.height-margin))*0.03;
+
+      const [fax,fay] = seekFood(i, FOOD_SENSE_RADIUS, 0.35);
+      ax += fax; ay += fay;
+
+      let nvx = vx[i]+ax, nvy = vy[i]+ay;
+      const speed = Math.hypot(nvx,nvy);
+      const maxS = B.maxSpeed, minS = maxS*0.35;
+      if(speed>maxS){ nvx=nvx/speed*maxS; nvy=nvy/speed*maxS; }
+      else if(speed<minS && speed>0.0001){ nvx=nvx/speed*minS; nvy=nvy/speed*minS; }
+      newVx[i]=nvx; newVy[i]=nvy;
+    }
+    for(let i=0;i<N;i++){
+      vx[i]=newVx[i]; vy[i]=newVy[i];
+      x[i]+=vx[i]; y[i]+=vy[i];
+      if(x[i]<0)x[i]=0; if(x[i]>canvas.width)x[i]=canvas.width;
+      if(y[i]<0)y[i]=0; if(y[i]>canvas.height)y[i]=canvas.height;
+    }
+    decayFoods();
+  }
+
+  function forceFunc(r, a, beta){
+    if(r < beta) return r/beta - 1;
+    return a*(1 - Math.abs(2*r-1-beta)/(1-beta));
+  }
+
+  function stepPL(){
+    buildGrid();
+    const R = PL.radius;
+    const newVx = new Float32Array(N), newVy = new Float32Array(N);
+    for(let i=0;i<N;i++){
+      let fx=0, fy=0;
+      forEachNeighbor(i, j=>{
+        const dx=x[j]-x[i], dy=y[j]-y[i];
+        const d = Math.hypot(dx,dy);
+        if(d>0.01 && d<R){
+          const r = d/R;
+          const a = matrix[ptype[i]][ptype[j]];
+          const f = forceFunc(r, a, PL.beta);
+          fx += (dx/d)*f; fy += (dy/d)*f;
+        }
+      });
+      const [fax,fay] = seekFood(i, FOOD_SENSE_RADIUS, 0.5);
+      fx += fax; fy += fay;
+      newVx[i] = (vx[i] + fx*PL.forceScale) * (1-PL.friction);
+      newVy[i] = (vy[i] + fy*PL.forceScale) * (1-PL.friction);
+    }
+    for(let i=0;i<N;i++){
+      vx[i]=newVx[i]; vy[i]=newVy[i];
+      x[i]+=vx[i]; y[i]+=vy[i];
+      if(x[i]<0){x[i]=0; vx[i]*=-1;} if(x[i]>canvas.width){x[i]=canvas.width; vx[i]*=-1;}
+      if(y[i]<0){y[i]=0; vy[i]*=-1;} if(y[i]>canvas.height){y[i]=canvas.height; vy[i]*=-1;}
+    }
+    decayFoods();
+  }
+
+  // ---------- render ----------
+  const PL_COLORS = ['#e0665a','#5ad1c7','#e0a55a','#8a7ce0','#7ce08a','#e07cc4','#7ca8e0','#d4e07c'];
+  function render(){
+    ctx.fillStyle = 'rgba(6,7,8,0.35)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    if(mode==='boids'){
+      ctx.fillStyle = '#5ad1c7';
+      for(let i=0;i<N;i++){
+        const ang = Math.atan2(vy[i], vx[i]);
+        const s=4.5;
+        ctx.save();
+        ctx.translate(x[i],y[i]);
+        ctx.rotate(ang);
+        ctx.beginPath();
+        ctx.moveTo(s*1.6,0); ctx.lineTo(-s,s*0.8); ctx.lineTo(-s,-s*0.8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    } else {
+      for(let i=0;i<N;i++){
+        ctx.fillStyle = PL_COLORS[ptype[i]%PL_COLORS.length];
+        ctx.beginPath();
+        ctx.arc(x[i], y[i], 2.6, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+    for(let k=0;k<foods.length;k++){
+      const f = foods[k];
+      const r = 4 + f.amount*5;
+      const grad = ctx.createRadialGradient(f.x,f.y,0, f.x,f.y,r*2.2);
+      grad.addColorStop(0, 'rgba(224,229,90,'+(0.5+0.5*f.amount)+')');
+      grad.addColorStop(1, 'rgba(224,229,90,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(f.x,f.y, r*2.2, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#e0e55a';
+      ctx.beginPath(); ctx.arc(f.x,f.y, r, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // ---------- UI wiring ----------
+  const sepSlider=document.getElementById('sepSlider'), sepVal=document.getElementById('sepVal');
+  const aliSlider=document.getElementById('aliSlider'), aliVal=document.getElementById('aliVal');
+  const cohSlider=document.getElementById('cohSlider'), cohVal=document.getElementById('cohVal');
+  const radSlider=document.getElementById('radSlider'), radVal=document.getElementById('radVal');
+  const spdSlider=document.getElementById('spdSlider'), spdVal=document.getElementById('spdVal');
+  const nBoidsSlider=document.getElementById('nBoidsSlider'), nBoidsVal=document.getElementById('nBoidsVal');
+
+  const kSlider=document.getElementById('kSlider'), kVal=document.getElementById('kVal');
+  const plRadSlider=document.getElementById('plRadSlider'), plRadVal=document.getElementById('plRadVal');
+  const betaSlider=document.getElementById('betaSlider'), betaVal=document.getElementById('betaVal');
+  const forceSlider=document.getElementById('forceSlider'), forceVal=document.getElementById('forceVal');
+  const fricSlider=document.getElementById('fricSlider'), fricVal=document.getElementById('fricVal');
+  const nPLSlider=document.getElementById('nPLSlider'), nPLVal=document.getElementById('nPLVal');
+
+  function refreshBoidsLabels(){
+    sepVal.textContent=B.sep.toFixed(2); aliVal.textContent=B.ali.toFixed(2); cohVal.textContent=B.coh.toFixed(2);
+    radVal.textContent=B.radius; spdVal.textContent=B.maxSpeed.toFixed(1); nBoidsVal.textContent=N;
+  }
+  function refreshPLLabels(){
+    kVal.textContent=K; plRadVal.textContent=PL.radius; betaVal.textContent=PL.beta.toFixed(2);
+    forceVal.textContent=PL.forceScale.toFixed(2); fricVal.textContent=PL.friction.toFixed(3); nPLVal.textContent=N;
+  }
+
+  sepSlider.value=B.sep; aliSlider.value=B.ali; cohSlider.value=B.coh;
+  radSlider.value=B.radius; spdSlider.value=B.maxSpeed; nBoidsSlider.value=N;
+  refreshBoidsLabels();
+
+  kSlider.value=K; plRadSlider.value=PL.radius; betaSlider.value=PL.beta;
+  forceSlider.value=PL.forceScale; fricSlider.value=PL.friction; nPLSlider.value=500;
+  refreshPLLabels();
+
+  sepSlider.addEventListener('input', ()=>{ B.sep=parseFloat(sepSlider.value); refreshBoidsLabels(); });
+  aliSlider.addEventListener('input', ()=>{ B.ali=parseFloat(aliSlider.value); refreshBoidsLabels(); });
+  cohSlider.addEventListener('input', ()=>{ B.coh=parseFloat(cohSlider.value); refreshBoidsLabels(); });
+  radSlider.addEventListener('input', ()=>{ B.radius=parseFloat(radSlider.value); refreshBoidsLabels(); });
+  spdSlider.addEventListener('input', ()=>{ B.maxSpeed=parseFloat(spdSlider.value); refreshBoidsLabels(); });
+  nBoidsSlider.addEventListener('input', ()=>{ N=parseInt(nBoidsSlider.value); refreshBoidsLabels(); initParticles(); });
+
+  kSlider.addEventListener('input', ()=>{ K=parseInt(kSlider.value); refreshPLLabels(); randomizeMatrix(); initParticles(); });
+  plRadSlider.addEventListener('input', ()=>{ PL.radius=parseFloat(plRadSlider.value); refreshPLLabels(); });
+  betaSlider.addEventListener('input', ()=>{ PL.beta=parseFloat(betaSlider.value); refreshPLLabels(); });
+  forceSlider.addEventListener('input', ()=>{ PL.forceScale=parseFloat(forceSlider.value); refreshPLLabels(); });
+  fricSlider.addEventListener('input', ()=>{ PL.friction=parseFloat(fricSlider.value); refreshPLLabels(); });
+  nPLSlider.addEventListener('input', ()=>{ N=parseInt(nPLSlider.value); refreshPLLabels(); initParticles(); });
+  document.getElementById('randomizeMatrix').addEventListener('click', ()=>{ randomizeMatrix(); });
+
+  document.getElementById('reset').addEventListener('click', ()=>{ initParticles(); });
+  const playBtn = document.getElementById('playpause');
+  playBtn.addEventListener('click', ()=>{ paused=!paused; playBtn.textContent = paused?'▶ 再生':'⏸ 一時停止'; });
+
+  document.getElementById('modeBoids').addEventListener('click', ()=>{
+    mode='boids';
+    document.getElementById('modeBoids').classList.add('active');
+    document.getElementById('modePL').classList.remove('active');
+    document.getElementById('paramsBoids').style.display='block';
+    document.getElementById('paramsPL').style.display='none';
+    document.getElementById('eqnBoids').style.display='block';
+    document.getElementById('eqnPL').style.display='none';
+    N = parseInt(nBoidsSlider.value);
+    initParticles();
+  });
+  document.getElementById('modePL').addEventListener('click', ()=>{
+    mode='pl';
+    document.getElementById('modePL').classList.add('active');
+    document.getElementById('modeBoids').classList.remove('active');
+    document.getElementById('paramsBoids').style.display='none';
+    document.getElementById('paramsPL').style.display='block';
+    document.getElementById('eqnBoids').style.display='none';
+    document.getElementById('eqnPL').style.display='block';
+    N = parseInt(nPLSlider.value);
+    randomizeMatrix();
+    initParticles();
+  });
+
+  // ---------- main loop ----------
+  randomizeMatrix();
+  initParticles();
+
+  let lastT=performance.now(), fpsAccum=0;
+  function loop(){
+    if(!paused){
+      if(mode==='boids') stepBoids(); else stepPL();
+    }
+    render();
+    const now = performance.now();
+    fpsAccum++;
+    if(now-lastT>500){
+      fpsEl.textContent = (fpsAccum*1000/(now-lastT)).toFixed(0)+' fps · N='+N;
+      fpsAccum=0; lastT=now;
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

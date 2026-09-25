@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meinhardt 貝殻パターンシミュレーター</title>
+<style>
+  :root{
+    --bg:#0b0d12;
+    --panel:#12151c;
+    --panel-border:#232833;
+    --text:#e6e9ef;
+    --text-dim:#8b93a3;
+    --accent:#5ad1c7;
+    --accent2:#e0a55a;
+    --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif;
+    overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; display:flex; align-items:center; justify-content:center;
+    position:relative; background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+    min-width:0;
+  }
+  #shellcanvas{
+    width:min(60vmin, 60vw - 340px);
+    height:min(92vh, 900px);
+    max-width:520px;
+    border-radius:6px;
+    box-shadow:0 0 0 1px #1c2029, 0 20px 60px rgba(0,0,0,0.6);
+    cursor:crosshair;
+    touch-action:none;
+    background:#000;
+  }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:52px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .eqn{
+    font-family:"Cambria Math","STIX Two Math",serif; font-size:12px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:6px; padding:10px 12px; line-height:1.8;
+  }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="shellcanvas" width="220" height="700"></canvas>
+  </div>
+
+  <div id="sidebar">
+    <div>
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <a href="../index.html" class="navlink" style="color:var(--text-dim);">← 図鑑トップ</a>
+        <a href="about.html" class="navlink" style="color:var(--accent);">使い方・理論背景 →</a>
+      </div>
+      <h1>Meinhardt 貝殻パターン</h1>
+      <p class="sub">成長する巻貝の色素パターンを、成長端(growing edge)に沿った1次元反応拡散系として再現するシミュレーター。時間軸が下方向＝貝の成長方向に対応します。</p>
+    </div>
+
+    <div class="card">
+      <h2>モデル</h2>
+      <div class="modebtns">
+        <button id="modeAS" class="active">Activator-Substrate</button>
+        <button id="modeAIH">Activator-Inhibitor-Hormone</button>
+      </div>
+      <select id="preset"></select>
+      <div class="btnrow" style="margin-top:10px;">
+        <button id="reseed">🌱 再スタート</button>
+        <button id="playpause" class="primary">⏸ 一時停止</button>
+      </div>
+    </div>
+
+    <div class="card" id="paramsAS">
+      <h2>パラメータ (Activator-Substrate)</h2>
+      <div class="row"><label>ρ (自己触媒係数)</label><span class="val" id="rhoVal">-</span></div>
+      <input type="range" id="rhoSlider" min="0.001" max="0.3" step="0.001" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>κ (飽和)</label><span class="val" id="kappaVal">-</span></div>
+      <input type="range" id="kappaSlider" min="0" max="0.2" step="0.001" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>μ_a (活性化因子の分解)</label><span class="val" id="muaVal">-</span></div>
+      <input type="range" id="muaSlider" min="0.001" max="0.3" step="0.001" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>Da (活性化因子の拡散)</label><span class="val" id="daVal">-</span></div>
+      <input type="range" id="daSlider" min="0" max="0.05" step="0.0005" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>Ds (基質の拡散)</label><span class="val" id="dsVal">-</span></div>
+      <input type="range" id="dsSlider" min="0" max="1.0" step="0.01" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>ρ₀ (基質の基礎生産)</label><span class="val" id="rho0Val">-</span></div>
+      <input type="range" id="rho0Slider" min="0" max="2" step="0.01" style="width:100%;">
+    </div>
+
+    <div class="card" id="paramsAIH" style="display:none;">
+      <h2>パラメータ (Activator-Inhibitor-Hormone)</h2>
+      <div class="row"><label>ρ (自己触媒係数)</label><span class="val" id="rho2Val">-</span></div>
+      <input type="range" id="rho2Slider" min="0.001" max="0.3" step="0.001" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>μ_h (阻害因子・ホルモン結合分解)</label><span class="val" id="chVal">-</span></div>
+      <input type="range" id="chSlider" min="0.01" max="2" step="0.01" style="width:100%; margin:0 0 12px;">
+      <div class="row"><label>ホルモン緩和速度</label><span class="val" id="hormVal">-</span></div>
+      <input type="range" id="hormSlider" min="0.001" max="0.5" step="0.001" style="width:100%;">
+    </div>
+
+    <div class="card">
+      <h2>表示</h2>
+      <select id="palette">
+        <option value="0">Ink（黒地に生成色）</option>
+        <option value="1">Sepia（貝殻風）</option>
+        <option value="2">Ocean（青緑）</option>
+      </select>
+      <div class="row" style="margin-top:12px;">
+        <label>速度 (step/frame)</label><span class="val" id="speedVal">2</span>
+      </div>
+      <input type="range" id="speedSlider" min="1" max="8" step="1" value="2" style="width:100%;">
+    </div>
+
+    <div class="card">
+      <h2>方程式</h2>
+      <div class="eqn" id="eqnAS">
+        ∂a/∂t = ρ·s·a²/(1+κa²) − μ_a·a + a₀ + Da∇²a<br>
+        ∂s/∂t = ρ₀ − ρ·s·a²/(1+κa²) − μ_s·s + Ds∇²s
+      </div>
+      <div class="eqn" id="eqnAIH" style="display:none;">
+        ∂a/∂t = ρ·a²/((h+h₀)(1+κa²)) − μ_a·a + a₀ + Da∇²a<br>
+        ∂h/∂t = ρ_h + ρ·a²/(1+κa²) − c·h + Dh∇²h<br>
+        dc/dt = γ·(⟨a⟩ − c)
+      </div>
+      <p class="note">a: 活性化因子(色素), s: 基質, h: 阻害因子, c: 全体を監視するホルモン(空間的に一様)。x軸=成長端(貝の周方向), 時間=下方向(成長方向)。</p>
+    </div>
+
+    <div class="footer-note">ClaudeALIFE — Meinhardt activator-substrate / -inhibitor model</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('shellcanvas');
+  const N = 220;   // spatial cells along the growing edge
+  const HEIGHT = 700; // scrolling history rows
+  canvas.width = N; canvas.height = HEIGHT;
+  const ctx = canvas.getContext('2d');
+
+  let mode = 'AS'; // 'AS' or 'AIH'
+  let paused = false;
+
+  // ---------- state ----------
+  let a = new Float64Array(N);
+  let s = new Float64Array(N); // substrate (AS mode)
+  let h = new Float64Array(N); // inhibitor (AIH mode)
+  let c = 0.1; // global hormone (AIH mode)
+
+  function noiseArr(base, pct, rng){
+    const out = new Float64Array(N);
+    for(let i=0;i<N;i++) out[i] = base*(1 + (rng()-0.5)*2*pct);
+    return out;
+  }
+  function rng(){ return Math.random(); }
+
+  // ---------- params ----------
+  let P = {}; // active parameter set, filled by presets
+
+  const PRESETS_AS = [
+    {name:'Stripes（縦縞）', rho:0.010, a0:0.001, mua:0.010, Da:0.002, kappa:0.015, mus:0.0, Ds:0.4, rho0:0.0, rhoNoise:0.025},
+    {name:'Undulating waves（波状線）', rho:0.10, a0:0.005, mua:0.10, Da:0.004, kappa:0.012, mus:0.0, Ds:0.0, rho0:1.0, rhoNoise:0.025, rhoModAmp:0.6},
+    {name:'Traveling bands（進行縞）', rho:0.10, a0:0.0025, mua:0.10, Da:0.01, kappa:0.11, mus:0.002, Ds:0.05, rho0:0.5, rhoNoise:0.025, rhoModAmp:0.9},
+  ];
+  const PRESETS_AIH = [
+    {name:'Oliva porphyria（衝突する斜線）', rho:0.10, a0:0.0002, mua:0.10, Da:0.015, kappa:0.05,
+     rhoH:0.06, ch_mu:0.10, Dh:0.06, h0:0.15, hormRate:0.05},
+    {name:'Conus marmoreus（網目状）', rho:0.14, a0:0.0003, mua:0.11, Da:0.02, kappa:0.03,
+     rhoH:0.05, ch_mu:0.16, Dh:0.10, h0:0.12, hormRate:0.08},
+  ];
+
+  function laplacian1D(arr, D){
+    const out = new Float64Array(N);
+    for(let i=0;i<N;i++){
+      const im = (i-1+N)%N, ip=(i+1)%N;
+      out[i] = D*(arr[im] + arr[ip] - 2*arr[i]);
+    }
+    return out;
+  }
+
+  function seed(){
+    a = noiseArr(0.2, 0.5, rng);
+    if(mode==='AS'){
+      s = new Float64Array(N).fill(1.0);
+    } else {
+      h = new Float64Array(N).fill(0.2);
+      c = 0.1;
+    }
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,N,HEIGHT);
+    frameTick = 0;
+  }
+
+  function rhoProfile(base, modAmp){
+    // fixed spatial sine modulation of substrate production rate (paper: rho = rho(x)).
+    // The waviness of the resulting pattern emerges purely from the PDE dynamics --
+    // neighboring x positions oscillate at slightly different local rates because
+    // rho(x) varies smoothly, not from any explicit time-dependence here.
+    const out = new Float64Array(N);
+    for(let i=0;i<N;i++){
+      out[i] = base*(1 + modAmp*Math.sin(2*Math.PI*i/N*3));
+    }
+    return out;
+  }
+
+  let stepCount = 0;
+
+  function stepAS(){
+    const rhoArr = P.rhoModAmp ? rhoProfile(P.rho, P.rhoModAmp) : P.rhoNoiseArr;
+    const lapA = laplacian1D(a, P.Da);
+    const lapS = laplacian1D(s, P.Ds);
+    const newA = new Float64Array(N);
+    const newS = new Float64Array(N);
+    for(let i=0;i<N;i++){
+      const rho_i = rhoArr[i];
+      const auto = (a[i]*a[i]) / (1 + P.kappa*a[i]*a[i]);
+      const da = rho_i*s[i]*auto - P.mua*a[i] + P.a0 + lapA[i];
+      const ds = P.rho0 - rho_i*s[i]*auto - P.mus*s[i] + lapS[i];
+      newA[i] = Math.max(0, a[i] + da);
+      newS[i] = Math.max(0, s[i] + ds);
+    }
+    a = newA; s = newS;
+    stepCount++;
+  }
+
+  function stepAIH(){
+    const lapA = laplacian1D(a, P.Da);
+    const lapH = laplacian1D(h, P.Dh);
+    const newA = new Float64Array(N);
+    const newH = new Float64Array(N);
+    let sumA = 0;
+    for(let i=0;i<N;i++){
+      const auto = (a[i]*a[i]) / (1 + P.kappa*a[i]*a[i]);
+      const da = P.rho*auto/(h[i]+P.h0) - P.mua*a[i] + P.a0 + lapA[i];
+      const dh = P.rhoH + P.rho*auto - c*P.ch_mu*h[i] + lapH[i];
+      newA[i] = Math.max(0, a[i] + da);
+      newH[i] = Math.max(0, h[i] + dh);
+      sumA += a[i];
+    }
+    const meanA = sumA / N;
+    c += P.hormRate*(meanA - c);
+    a = newA; h = newH;
+    stepCount++;
+  }
+
+  function palette(v, mode){
+    v = Math.min(1, Math.max(0, v));
+    if(mode===1){ // Sepia
+      return [30+v*200, 20+v*140, 10+v*70];
+    } else if(mode===2){ // Ocean
+      return [10+v*40, 20+v*160, 40+v*200];
+    }
+    // Ink
+    const t = v;
+    return [t*235, t*230+ (1-t)*10, t*200+(1-t)*20];
+  }
+
+  function pushRow(){
+    // scroll canvas content up by 1px via cheap self-blit, then paint just the new bottom row
+    ctx.drawImage(canvas, 0, -1);
+    const row = ctx.createImageData(N,1);
+    const pal = parseInt(document.getElementById('palette').value);
+    for(let i=0;i<N;i++){
+      const [r,g,b] = palette(a[i]/ (mode==='AS'?1.2:1.0), pal);
+      row.data[i*4+0]=r; row.data[i*4+1]=g; row.data[i*4+2]=b; row.data[i*4+3]=255;
+    }
+    ctx.putImageData(row, 0, HEIGHT-1);
+  }
+
+  // ---------- UI wiring ----------
+  const presetSel = document.getElementById('preset');
+  const rhoSlider=document.getElementById('rhoSlider'), rhoVal=document.getElementById('rhoVal');
+  const kappaSlider=document.getElementById('kappaSlider'), kappaVal=document.getElementById('kappaVal');
+  const muaSlider=document.getElementById('muaSlider'), muaVal=document.getElementById('muaVal');
+  const daSlider=document.getElementById('daSlider'), daVal=document.getElementById('daVal');
+  const dsSlider=document.getElementById('dsSlider'), dsVal=document.getElementById('dsVal');
+  const rho0Slider=document.getElementById('rho0Slider'), rho0Val=document.getElementById('rho0Val');
+
+  const rho2Slider=document.getElementById('rho2Slider'), rho2Val=document.getElementById('rho2Val');
+  const chSlider=document.getElementById('chSlider'), chVal=document.getElementById('chVal');
+  const hormSlider=document.getElementById('hormSlider'), hormVal=document.getElementById('hormVal');
+
+  const speedSlider = document.getElementById('speedSlider');
+  const speedVal = document.getElementById('speedVal');
+  let steps = 2;
+
+  function refreshASLabels(){
+    rhoVal.textContent=P.rho.toFixed(3); kappaVal.textContent=P.kappa.toFixed(3);
+    muaVal.textContent=P.mua.toFixed(3); daVal.textContent=P.Da.toFixed(4);
+    dsVal.textContent=P.Ds.toFixed(2); rho0Val.textContent=P.rho0.toFixed(2);
+  }
+  function refreshAIHLabels(){
+    rho2Val.textContent=P.rho.toFixed(3); chVal.textContent=P.ch_mu.toFixed(2);
+    hormVal.textContent=P.hormRate.toFixed(3);
+  }
+
+  function applyPresetAS(p){
+    P = Object.assign({}, p);
+    P.rhoNoiseArr = noiseArr(P.rho, P.rhoNoise||0, rng);
+    rhoSlider.value=P.rho; kappaSlider.value=P.kappa; muaSlider.value=P.mua;
+    daSlider.value=P.Da; dsSlider.value=P.Ds; rho0Slider.value=P.rho0;
+    refreshASLabels();
+  }
+  function applyPresetAIH(p){
+    P = Object.assign({}, p);
+    rho2Slider.value=P.rho; chSlider.value=P.ch_mu; hormSlider.value=P.hormRate;
+    refreshAIHLabels();
+  }
+
+  function loadPresetList(){
+    presetSel.innerHTML='';
+    const list = mode==='AS'?PRESETS_AS:PRESETS_AIH;
+    list.forEach((p,i)=>{
+      const opt=document.createElement('option'); opt.value=i; opt.textContent=p.name;
+      presetSel.appendChild(opt);
+    });
+    presetSel.value=0;
+    if(mode==='AS') applyPresetAS(list[0]); else applyPresetAIH(list[0]);
+  }
+
+  presetSel.addEventListener('change', ()=>{
+    const list = mode==='AS'?PRESETS_AS:PRESETS_AIH;
+    const p = list[parseInt(presetSel.value)];
+    if(mode==='AS') applyPresetAS(p); else applyPresetAIH(p);
+    seed();
+  });
+
+  [rhoSlider,kappaSlider,muaSlider,daSlider,dsSlider,rho0Slider].forEach(s=>{
+    s.addEventListener('input', ()=>{
+      P.rho=parseFloat(rhoSlider.value); P.kappa=parseFloat(kappaSlider.value);
+      P.mua=parseFloat(muaSlider.value); P.Da=parseFloat(daSlider.value);
+      P.Ds=parseFloat(dsSlider.value); P.rho0=parseFloat(rho0Slider.value);
+      P.rhoNoiseArr = noiseArr(P.rho, P.rhoNoise||0, rng);
+      refreshASLabels();
+    });
+  });
+  [rho2Slider,chSlider,hormSlider].forEach(s=>{
+    s.addEventListener('input', ()=>{
+      P.rho=parseFloat(rho2Slider.value); P.ch_mu=parseFloat(chSlider.value); P.hormRate=parseFloat(hormSlider.value);
+      refreshAIHLabels();
+    });
+  });
+
+  speedSlider.addEventListener('input', ()=>{ steps=parseInt(speedSlider.value); speedVal.textContent=steps; });
+
+  document.getElementById('modeAS').addEventListener('click', ()=>{
+    mode='AS'; document.getElementById('modeAS').classList.add('active');
+    document.getElementById('modeAIH').classList.remove('active');
+    document.getElementById('paramsAS').style.display='block';
+    document.getElementById('paramsAIH').style.display='none';
+    document.getElementById('eqnAS').style.display='block';
+    document.getElementById('eqnAIH').style.display='none';
+    loadPresetList(); seed();
+  });
+  document.getElementById('modeAIH').addEventListener('click', ()=>{
+    mode='AIH'; document.getElementById('modeAIH').classList.add('active');
+    document.getElementById('modeAS').classList.remove('active');
+    document.getElementById('paramsAS').style.display='none';
+    document.getElementById('paramsAIH').style.display='block';
+    document.getElementById('eqnAS').style.display='none';
+    document.getElementById('eqnAIH').style.display='block';
+    loadPresetList(); seed();
+  });
+
+  document.getElementById('reseed').addEventListener('click', seed);
+  const playBtn = document.getElementById('playpause');
+  playBtn.addEventListener('click', ()=>{
+    paused=!paused; playBtn.textContent = paused?'▶ 再生':'⏸ 一時停止';
+  });
+
+  // ---------- main loop ----------
+  let frameTick = 0;
+  function loop(){
+    if(!paused){
+      for(let i=0;i<steps;i++){
+        if(mode==='AS') stepAS(); else stepAIH();
+        pushRow();
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  loadPresetList();
+  seed();
+  loop();
+})();
+</script>
+</body>
+</html>

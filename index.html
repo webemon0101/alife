@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALIFE図鑑</title>
+<style>
+  :root{
+    --bg:#0b0d12;
+    --panel:#12151c;
+    --panel-border:#232833;
+    --text:#e6e9ef;
+    --text-dim:#8b93a3;
+    --accent:#5ad1c7;
+    --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    background:
+      radial-gradient(ellipse at 20% 0%, #131722 0%, #0b0d12 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif;
+  }
+  header{
+    max-width:1080px; margin:0 auto; padding:56px 24px 24px;
+  }
+  header h1{
+    font-size:28px; font-weight:700; margin:0 0 10px; letter-spacing:0.02em;
+  }
+  header p{
+    font-size:14px; color:var(--text-dim); line-height:1.8; max-width:640px; margin:0;
+  }
+  main{
+    max-width:1080px; margin:0 auto; padding:16px 24px 80px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+    gap:18px;
+    margin-top:24px;
+  }
+  a.card{
+    text-decoration:none; color:inherit;
+    background:var(--panel); border:1px solid var(--panel-border);
+    border-radius:12px; overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:transform .15s, border-color .15s, box-shadow .15s;
+    position:relative;
+  }
+  a.card:hover{
+    transform:translateY(-3px);
+    border-color:#3a4152;
+    box-shadow:0 12px 30px rgba(0,0,0,0.45);
+  }
+  .card .thumb{
+    height:140px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:52px;
+    background:
+      radial-gradient(circle at 50% 40%, #1c2130 0%, #0e1017 75%);
+    border-bottom:1px solid var(--panel-border);
+  }
+  .card .body{
+    padding:16px 18px 18px;
+    display:flex; flex-direction:column; gap:6px; flex:1;
+  }
+  .card h2{
+    font-size:15px; margin:0; font-weight:600;
+  }
+  .card .tag{
+    font-size:10px; color:var(--accent); letter-spacing:0.06em;
+    text-transform:uppercase; font-weight:600;
+  }
+  .card p{
+    font-size:12px; color:var(--text-dim); line-height:1.6; margin:0;
+  }
+  .card.disabled{
+    cursor:default; opacity:0.45; filter:grayscale(0.4);
+  }
+  .card.disabled:hover{
+    transform:none; box-shadow:none; border-color:var(--panel-border);
+  }
+  .badge-soon{
+    position:absolute; top:10px; right:10px;
+    font-size:9.5px; padding:3px 8px; border-radius:20px;
+    background:#232833; color:var(--text-dim); letter-spacing:0.05em;
+  }
+  footer{
+    max-width:1080px; margin:0 auto; padding:0 24px 60px;
+    font-size:11px; color:#4a5162;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>ALIFE図鑑</h1>
+  <p>人工生命(Artificial Life)の各モデルを、ブラウザで動かして遊べるシミュレーターとしてまとめた個人的な標本箱。
+  カードを選ぶとそのモデルのシミュレーターが開きます。各ページ内から使い方・理論背景の解説にも飛べます。</p>
+</header>
+<main>
+  <div class="grid">
+    <a class="card" href="gray-scott/index.html">
+      <div class="thumb">🧫</div>
+      <div class="body">
+        <span class="tag">Reaction-Diffusion</span>
+        <h2>Gray-Scott 散逸構造</h2>
+        <p>反応拡散方程式による自己組織化パターン。Feed/Kill rateで斑点・迷路・カオスなど多様な模様が生まれる、非平衡開放系の基本モデル。</p>
+      </div>
+    </a>
+
+    <a class="card" href="lenia/index.html">
+      <div class="thumb">🫧</div>
+      <div class="body">
+        <span class="tag">Continuous Cellular Automaton</span>
+        <h2>Lenia</h2>
+        <p>Game of Lifeを連続化した、なめらかで生物的な自己組織化パターン。Orbiumなど多様な"種"が発見されている。</p>
+      </div>
+    </a>
+
+    <a class="card" href="boids/index.html">
+      <div class="thumb">🐦</div>
+      <div class="body">
+        <span class="tag">Multi-Agent</span>
+        <h2>Boids / Particle Life</h2>
+        <p>単純な局所ルール(分離・整列・結合、または引力・斥力行列)を持つ粒子の集団から、群れ行動や自己組織化パターンが生まれるモデル。</p>
+      </div>
+    </a>
+  </div>
+</main>
+<footer>ClaudeALIFE — 個人的なALIFE研究・実験のまとめ</footer>
+</body>
+</html>

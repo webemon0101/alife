@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boids / Particle Life — 使い方・理論背景</title>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html">← 図鑑トップ</a>
+  <a href="index.html">シミュレーターに戻る →</a>
+</nav>
+<article>
+  <h1>Boids / Particle Life</h1>
+  <p class="lead">局所ルールを持つエージェント集団から群れ行動や自己組織化が創発する、マルチエージェント系ALifeの2つの代表モデル。</p>
+
+  <h2>使い方</h2>
+  <ul>
+    <li><b>モード切り替え</b>：BoidsとParticle Lifeを切り替えられます。それぞれ全く違う仕組みですが、同じ「多数のエージェント＋近傍だけを見る局所ルール」という枠組みを共有しています。</li>
+    <li><b>キャンバス上のドラッグ</b>：マウス位置の周囲に反発力を発生させます。群れを散らしたり、Particle Lifeの構造を突いて壊してみたりできます。</li>
+    <li><b>🎲 ルールをランダム化</b>（Particle Lifeのみ）：種類間の相互作用行列を全く新しいランダム値に差し替えます。同じ種類数・同じ力の強さでも、行列が変わるだけで群れる・追いかけ合う・膜状に固まる・完全に散逸する、など挙動がガラリと変わります。</li>
+  </ul>
+
+  <h2>Boids（Craig Reynolds, 1986）</h2>
+  <p>
+    各個体は近傍の仲間だけを見て、次の3つのベクトルを合成した加速度で動きます。
+  </p>
+  <ul>
+    <li><b>Separation（分離）</b>：近すぎる仲間から離れる方向に押し返される</li>
+    <li><b>Alignment（整列）</b>：近傍の平均速度に自分の速度を合わせようとする</li>
+    <li><b>Cohesion（結合）</b>：近傍の重心に向かって引き寄せられる</li>
+  </ul>
+  <p>
+    Boidsの歴史的な新しさは、<b>群れ全体を指揮する中央制御が一切無い</b>のに、この3つの単純な局所ルールだけから、まるで本物の鳥や魚の群れのような、滑らかで生物的な集団運動が創発する、と示した点にあります。1986年当時、群れの動きはトップダウンにスクリプトされるのが普通でしたが、Reynoldsはボトムアップな創発だけで同じ現象を再現しました。
+  </p>
+  <p class="note">
+    パラメータをいじって、3つの力のバランスがどう群れの性格を変えるか試してみてください。Separationを強くしすぎると散り散りに、Cohesionを強くしすぎると1つの塊に潰れます。
+  </p>
+
+  <h2>Particle Life</h2>
+  <div class="eqn">
+    F(r) = r/β − 1&nbsp;&nbsp;(r &lt; β、常に反発)<br>
+    F(r) = A<sub>type(i),type(j)</sub>·(1 − |2r−1−β| / (1−β))&nbsp;&nbsp;(β ≤ r &lt; 1)<br>
+    F(r) = 0&nbsp;&nbsp;(r ≥ 1)
+  </div>
+  <p>
+    Particle Lifeは、Boidsのような「群れ行動」を明示的に作り込むのではなく、<b>色（種類）ごとに異なる引力・斥力の行列だけをランダムに与える</b>、もっと下のレイヤーのモデルです。近すぎると必ず反発し（潰れて重なるのを防ぐ）、少し離れた距離では種類の組み合わせごとに決まった符号・強さで引き合ったり反発したりします。
+  </p>
+  <p>
+    このモデルの面白さは、<b>同じ数式・同じパラメータレンジのまま、行列の中身をランダムに変えるだけで、全く性質の違う"生態系"が生まれる</b>ことです。ある行列では群れがクラスターを作って静止し、別の行列では一方が他方を延々追いかけ回す「捕食者-被食者」的な運動が生まれ、また別の行列では膜のような構造や、細胞質流動のように内部を撹拌し続ける塊が生まれます。単純な物理法則から多様な"生態"が生まれる様子を、ボタン一つで何度も引き直して観察できます。
+  </p>
+
+  <h2>2つのモデルの位置づけ</h2>
+  <p>
+    Boidsは「群れる」という結果を出すために3つのルールを意図的に設計したモデルです。一方Particle Lifeは、ルール自体をランダムに生成し、その帰結として偶然「群れる」「追いかける」「固まる」といった行動が生まれるかどうかを観察する、より探索的なモデルです。ALIFE研究の文脈で言えば、Boidsは「デザインされた創発」、Particle Lifeは「無数にありうるルール空間からの偶然の創発」という、対照的な2つのアプローチを代表しています。
+  </p>
+
+  <h2>参考文献</h2>
+  <ul class="refs">
+    <li>C. W. Reynolds, "Flocks, Herds, and Schools: A Distributed Behavioral Model," <i>SIGGRAPH</i>, 1987.</li>
+    <li><a class="inline" href="https://www.red3d.com/cwr/boids/" target="_blank" rel="noopener">Boids — Craig Reynolds公式ページ</a></li>
+    <li><a class="inline" href="https://physion.net/blog/introducing-particle-life" target="_blank" rel="noopener">Introducing Particle Life — Physion</a></li>
+  </ul>
+</article>
+</body>
+</html>
