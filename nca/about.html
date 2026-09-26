@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCA / Neural Cellular Automata — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Explore learned cellular rules, growth and regeneration with the original pretrained NCA models. ニューラル・セルオートマトンの仕組みと使い方。">
+<link rel="canonical" href="https://hamzworkerz.com/nca/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/nca/about.html">
+<meta property="og:title" content="NCA / Neural Cellular Automata — 使い方・理論背景">
+<meta property="og:description" content="Explore learned cellular rules, growth and regeneration with the original pretrained NCA models. ニューラル・セルオートマトンの仕組みと使い方。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NCA / Neural Cellular Automata — 使い方・理論背景">
+<meta name="twitter:description" content="Explore learned cellular rules, growth and regeneration with the original pretrained NCA models. ニューラル・セルオートマトンの仕組みと使い方。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article>
+<h1>Neural Cellular Automata</h1><p class="lead">NCA — 学習した細胞のルールから生まれる成長と自己修復</p>
+<h2>使い方 / Getting started</h2><p>初期状態は中央の1つの種です。まず自己修復モデルで「200歩進める」を押し、形が育つのを待ってください。処理後は一時停止します。形の一部を指やマウスで削り、再生して修復を観察できます。</p><p lang="en">Start from a seed at the center. Choose Regenerating and advance 200 steps; the simulation pauses afterward. Erase part of the pattern, then press Play to observe recovery.</p><ul><li>トカゲ・蝶・木と、3種類の学習方法を選べます。変更すると種から再開します。 / Choose lizard, butterfly or tree and one of three training regimes. Switching models resets to a seed.</li><li>「種を置く」で別の場所にも種を置けます。複数の個体の衝突や境界付近では、期待する形にならない場合があります。 / Plant more seeds to explore interactions; collisions and boundaries can disrupt the learned shape.</li><li>「すべて消す」で空の盤面にできます。残存細胞がなければ自動復活しません。 / Clear all removes the entire state; an empty board cannot regrow without a new seed.</li><li>スマートフォンの設定は⚙から開きます。PNGは現在の表示を保存します。 / Open mobile controls with ⚙. Save the current view as PNG.</li></ul>
+<h2>学習方法を比較する / Compare training regimes</h2><p><b>成長 / Growing：</b>種から目標の形になるよう学習。完成後の維持は苦手な場合があります。<br><b>維持 / Persistent：</b>成長した状態も使って学習し、形を保つことを促します。<br><b>自己修復 / Regenerating：</b>学習時に損傷を加え、残った細胞からの回復を促します。</p><p lang="en">Growing models learn to reach a target. Persistent models are also trained on evolved states to support stability. Regenerating models additionally train on damaged states. These are different pretrained networks, not a visual effect applied to the same model.</p>
+<h2>局所的なニューラルネット / A local neural rule</h2><p>各セルは色・不透明度と内部状態を持ち、近傍の情報から小さなニューラルネットで変化量を計算します。全てのセルが同じ学習済み規則を使います。目標画像は学習に使われていますが、実行中に画像を貼り戻して修復する仕組みではありません。</p><p lang="en">Each cell stores visible and hidden state. A shared neural network computes changes from local neighborhood information. The target image was used during training; runtime repair does not paste the target back onto the grid.</p><p class="note">生物そのものの再現や、任意の傷から必ず復元する保証ではありません。大きな損傷、回転、複数の種など、学習条件から離れると崩壊する場合があります。 / Recovery is not guaranteed, especially under conditions unlike training.</p>
+<h2>このページの実装 / Implementation</h2><p>原研究で公開された学習済み重みとWebGL実装を使い、96×96セルをブラウザ内で更新します。学習は行いません。重みと描画ライブラリはこのサイトから読み込み、実行にAI APIは使いません。端は反対側につながる方式です。内部状態表示は各チャンネルを並べたもので、生物学的な器官の表示ではありません。</p><p lang="en">This page runs the original pretrained, quantized models on a 96×96 grid with WebGL. It performs inference only, with no AI API calls. Model files and the rendering library are served locally by this site. Grid boundaries wrap. Internal-state view shows packed channels, not biological organs.</p><p>WebGL対応が必要です。速度は端末性能で変わり、非表示タブでは計算を停止します。動きを減らす設定が有効な端末では、一時停止状態で開始します。</p>
+<h2 id="credits">出典・ライセンス / Credits</h2><p>Alexander Mordvintsev, Ettore Randazzo, Eyvind Niklasson, Michael Levin (2020), <a class="inline" href="https://distill.pub/2020/growing-ca/">Growing Neural Cellular Automata</a>。学習済みモデルと推論コードの作者に帰属します。本サイト用に操作画面と解説を作成しました。</p><ul class="refs"><li><a class="inline" href="https://github.com/distillpub/post--growing-ca">原研究の公開リポジトリ / Original repository</a></li><li><a class="inline" href="THIRD_PARTY_NOTICES.md">使用ファイルと変更内容 / Source and attribution details</a></li><li><a class="inline" href="licenses/APACHE-2.0.txt">推論コード / Apache 2.0</a> · <a class="inline" href="licenses/CC-BY-4.0.txt">リポジトリのコンテンツ / CC BY 4.0</a> · <a class="inline" href="licenses/TWGL-MIT.txt">TWGL / MIT</a></li></ul><p class="refs">hamzALIFE · <a class="inline" href="../privacy.html">Privacy</a></p></article></body></html>
