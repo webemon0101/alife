@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラングトンのアリ / Langton’s Ant — ALIFE図鑑</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Langton’s Ant simulator: explore simple turning rules, an emerging highway, and multicolor ants in your browser. ラングトンのアリをブラウザで実験。">
+<link rel="canonical" href="https://hamzworkerz.com/langtons-ant/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hamzworkerz.com/langtons-ant/">
+<meta property="og:title" content="ラングトンのアリ / Langton’s Ant — ALIFE図鑑">
+<meta property="og:description" content="Langton’s Ant simulator: explore simple turning rules, an emerging highway, and multicolor ants in your browser. ラングトンのアリをブラウザで実験。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ラングトンのアリ / Langton’s Ant — ALIFE図鑑">
+<meta name="twitter:description" content="Langton’s Ant simulator: explore simple turning rules, an emerging highway, and multicolor ants in your browser. ラングトンのアリをブラウザで実験。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; position:relative; min-width:0;
+    background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+  }
+  #canvas{ display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+  #fps{ position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162; pointer-events:none; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  #menuToggle{
+    display:none; position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--panel-border);
+    color:var(--text); font-size:19px;
+    align-items:center; justify-content:center; cursor:pointer;
+  }
+  #sidebarBackdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40;
+  }
+  @media (max-width: 760px){
+    #menuToggle{ display:flex; }
+    #sidebar{
+      position:fixed; top:0; right:0; height:100%;
+      width:82vw; max-width:340px;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:50;
+      box-shadow:-10px 0 30px rgba(0,0,0,0.5);
+    }
+    #sidebar.open{ transform:translateX(0); }
+    #sidebarBackdrop.open{ display:block; }
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:44px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+
+#app{height:100dvh}#stats{position:absolute;top:16px;left:16px;right:64px;color:var(--text-dim);font-size:12px;pointer-events:none}#transport{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;width:min(90%,340px)}#transport button{min-height:44px}#sidebar label{display:block;font-size:12px;margin:10px 0 8px}#sidebar input[type=range]{display:block;width:100%;margin:0;min-height:24px}#sidebar .check{display:flex;align-items:center;gap:8px}#sidebar button{min-height:38px}#highway{margin-top:8px}.links{display:flex;justify-content:space-between;gap:10px;margin-bottom:14px}.links a{font-size:11px}a{color:var(--accent);text-decoration:none}#rule{min-width:0;width:55%;background:var(--bg);color:var(--text);border:1px solid var(--panel-border);border-radius:6px;padding:8px;font:13px monospace;text-transform:uppercase}#legend{display:flex;gap:8px;flex-wrap:wrap}#legend span{font:12px monospace;border-bottom:4px solid;padding:4px}#notice{font-size:12px;color:var(--accent2);line-height:1.6;margin:8px 0 0}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}@media(max-width:760px){#sidebar{padding-top:66px;width:88vw}}@media(prefers-reduced-motion:reduce){#sidebar{transition:none}}
+</style>
+</head>
+<body>
+<div id="app">
+<button id="menuToggle" aria-label="設定 / Settings" aria-controls="sidebar" aria-expanded="false">⚙</button><div id="sidebarBackdrop"></div>
+<main id="stage"><canvas id="canvas" aria-label="ラングトンのアリの軌跡 / Langton's Ant simulation"></canvas><div id="stats"></div><div id="transport"><button id="play" class="primary">⏸ Pause / 一時停止</button><button id="step">1 step / 1歩</button></div></main>
+<aside id="sidebar">
+<div><div class="links"><a href="../index.html">← 図鑑 / Gallery</a><a href="about.html">解説 / About →</a></div><h1>ラングトンのアリ</h1><p class="sub" lang="en">Langton’s Ant</p><p class="sub">右か左か、それだけのルールから複雑な軌跡と「高速道路」が生まれます。</p></div>
+<div class="card"><h2>初期状態 / Start</h2><button id="reset">リセット / Reset</button><button id="highway">高速道路へ / Jump to highway</button><p class="note">基本ルール RL の白紙から12,000歩を計算して、一時停止します。</p></div>
+<div class="card"><h2>ルール / Rules</h2><label for="preset">プリセット / Preset</label><select id="preset"><option value="RL">RL — 基本 / Classic</option><option value="LLRR">LLRR — 4色 / 4 colors</option><option value="LRRRRRLLR">LRRRRRLLR — 9色 / 9 colors</option><option value="custom">カスタム / Custom</option></select><label for="rule">R: 右 / Right · L: 左 / Left</label><div class="btnrow"><input id="rule" value="RL" maxlength="12" spellcheck="false" autocomplete="off" aria-describedby="ruleHelp"><button id="apply">適用 / Apply</button></div><p id="ruleHelp" class="note">R・Lを2〜12文字。適用すると盤面がリセットされます。<br>Enter 2–12 R/L characters; applying resets the board.</p><div id="legend"></div><p id="notice" role="status"></p></div>
+<div class="card"><h2>表示と速度 / View &amp; Speed</h2><label for="speed">速度 / Steps per second: <span id="speedValue"></span></label><input id="speed" type="range" min="0" max="4" step="0.1" value="2.5"><label for="zoom">セルの大きさ / Cell size</label><input id="zoom" type="range" min="1" max="24" value="6"><label class="check"><input id="follow" type="checkbox" checked> アリを追う / Follow ant</label><div class="btnrow"><button id="fit">全体を見る / Fit</button><button id="save">PNG保存 / Save</button></div></div>
+<div class="card"><h2>操作 / Interaction</h2><label for="tool">キャンバス操作 / Canvas tool</label><select id="tool"><option value="pan">ドラッグで移動 / Pan</option><option value="draw">色を描く / Paint</option><option value="erase">消す / Erase</option></select><p class="note">描画すると一時停止。色は状態1です。ホイールで拡大縮小。<br>Painting pauses the simulation and sets state 1. Scroll to zoom.</p></div>
+<div class="card"><h2>仕組み / How it works</h2><p class="note">今いるセルの色で90°回転 → 色を次へ → 1歩進む。基本のRLでは白で右、黒で左。表示は暗い背景と明るい軌跡で表現しています。<br>Turn, change the cell’s color, then move forward. The classic rule turns right on white, left on black.</p></div>
+<div class="footer-note">hamzALIFE — Langton’s Ant · <a href="../privacy.html">Privacy</a></div>
+</aside></div><script>class AntWorld {
+  constructor(rule='RL'){if(!/^[RL]{2,12}$/.test(rule))throw Error('Invalid rule');this.rule=rule;this.cells=new Map();this.x=0;this.y=0;this.dir=0;this.steps=0;}
+  get(x,y){return this.cells.get(`${x},${y}`)||0;}
+  set(x,y,v){const key=`${x},${y}`;if(v)this.cells.set(key,v);else this.cells.delete(key);}
+  step(){const state=this.get(this.x,this.y);this.dir=(this.dir+(this.rule[state]==='R'?1:3))%4;this.set(this.x,this.y,(state+1)%this.rule.length);this.x += [0,1,0,-1][this.dir];this.y += [-1,0,1,0][this.dir];this.steps++;}
+  advance(n){for(let i=0;i<n;i++)this.step();}
+}
+
+const $=id=>document.getElementById(id), canvas=$('canvas'),ctx=canvas.getContext('2d');
+let world=new AntWorld(),paused=matchMedia('(prefers-reduced-motion: reduce)').matches,scale=6,cx=0,cy=0,last=0,credit=0;
+const colors=['#10151e','#5ad1c7','#e0a55a','#9c8ae8','#ed798c','#78a9ef','#dae278','#ec9ed8','#79cf95','#d6a47f','#81d8e4','#e7eaf1'];
+function pause(value){paused=value;credit=0;$('play').textContent=paused?'▶ Play / 再生':'⏸ Pause / 一時停止';}
+function legend(){$('legend').replaceChildren();[...world.rule].forEach((r,i)=>{let s=document.createElement('span');s.textContent=`${i}: ${r}`;s.style.borderColor=colors[i];$('legend').append(s);});}
+function reset(rule=world.rule){world=new AntWorld(rule);cx=cy=0;credit=0;$('rule').value=rule;$('notice').textContent='';legend();draw();}
+function draw(){const w=canvas.clientWidth,h=canvas.clientHeight;if($('follow').checked){cx=world.x;cy=world.y;}ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.fillStyle=colors[0];ctx.fillRect(0,0,w,h);for(const [key,state] of world.cells){const [x,y]=key.split(',').map(Number);const px=(x-cx)*scale+w/2,py=(y-cy)*scale+h/2;if(px+scale<0||py+scale<0||px>w||py>h)continue;ctx.fillStyle=colors[state];ctx.fillRect(px,py,scale+.15,scale+.15);}if(scale>=12){ctx.strokeStyle='#ffffff0b';ctx.beginPath();for(let x=((w/2-cx*scale)%scale+scale)%scale;x<w;x+=scale){ctx.moveTo(x,0);ctx.lineTo(x,h);}for(let y=((h/2-cy*scale)%scale+scale)%scale;y<h;y+=scale){ctx.moveTo(0,y);ctx.lineTo(w,y);}ctx.stroke();}ctx.save();ctx.translate((world.x-cx+.5)*scale+w/2,(world.y-cy+.5)*scale+h/2);ctx.rotate(world.dir*Math.PI/2);const a=Math.max(4,scale*.65);ctx.beginPath();ctx.moveTo(0,-a);ctx.lineTo(a*.7,a*.7);ctx.lineTo(-a*.7,a*.7);ctx.closePath();ctx.fillStyle='#ff6578';ctx.fill();ctx.strokeStyle='#0b0d12';ctx.stroke();ctx.restore();$('stats').textContent=`${world.steps.toLocaleString()} steps · (${world.x}, ${world.y}) · ${world.rule}`;}
+function resize(){canvas.width=Math.round(canvas.clientWidth*devicePixelRatio);canvas.height=Math.round(canvas.clientHeight*devicePixelRatio);draw();}new ResizeObserver(resize).observe($('stage'));
+function fit(){$('follow').checked=false;let minX=world.x,maxX=world.x,minY=world.y,maxY=world.y;for(const key of world.cells.keys()){const [x,y]=key.split(',').map(Number);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}cx=(minX+maxX+1)/2;cy=(minY+maxY+1)/2;scale=Math.max(.1,Math.min(16,(canvas.clientWidth-40)/(maxX-minX+12),(canvas.clientHeight-160)/(maxY-minY+12)));$('zoom').value=Math.max(1,scale);draw();}
+$('play').onclick=()=>pause(!paused);$('step').onclick=()=>{pause(true);world.step();draw();};$('reset').onclick=()=>reset();
+$('highway').onclick=()=>{pause(true);$('preset').value='RL';reset('RL');world.advance(12000);fit();};
+$('apply').onclick=()=>{const rule=$('rule').value.trim().toUpperCase();if(!/^[RL]{2,12}$/.test(rule)){$('notice').textContent='R・Lを2〜12文字入力してください / Use 2–12 R/L characters.';return;}$('preset').value=[...$('preset').options].some(o=>o.value===rule)?rule:'custom';reset(rule);};
+$('preset').onchange=()=>{if($('preset').value!=='custom')reset($('preset').value);else $('rule').focus();};
+$('rule').onkeydown=e=>{if(e.key==='Enter')$('apply').click();};
+function speed(){return Math.round(10**Number($('speed').value));}$('speed').oninput=()=>{$('speedValue').textContent=speed().toLocaleString();};$('speed').oninput();
+$('zoom').oninput=()=>{scale=Number($('zoom').value);draw();};$('follow').onchange=draw;$('fit').onclick=fit;
+$('save').onclick=()=>{draw();canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`langtons-ant-${world.steps}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});};
+let pointer=null;
+function paint(e){const r=canvas.getBoundingClientRect(),x=Math.floor((e.clientX-r.left-r.width/2)/scale+cx),y=Math.floor((e.clientY-r.top-r.height/2)/scale+cy);world.set(x,y,$('tool').value==='erase'?0:1);draw();}
+canvas.onpointerdown=e=>{if(e.button!==0)return;canvas.setPointerCapture(e.pointerId);pointer={x:e.clientX,y:e.clientY};if($('tool').value==='pan')$('follow').checked=false;else{pause(true);paint(e);}};
+canvas.onpointermove=e=>{if(!pointer)return;if($('tool').value==='pan'){cx-=(e.clientX-pointer.x)/scale;cy-=(e.clientY-pointer.y)/scale;draw();}else paint(e);pointer={x:e.clientX,y:e.clientY};};canvas.onpointerup=canvas.onpointercancel=()=>pointer=null;
+canvas.addEventListener('wheel',e=>{e.preventDefault();scale=Math.max(.1,Math.min(24,scale*(e.deltaY<0?1.15:1/1.15)));$('zoom').value=Math.max(1,scale);draw();},{passive:false});
+function menu(open){$('sidebar').classList.toggle('open',open);$('sidebarBackdrop').classList.toggle('open',open);$('menuToggle').setAttribute('aria-expanded',String(open));const mobile=matchMedia('(max-width:760px)').matches;$('sidebar').inert=mobile&&!open;}
+$('menuToggle').onclick=()=>menu(!$('sidebar').classList.contains('open'));$('sidebarBackdrop').onclick=()=>menu(false);window.addEventListener('keydown',e=>{if(e.key==='Escape'){menu(false);$('menuToggle').focus();}});window.addEventListener('resize',()=>menu(false));menu(false);
+document.addEventListener('visibilitychange',()=>{last=0;credit=0;});
+function frame(t){const dt=last?Math.min((t-last)/1000,.1):0;last=t;if(!paused&&!document.hidden){credit+=dt*speed();const n=Math.floor(credit);credit-=n;world.advance(n);if(world.cells.size>250000){pause(true);$('notice').textContent='描画セルが25万に達したため一時停止 / Paused at 250,000 active cells.';}draw();}requestAnimationFrame(frame);}legend();pause(paused);resize();requestAnimationFrame(frame);
+</script></body></html>

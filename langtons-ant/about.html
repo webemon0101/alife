@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラングトンのアリ / Langton’s Ant — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Learn how Langton’s Ant turns simple local rules into complex paths. ラングトンのアリのルール、高速道路、多色への拡張を解説。">
+<link rel="canonical" href="https://hamzworkerz.com/langtons-ant/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/langtons-ant/about.html">
+<meta property="og:title" content="ラングトンのアリ / Langton’s Ant — 使い方・理論背景">
+<meta property="og:description" content="Learn how Langton’s Ant turns simple local rules into complex paths. ラングトンのアリのルール、高速道路、多色への拡張を解説。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ラングトンのアリ / Langton’s Ant — 使い方・理論背景">
+<meta name="twitter:description" content="Learn how Langton’s Ant turns simple local rules into complex paths. ラングトンのアリのルール、高速道路、多色への拡張を解説。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article>
+<h1>ラングトンのアリ</h1><p class="lead">Langton’s Ant — 単純なルールから生まれる複雑さ</p>
+<h2>使い方 / Getting started</h2><p>アリは白紙の原点から上向きに出発します。「1歩」で変化を追い、速度を上げて長い時間の挙動を観察してください。「高速道路へ」は基本ルールの白紙から12,000歩を実際に計算し、全体が見える状態で停止します。</p>
+<p lang="en">Start with a blank grid and an ant facing up. Use “1 step” to inspect each move, or increase the speed. “Jump to highway” runs the classic rule for 12,000 steps from a fresh blank grid, fits the pattern, and pauses.</p>
+<ul><li>ドラッグで表示位置を移動。追跡をオンにするとアリが中央に戻ります。 / Drag to pan; enable Follow ant to keep the ant centered.</li><li>描画・消去で盤面を変更すると停止します。再生すると変更した盤面から続きます。 / Paint or erase to pause and edit the landscape, then resume.</li><li>プリセットやカスタムルールの適用、リセットは盤面と歩数を初期化します。 / Applying a rule or resetting clears the board and step count.</li><li>スマートフォンでは右上の⚙で設定を開きます。 / On mobile, open settings with ⚙.</li></ul>
+<h2>基本ルール / The classic rule</h2><ol><li>現在のセルが白なら右へ90°、黒なら左へ90°回転。</li><li>現在のセルを白から黒、または黒から白に反転。</li><li>新しい向きへ1セル進む。</li></ol><p lang="en">Turn 90° right on white or left on black, flip the current cell, then move one cell forward. These deterministic rules alone generate the entire trajectory.</p>
+<p class="note">見やすさのため、白（状態0）は暗い背景、黒（状態1）はミント色で表示しています。ピンクの三角はアリの位置と向きです。 / For contrast, white cells appear dark and black cells appear mint. The pink triangle marks the ant and its heading.</p>
+<h2>高速道路 / The highway</h2><p>白紙から始めた基本ルールでは、入り組んだ軌跡を作った後に、斜め方向へ伸びる規則的な道が現れます。この段階では104歩ごとに同じ動作を繰り返し、位置が斜めに2セルずつ移動します。道そのものを描く命令はありません。アリが書き換えた環境が、その後の動きを決めています。</p><p lang="en">From a blank grid, the classic ant eventually builds a diagonal highway. A 104-step sequence repeats, translating the ant by two cells along each axis. The highway is an emergent result of the ant interacting with the cells it has changed.</p>
+<p>盤面を編集した場合や多色ルールでは、同じ道ができるとは限りません。</p>
+<h2>多色への拡張 / Multicolor rules</h2><p>文字列の各文字が、対応する色での回転方向を表します。例えば <code>LLRR</code> は状態0・1で左、状態2・3で右。回転後にセルの色を1つ進め、最後の色からは状態0に戻ります。2〜12色を試せます。</p><div class="eqn">direction ← direction + turn[color]<br>color ← (color + 1) mod number_of_colors<br>position ← position + forward(direction)</div><p lang="en">Each R or L specifies the turn for one color. After turning, advance the color cyclically and move forward. Try the presets or enter your own sequence of 2–12 R/L characters.</p>
+<h2>この実装について / Implementation</h2><p>端を反対側につなぐ方式ではなく、必要なセルだけを保存して平面を広げます。表示範囲の外でも同じルールで計算を続けます。長時間の実行で端末が重くなりすぎないよう、状態0以外のセルが25万を超えると一時停止します。端末の性能によって実際の速度は設定値を下回る場合があります。</p><p lang="en">The grid grows as needed without wrapping at the screen edges. The simulation pauses after exceeding 250,000 nonzero cells. Actual speed depends on your device.</p>
+<h2>参考資料 / References</h2><ul class="refs"><li><a class="inline" href="https://arxiv.org/abs/nlin/0306022">Gajardo, Moreira &amp; Goles — Complexity of Langton’s Ant</a></li><li><a class="inline" href="https://golly.sourceforge.io/Help/Algorithms/RuleLoader.html">Golly — RuleLoader / Langtons-Ant</a></li></ul><p class="refs">hamzALIFE · <a class="inline" href="../privacy.html">Privacy</a></p></article></body></html>
