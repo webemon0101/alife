@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>捕食者・被食者 / Flocking &amp; Food — ALIFE Collection</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Explore a predator-prey ecosystem with flocking, food regrowth, energy and reproduction. 群れ・採食・捕食から生まれる個体数変化を実験。">
+<link rel="canonical" href="https://hamzworkerz.com/predator-prey/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hamzworkerz.com/predator-prey/">
+<meta property="og:title" content="捕食者・被食者 / Flocking &amp; Food — ALIFE Collection">
+<meta property="og:description" content="Explore a predator-prey ecosystem with flocking, food regrowth, energy and reproduction. 群れ・採食・捕食から生まれる個体数変化を実験。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="捕食者・被食者 / Flocking &amp; Food — ALIFE Collection">
+<meta name="twitter:description" content="Explore a predator-prey ecosystem with flocking, food regrowth, energy and reproduction. 群れ・採食・捕食から生まれる個体数変化を実験。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; position:relative; min-width:0;
+    background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+  }
+  #canvas{ display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+  #fps{ position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162; pointer-events:none; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  #menuToggle{
+    display:none; position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--panel-border);
+    color:var(--text); font-size:19px;
+    align-items:center; justify-content:center; cursor:pointer;
+  }
+  #sidebarBackdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40;
+  }
+  @media (max-width: 760px){
+    #menuToggle{ display:flex; }
+    #sidebar{
+      position:fixed; top:0; right:0; height:100%;
+      width:82vw; max-width:340px;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:50;
+      box-shadow:-10px 0 30px rgba(0,0,0,0.5);
+    }
+    #sidebar.open{ transform:translateX(0); }
+    #sidebarBackdrop.open{ display:block; }
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:44px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+#app{height:100dvh}#stats{position:absolute;top:16px;left:16px;right:66px;color:var(--text-dim);font-size:12px;pointer-events:none;line-height:1.7}#transport{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;width:min(90%,340px)}#transport button{min-height:44px}#sidebar label{display:block;font-size:12px;margin:10px 0 8px}#sidebar input[type=range]{display:block;width:100%;margin:0;min-height:24px}#sidebar .check{display:flex;align-items:center;gap:8px}#sidebar button{min-height:38px}.links{display:flex;justify-content:space-between;gap:10px;margin-bottom:14px}.links a{font-size:11px}a{color:var(--accent);text-decoration:none}#seed{display:block;width:100%;background:var(--bg);color:var(--text);border:1px solid var(--panel-border);border-radius:6px;padding:8px;font:13px monospace;margin-bottom:8px}#notice{font-size:12px;color:var(--accent2);line-height:1.6;margin:8px 0 0}#chart{display:block;width:100%;height:auto;margin-top:10px}.legend{display:flex;gap:7px;flex-wrap:wrap;font-size:10px}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}@media(max-width:760px){#sidebar{padding-top:66px;width:88vw}}@media(prefers-reduced-motion:reduce){#sidebar{transition:none}}</style>
+</head>
+<body><div id="app"><button id="menuToggle" aria-label="設定 / Settings" aria-controls="sidebar" aria-expanded="false">⚙</button><div id="sidebarBackdrop"></div>
+<main id="stage"><canvas id="canvas" aria-label="捕食者・被食者の生態系 / Predator-prey ecosystem"></canvas><div id="stats"></div><div id="transport"><button id="play" class="primary">⏸ 一時停止 / Pause</button><button id="step">1ステップ / Step</button></div></main>
+<aside id="sidebar"><div><div class="links"><a href="../index.html">← 図鑑 / Gallery</a><a href="about.html">解説 / About →</a></div><h1>捕食者・被食者モデル</h1><p class="sub" lang="en">Flocking &amp; Food / Predator–Prey</p><p class="sub">餌を探す群れと、それを追う捕食者。採食・繁殖・飢餓が個体数を変えます。</p></div>
+<div class="card"><h2>個体数の推移 / Populations</h2><div class="legend"><span style="color:#5ad1c7">▲ 被食者 / Prey</span><span style="color:#f48478">◆ 捕食者 / Predators</span><span style="color:#e0bf64">● 餌 / Food</span></div><canvas id="chart" width="560" height="220" aria-label="被食者・捕食者の個体数グラフ / Population history"></canvas><p class="note">縦軸: 個体数（共通尺度）・横軸: 直近180秒<br>Population counts on a shared scale; last 180 simulated seconds.</p><p id="notice" role="status"></p></div>
+<div class="card"><h2>初期条件 / Starting conditions</h2><label for="preset">シナリオ / Scenario</label><select id="preset"><option value="ecosystem">生態系 / Ecosystem</option><option value="forage">捕食者なし / Foraging only</option><option value="scarce">餌不足 / Scarce food</option></select><label for="seed">乱数シード / Random seed</label><input id="seed" type="number" min="0" max="4294967295" step="1" value="42"><button id="reset">初期化 / Restart</button><p class="note">同じ設定・シード・操作順なら同じ計算結果。<br>Same seed, settings and simulation-step inputs reproduce the run.</p></div>
+<div class="card"><h2>パラメータ / Parameters</h2><label for="regrow">餌の再生時間 / Regrowth: <span id="regrowValue"></span>s</label><input id="regrow" type="range" min="5" max="60" value="18"><label for="flock">群れの強さ / Flocking: <span id="flockValue"></span></label><input id="flock" type="range" min="0" max="3" step="0.1" value="1"><label for="fear">逃避の強さ / Escape: <span id="fearValue"></span></label><input id="fear" type="range" min="0" max="3" step="0.1" value="1.5"><label for="birth">被食者の繁殖率 / Prey birth rate: <span id="birthValue"></span>/s</label><input id="birth" type="range" min="0" max="0.2" step="0.01" value="0.08"><p class="note">繁殖には十分なエネルギーと待ち時間も必要。<br>Birth also requires sufficient energy and a cooldown.</p></div>
+<div class="card"><h2>操作 / Interaction</h2><label for="tool">クリック・ドラッグ / Click or drag</label><select id="tool"><option value="food">餌を補充 / Add food</option><option value="prey">被食者を追加 / Add prey</option><option value="predators">捕食者を追加 / Add predator</option></select><label for="speed">実行速度 / Simulation speed</label><select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select><label class="check"><input id="energy" type="checkbox"> エネルギー表示 / Show energy</label><button id="save">PNG保存 / Save PNG</button></div>
+<div class="card"><h2>観察のヒント / Explore</h2><p class="note">餌を増やすと必ず共存できるでしょうか。群れの強さや逃げ方を変えて、個体数の推移を比べてみてください。絶滅した種は自動復活しません。<br>Does more food always ensure coexistence? Compare flocking and escape settings. Extinct species do not respawn automatically.</p></div>
+<div class="footer-note">hamzALIFE — Predator–Prey · <a href="../privacy.html">Privacy</a></div></aside></div><script>class Ecosystem {
+  constructor({seed=42,prey=120,predators=8,regrow=18,flock=1,fear=1.5,birth=.08}={}) {
+    this.w=1000;this.h=720;this.seed=seed>>>0;this.params={regrow,flock,fear,birth};
+    this.prey=[];this.predators=[];this.food=[];this.time=0;this.nextId=0;
+    this.counts={born:0,caught:0,starved:0};this.caps={prey:360,predators:60};
+    for(let y=0;y<18;y++)for(let x=0;x<25;x++)this.food.push({x:(x+.5)*40,y:(y+.5)*40,ready:this.random()>.35?1:this.random()});
+    for(let i=0;i<prey;i++)this.add('prey');for(let i=0;i<predators;i++)this.add('predators');
+  }
+  random(){this.seed=(Math.imul(1664525,this.seed)+1013904223)>>>0;return this.seed/4294967296;}
+  delta(v,size){return v-Math.round(v/size)*size;}
+  offset(a,b){return [this.delta(b.x-a.x,this.w),this.delta(b.y-a.y,this.h)];}
+  add(kind,x=this.random()*this.w,y=this.random()*this.h,energy=kind==='prey'?50:75){
+    if(this[kind].length>=this.caps[kind])return null;
+    const angle=this.random()*Math.PI*2,speed=kind==='prey'?42:53;
+    const a={id:this.nextId++,x:(x%this.w+this.w)%this.w,y:(y%this.h+this.h)%this.h,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,energy,age:0,cool:0,birthCool:10,dead:false};
+    this[kind].push(a);return a;
+  }
+  hash(list){const bins=Array.from({length:180},()=>[]);for(const a of list)bins[Math.floor(a.y/60)*15+Math.min(14,Math.floor(a.x/(this.w/15)))].push(a);return bins;}
+  nearby(hash,a,r){const out=[],cw=this.w/15,cx=Math.floor(a.x/cw),cy=Math.floor(a.y/60),nx=Math.ceil(r/cw),ny=Math.ceil(r/60);for(let y=-ny;y<=ny;y++)for(let x=-nx;x<=nx;x++)out.push(...hash[((cy+y+12)%12)*15+(cx+x+15)%15]);return out;}
+  foodNear(a,r){const out=[],cx=Math.floor(a.x/40),cy=Math.floor(a.y/40),n=Math.ceil(r/40);for(let dy=-n;dy<=n;dy++)for(let dx=-n;dx<=n;dx++)out.push(this.food[((cy+dy+18)%18)*25+(cx+dx+25)%25]);return out;}
+  foodBrush(x,y){const a={x,y};for(const f of this.foodNear(a,65)){const [dx,dy]=this.offset(a,f);if(dx*dx+dy*dy<65**2)f.ready=1;}}
+  steer(a,kind,preyHash,predHash){
+    let ax=(this.random()-.5)*18,ay=(this.random()-.5)*18;
+    const pull=(dx,dy,weight)=>{const d=Math.hypot(dx,dy);if(d>1e-8){ax+=dx/d*weight;ay+=dy/d*weight;}};
+    if(kind==='prey'){
+      let n=0,cx=0,cy=0,vx=0,vy=0,sx=0,sy=0;
+      for(const b of this.nearby(preyHash,a,65)){if(a.id===b.id)continue;const [dx,dy]=this.offset(a,b),d2=dx*dx+dy*dy;if(d2<65**2){n++;cx+=dx;cy+=dy;vx+=b.vx;vy+=b.vy;if(d2<22**2&&d2>0){sx-=dx/d2;sy-=dy/d2;}}}
+      if(n){pull(cx/n,cy/n,12*this.params.flock);pull(vx/n-a.vx,vy/n-a.vy,22*this.params.flock);pull(sx,sy,38);}
+      let danger=false;for(const p of this.nearby(predHash,a,105)){const [dx,dy]=this.offset(a,p),d=Math.hypot(dx,dy);if(d<105){danger=true;pull(-dx,-dy,90*this.params.fear*(1-d/130));}}
+      let best=null,dist=100**2;for(const f of this.foodNear(a,100)){if(f.ready<1)continue;const [dx,dy]=this.offset(a,f),d=dx*dx+dy*dy;if(d<dist){dist=d;best=[dx,dy];}}
+      if(best)pull(...best,danger?15:50);
+      return {ax,ay,speed:danger?60:42};
+    }
+    let target=null,dist=150**2;for(const b of this.nearby(preyHash,a,150)){const [dx,dy]=this.offset(a,b),d=dx*dx+dy*dy;if(d<dist){dist=d;target=[dx,dy];}}
+    if(target)pull(...target,80);
+    for(const p of this.nearby(predHash,a,25)){if(p.id===a.id)continue;const [dx,dy]=this.offset(a,p),d=Math.hypot(dx,dy);if(d>0&&d<25)pull(-dx,-dy,20);}
+    return {ax,ay,speed:target?68:53};
+  }
+  step(dt=1/30){
+    if(!Number.isFinite(dt)||dt<=0||dt>.1)throw Error('Invalid timestep');
+    const preyHash=this.hash(this.prey),predHash=this.hash(this.predators);
+    // Read a common position/velocity snapshot, then integrate all agents.
+    const moves=[];for(const kind of ['prey','predators'])for(const a of this[kind])moves.push({a,kind,...this.steer(a,kind,preyHash,predHash)});
+    for(const {a,kind,ax,ay,speed} of moves){a.vx+=ax*dt;a.vy+=ay*dt;const v=Math.hypot(a.vx,a.vy);if(v>speed){a.vx=a.vx/v*speed;a.vy=a.vy/v*speed;}a.x=(a.x+a.vx*dt+this.w)%this.w;a.y=(a.y+a.vy*dt+this.h)%this.h;a.energy-=dt*(kind==='prey'?1:1.7);a.age+=dt;a.cool=Math.max(0,a.cool-dt);a.birthCool=Math.max(0,a.birthCool-dt);}
+    for(const f of this.food)f.ready=Math.min(1,f.ready+dt/this.params.regrow);
+    for(const a of this.prey){if(a.cool>0)continue;for(const f of this.foodNear(a,10)){const [dx,dy]=this.offset(a,f);if(f.ready>=1&&dx*dx+dy*dy<100){f.ready=0;a.energy=Math.min(130,a.energy+9);a.cool=1.5;break;}}}
+    const movedHash=this.hash(this.prey);
+    for(const p of this.predators){if(p.cool>0)continue;let target=null,dist=11**2;for(const a of this.nearby(movedHash,p,11)){if(a.dead)continue;const [dx,dy]=this.offset(p,a),d=dx*dx+dy*dy;if(d<dist){dist=d;target=a;}}if(target){target.dead=true;p.energy=Math.min(180,p.energy+40);p.cool=2.5;this.counts.caught++;}}
+    for(const kind of ['prey','predators']){
+      this[kind]=this[kind].filter(a=>{if(a.dead)return false;if(a.energy<=0){this.counts.starved++;return false;}return true;});
+      const children=[];
+      for(const a of this[kind]){const threshold=kind==='prey'?90:135,rate=kind==='prey'?this.params.birth:.035;if(this[kind].length+children.length<this.caps[kind]&&a.age>=10&&a.birthCool<=0&&a.energy>threshold&&this.random()<1-Math.exp(-rate*dt)){a.energy/=2;a.birthCool=12;children.push({x:a.x+8,y:a.y+8,energy:a.energy});}}
+      for(const child of children){this.add(kind,child.x,child.y,child.energy);this.counts.born++;}
+    }
+    this.time+=dt;
+  }
+}
+
+const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d'),chart=$('chart'),gc=chart.getContext('2d');
+let world,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,last=0,credit=0,history=[],nextSample=0,view={scale:1,x:0,y:0};
+function pause(value){paused=value;credit=0;$('play').textContent=paused?'▶ 再生 / Play':'⏸ 一時停止 / Pause';}
+function reset(){const seed=Number($('seed').value);$('seed').setCustomValidity('');if(!Number.isInteger(seed)||seed<0||seed>4294967295||$('seed').value===''){$('seed').setCustomValidity('シードは0〜4294967295の整数 / Enter a valid integer seed.');$('seed').reportValidity();return;}const options={seed,prey:120,predators:$('preset').value==='forage'?0:$('preset').value==='scarce'?12:8};for(const key of ['regrow','flock','fear','birth'])options[key]=Number($(key).value);world=new Ecosystem(options);history=[];nextSample=0;credit=0;sample();draw();}
+function sample(){if(world.time+1e-8>=nextSample){history.push({t:world.time,prey:world.prey.length,predators:world.predators.length});while(history.length>181)history.shift();nextSample++;}}
+function graph(){gc.fillStyle='#0b0f15';gc.fillRect(0,0,560,220);const max=Math.max(10,...history.map(p=>Math.max(p.prey,p.predators))),end=Math.max(180,world.time),start=end-180;gc.font='20px system-ui';gc.fillStyle='#8b93a3';gc.fillText(String(max),4,24);gc.fillText('0',12,195);gc.strokeStyle='#26303b';gc.beginPath();gc.moveTo(45,15);gc.lineTo(45,195);gc.lineTo(550,195);gc.stroke();for(const [key,color] of [['prey','#5ad1c7'],['predators','#f48478']]){gc.strokeStyle=color;gc.lineWidth=3;gc.beginPath();history.forEach((p,i)=>{const x=45+(p.t-start)/180*505,y=195-p[key]/max*170;i?gc.lineTo(x,y):gc.moveTo(x,y);});gc.stroke();}}
+function draw(){if(!world)return;const w=canvas.clientWidth,h=canvas.clientHeight;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.fillStyle='#080c12';ctx.fillRect(0,0,w,h);view.scale=Math.min((w-20)/world.w,(h-140)/world.h);view.x=(w-world.w*view.scale)/2;view.y=(h-world.h*view.scale)/2;ctx.save();ctx.translate(view.x,view.y);ctx.scale(view.scale,view.scale);ctx.fillStyle='#101923';ctx.fillRect(0,0,world.w,world.h);for(const f of world.food){ctx.fillStyle=f.ready>=1?'#d6bc65':'#334335';ctx.beginPath();ctx.arc(f.x,f.y,f.ready>=1?Math.max(3.2,1.3/view.scale):1.2,0,Math.PI*2);ctx.fill();}for(const [kind,color] of [['prey','#5ad1c7'],['predators','#f48478']])for(const a of world[kind]){ctx.save();ctx.translate(a.x,a.y);ctx.rotate(Math.atan2(a.vy,a.vx));const markerScale=Math.max(1,.7/view.scale);ctx.scale(markerScale,markerScale);ctx.fillStyle=color;ctx.beginPath();if(kind==='prey'){ctx.moveTo(7,0);ctx.lineTo(-5,4);ctx.lineTo(-3,0);ctx.lineTo(-5,-4);}else{ctx.moveTo(10,0);ctx.lineTo(-1,6);ctx.lineTo(-7,0);ctx.lineTo(-1,-6);}ctx.closePath();ctx.fill();ctx.restore();if($('energy').checked){ctx.fillStyle='#29303d';ctx.fillRect(a.x-7,a.y+9,14,2);ctx.fillStyle=color;ctx.fillRect(a.x-7,a.y+9,14*Math.min(1,a.energy/(kind==='prey'?130:180)),2);}}ctx.restore();const food=world.food.filter(f=>f.ready>=1).length;$('stats').textContent=`${world.time.toFixed(1)}s · Prey ${world.prey.length} · Predators ${world.predators.length} · Food ${food}`;let msg='';if(!world.prey.length&&!world.predators.length)msg='全個体がいなくなりました。追加または初期化できます。 / All animals extinct; add animals or restart.';else if(!world.prey.length)msg='被食者が絶滅 / Prey extinct';else if(!world.predators.length)msg='捕食者なし / No predators';else if(world.prey.length>=360||world.predators.length>=60)msg='個体数の上限に達しました / Population cap reached';$('notice').textContent=msg;graph();}
+for(const key of ['regrow','flock','fear','birth']){$(key).oninput=()=>{$(key+'Value').textContent=$(key).value;if(world)world.params[key]=Number($(key).value);};$(key).oninput();}
+$('preset').onchange=()=>{$('regrow').value=$('preset').value==='scarce'?45:18;$('regrow').oninput();reset();};$('reset').onclick=reset;$('play').onclick=()=>pause(!paused);$('step').onclick=()=>{pause(true);world.step();sample();draw();};$('energy').onchange=draw;
+function resize(){canvas.width=Math.round(canvas.clientWidth*devicePixelRatio);canvas.height=Math.round(canvas.clientHeight*devicePixelRatio);draw();}new ResizeObserver(resize).observe($('stage'));
+let pointer=false,lastPoint=null;
+function interact(e){const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left-view.x)/view.scale,y=(e.clientY-rect.top-view.y)/view.scale;if(x<0||y<0||x>=world.w||y>=world.h)return;if(lastPoint&&Math.hypot(x-lastPoint.x,y-lastPoint.y)<20)return;lastPoint={x,y};if($('tool').value==='food')world.foodBrush(x,y);else world.add($('tool').value,x,y);draw();}
+canvas.onpointerdown=e=>{if(e.button!==0)return;pointer=true;lastPoint=null;canvas.setPointerCapture(e.pointerId);interact(e);};canvas.onpointermove=e=>{if(pointer)interact(e);};canvas.onpointerup=canvas.onpointercancel=()=>{pointer=false;lastPoint=null;};
+$('save').onclick=()=>{draw();canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`predator-prey-${Math.floor(world.time)}s.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});};
+function menu(open){$('sidebar').classList.toggle('open',open);$('sidebarBackdrop').classList.toggle('open',open);$('menuToggle').setAttribute('aria-expanded',String(open));$('sidebar').inert=matchMedia('(max-width:760px)').matches&&!open;}$('menuToggle').onclick=()=>menu(!$('sidebar').classList.contains('open'));$('sidebarBackdrop').onclick=()=>menu(false);window.addEventListener('keydown',e=>{if(e.key==='Escape'){menu(false);$('menuToggle').focus();}});window.addEventListener('resize',()=>menu(false));document.addEventListener('visibilitychange',()=>{last=0;credit=0;});
+function frame(t){const dt=last?Math.min(.1,(t-last)/1000):0;last=t;if(!paused&&!document.hidden){credit+=dt*Number($('speed').value);let n=0;while(credit>=1/30&&n<12){world.step();credit-=1/30;sample();n++;}draw();}requestAnimationFrame(frame);}reset();pause(paused);menu(false);resize();requestAnimationFrame(frame);
+</script></body></html>

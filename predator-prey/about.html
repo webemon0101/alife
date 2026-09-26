@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>捕食者・被食者 / Predator–Prey — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="How flocking, feeding, reproduction and starvation shape this browser ecosystem. 捕食者・被食者モデルの使い方と仕組み。">
+<link rel="canonical" href="https://hamzworkerz.com/predator-prey/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/predator-prey/about.html">
+<meta property="og:title" content="捕食者・被食者 / Predator–Prey — 使い方・理論背景">
+<meta property="og:description" content="How flocking, feeding, reproduction and starvation shape this browser ecosystem. 捕食者・被食者モデルの使い方と仕組み。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="捕食者・被食者 / Predator–Prey — 使い方・理論背景">
+<meta name="twitter:description" content="How flocking, feeding, reproduction and starvation shape this browser ecosystem. 捕食者・被食者モデルの使い方と仕組み。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article>
+<h1>捕食者・被食者モデル</h1><p class="lead">Flocking &amp; Food / Predator–Prey — 群れと食物連鎖</p>
+<h2>使い方 / Getting started</h2><p>ミント色の三角は被食者、サーモン色のひし形は捕食者、黄色い点は食べられる餌です。餌を食べて増える群れと、それを追いかける捕食者を観察してください。グラフには両者の個体数を共通の縦軸で表示します。</p><p lang="en">Mint triangles are prey, salmon diamonds are predators, and yellow dots are edible food. Watch foraging flocks and hunting predators, and compare their populations on the graph’s shared vertical scale.</p><ul><li>「生態系」は被食者120・捕食者8、「捕食者なし」は120・0、「餌不足」は120・12から開始します。餌の再生は通常18秒、餌不足では45秒です。 / Ecosystem starts with 120 prey and 8 predators; Foraging only with 120 and 0; Scarce food with 120 and 12. Food regrowth is 18 seconds normally or 45 seconds in the scarce scenario.</li><li>キャンバスのクリック・ドラッグで餌を補充したり、個体を追加できます。 / Click or drag to replenish food or introduce animals.</li><li>一時停止・1ステップ・速度変更で動きを調べられます。スマートフォンでは⚙で設定を開きます。 / Pause, step or change playback speed. On mobile, open settings with ⚙.</li><li>パラメータは即時反映されます。初期化は現在のパラメータとシードで再開します。シナリオ変更は初期個体数と餌の再生時間を切り替えて再開します。 / Parameters apply immediately. Restart uses the current parameters and seed; changing scenario resets initial populations and regrowth time.</li></ul>
+<h2>群れ・採食・逃避 / Flocking, foraging and escape</h2><p>被食者は近隣の仲間との分離・整列・結合を組み合わせ、近くの餌へ向かいます。捕食者が近づくと反対方向へ逃げ、最高速度が上がります。捕食者は近くの被食者を追い、接触すると捕食します。画面の端は反対側へつながっており、近隣の探索も境界をまたぎます。</p><p lang="en">Prey combine separation, alignment and cohesion with food seeking and predator avoidance. Predators pursue nearby prey and capture them at close range. The world wraps at its edges, including perception across the boundary.</p><p class="note">「群れの強さ」は整列と結合を調整します。個体の重なりを抑える分離は残ります。 / Flocking strength adjusts alignment and cohesion; short-range separation remains active.</p>
+<h2>エネルギーと繁殖 / Energy and reproduction</h2><p>被食者は毎秒1、捕食者は毎秒1.7のエネルギーを消費します。餌1個は被食者に9、捕食1回は捕食者に40を与えます。餌は食べると消費され、再生時間後に再び食べられます。エネルギーが尽きた個体は消えます。</p><p>被食者はエネルギー90超、捕食者は135超で繁殖可能になります。誕生から10秒以上かつ繁殖待ち時間が終わった個体について確率的に判定し、親のエネルギーを親子で半分ずつ分けます。繁殖後は12秒待ちます。</p><div class="eqn">P(birth during Δt) = 1 − exp(−rate × Δt)<br>E_parent ← E_parent / 2<br>E_child ← E_parent</div><p lang="en">Prey and predators spend energy continuously and regain it by feeding. Eligible, sufficiently energetic animals reproduce probabilistically, sharing their energy equally with offspring. Reproduction also has age and cooldown requirements; reaching zero energy causes death.</p><p>被食者の繁殖率はスライダー、捕食者の率は0.035/秒です。再生の遅い餌や過剰な捕食は個体数を減らす一方、繁殖が追いつけば増加します。共存や周期的な振動を保証するモデルではなく、絶滅も起こりえます。絶滅後の自動補充はありません。</p><p lang="en">Prey birth rate is adjustable; predator birth rate is 0.035 per second. Coexistence and population cycles are not guaranteed. Extinction is possible, and animals never respawn automatically.</p>
+<h2>モデルの位置づけ / What this model represents</h2><p>これはBoidsの群れ行動と、エネルギーで採食・繁殖・死亡を表す考え方を組み合わせた、この図鑑独自の教育用エージェントモデルです。Lotka–Volterra方程式の数値解や、実在する生態系の予測ではありません。群れや位置の違いも結果に影響します。</p><p lang="en">This educational agent model combines Boids-style movement with energy-based feeding, reproduction and death. It is not a numerical solution of the Lotka–Volterra equations or a forecast of a real ecosystem. Spatial interactions affect the outcome.</p>
+<h2>再現性と上限 / Reproducibility and limits</h2><p>内部の時間刻みは1/30秒です。同じシード・パラメータ・同じ計算ステップでの操作で結果を再現できます。上限は被食者360、捕食者60、餌450地点です。上限到達時はその種の新規追加と繁殖を止めるため、個体数変化に影響します。グラフは最大180秒分を保持します。端末が遅い場合、実際の進行速度が設定より低くなることがあります。</p><p lang="en">The model uses a fixed 1/30-second timestep and seeded randomness. Caps of 360 prey and 60 predators prevent further additions and births for that species; 450 food locations regrow in place. History retains up to 180 simulated seconds. Slow devices may run below the requested speed.</p>
+<h2>参考資料 / References</h2><ul class="refs"><li><a class="inline" href="https://www.red3d.com/cwr/boids/">Craig Reynolds — Boids</a></li><li><a class="inline" href="https://ccl.northwestern.edu/netlogo/models/WolfSheepPredation">Uri Wilensky / NetLogo — Wolf Sheep Predation</a></li></ul><p class="refs">hamzALIFE · <a class="inline" href="../privacy.html">Privacy</a></p></article></body></html>
