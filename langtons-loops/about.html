@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラングトンループ / Langton’s Loops — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Learn how eight-state cellular automata reproduce through local rules. ラングトンループの使い方、自己複製の仕組み、出典を解説。">
+<link rel="canonical" href="https://hamzworkerz.com/langtons-loops/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/langtons-loops/about.html">
+<meta property="og:title" content="ラングトンループ / Langton’s Loops — 使い方・理論背景">
+<meta property="og:description" content="Learn how eight-state cellular automata reproduce through local rules. ラングトンループの使い方、自己複製の仕組み、出典を解説。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ラングトンループ / Langton’s Loops — 使い方・理論背景">
+<meta name="twitter:description" content="Learn how eight-state cellular automata reproduce through local rules. ラングトンループの使い方、自己複製の仕組み、出典を解説。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article>
+<h1>ラングトンループ</h1><p class="lead">Langton’s Loops — 局所ルールが生み出す自己複製</p>
+<h2>使い方 / Getting started</h2><p>1つの輪から始まります。輪の内側を流れる色の変化と、外へ伸びる腕を観察してください。「1ステップ」で動きを追い、「+151ステップ」「+1,000ステップ」で計算を早送りします。早送り後は停止し、できた模様が見える倍率になります。</p>
+<p lang="en">Start with a single loop. Watch signals circulate and an arm extend to construct a daughter loop. Step through the process or fast-forward by 151 or 1,000 steps. Fast-forward computes every step, then pauses and fits the pattern.</p>
+<ul><li>移動：ドラッグで移動。ホイール、または設定の拡大率でズーム。 / Pan by dragging; zoom with the wheel or slider.</li><li>ループを置く：設定で向きを選び、十分に空いた場所をタップ。 / Choose a rotation and tap an empty area to place a loop.</li><li>削る・セルを描く：編集すると一時停止。再生で結果を確認。 / Erase or paint cells to pause and edit, then resume.</li><li>リセット：選択した初期配置へ戻ります。早送り中は計算を中止して戻ります。 / Reset restores the selected starting pattern and cancels fast-forward.</li><li>スマートフォンでは右上の⚙から設定を開きます。PNG保存は盤面全体を160 × 160ピクセルで保存します。 / Open settings with ⚙ on mobile. PNG export saves the entire 160 × 160 board.</li></ul>
+<h2>どんなモデル？ / The model</h2><p>Christopher G. Langtonが1984年に発表した、自己複製する2次元セルオートマトンです。各セルは0〜7の8状態を持ち、自分と上下左右のセルの状態から次の状態を決めます。全セルを同時に更新し、同じ規則を90°ずつ回した向きにも適用します。</p>
+<p lang="en">Introduced by Christopher G. Langton in 1984, this is an eight-state, two-dimensional cellular automaton. Every cell updates synchronously from its own state and its four orthogonal neighbors. The transition rules apply in all four rotations.</p>
+<div class="eqn">next(x, y) = rule(center, north, east, south, west)</div>
+<p>状態0は空間、状態2は外壁です。外壁に囲まれた経路を信号が巡り、腕を伸ばしたり曲げたりする過程を通じて、新たな輪が作られます。「完成した輪をコピーする」という命令はプログラムにありません。初期配置を置いた後は、セル単位の更新だけで複製が進みます。</p>
+<p lang="en">State 0 is empty space; state 2 forms the sheath. Signals traveling through the enclosed pathway control extension and turning. New loops arise from cell updates, without a command that copies completed organisms.</p>
+<h2>観察のヒント / What to look for</h2><p>輪を流れる信号、腕の成長、輪が閉じる瞬間を順に追ってください。増殖が進むと、周囲の輪や構造との接触で複製できない輪も現れます。少し削って壊れ方を比べたり、向きの違う2つのループを置いて、群体の広がり方を観察できます。</p>
+<p lang="en">Follow the circulating signals, the growing arm, and the closing of a new loop. Crowding can stop further reproduction. Try damage or two differently oriented seeds to see how the colony develops.</p>
+<p class="note">自己複製はしますが、このモデルには学習や突然変異による進化は組み込まれていません。編集した任意の模様が複製するとは限りません。表示のcellsは状態1〜7のセル数であり、個体数ではありません。</p>
+<p lang="en">Self-reproduction here does not include learning or evolutionary mutation. Arbitrary edited patterns may fail to reproduce. The “cells” counter counts nonzero cells, not individual loops.</p>
+<h2>この実装の範囲 / Implementation</h2><p>219個の遷移エントリと回転対称性を用い、初期ループは空間以外の86セルで構成しています。実験用の有限盤面は160 × 160セルで、外周の1セル幅は状態0に固定しています。端を反対側につなぎません。ルール表にない近傍は状態0へ移します。盤面の端や手動編集は、無限の空間での標準的な成長とは異なる結果を生むことがあります。</p>
+<p lang="en">The engine uses 219 transition entries with rotational symmetry and an 86-nonzero-cell seed. The finite 160 × 160 board has a one-cell border fixed at state 0, without wrapping. Unlisted neighborhoods become state 0. Boundaries and manual edits can change behavior compared with standard growth on an unbounded plane.</p>
+<p>実際の速度は端末の性能により設定値を下回る場合があります。別タブ表示中は通常の再生を止め、OSで動きを減らす設定がある場合は停止状態で開始します。</p>
+<p lang="en">Actual speed depends on the device. Normal playback suspends in hidden tabs. Reduced-motion preferences start the simulator paused.</p>
+<h2 id="credits">出典・ライセンス / Sources &amp; licenses</h2>
+<ul class="refs"><li>C. G. Langton (1984), <a class="inline" href="https://doi.org/10.1016/0167-2789(84)90256-2">Self-reproduction in cellular automata</a>, Physica D 10, 135–144.</li>
+<li>遷移ルールと初期配置は <a class="inline" href="https://github.com/lantunes/cellpylib">CellPyLib — Luis M. Antunes</a>（Apache-2.0）からデータを抽出し、JavaScript形式へ変換。ブラウザ用の計算処理・操作画面・解説はALIFE Collection向けに実装しました。</li>
+<li lang="en">Rule and seed data adapted from CellPyLib under Apache-2.0; extracted and reformatted for JavaScript. The browser engine, interface and guide were implemented for ALIFE Collection. No endorsement by the original authors is implied.</li>
+<li><a class="inline" href="THIRD_PARTY_NOTICES.md">詳しい出典・変更内容 / Attribution &amp; changes</a> · <a class="inline" href="LICENSE-CellPyLib.txt">Apache-2.0 license</a></li></ul>
+<p class="refs">hamzALIFE · <a class="inline" href="../privacy.html">Privacy</a></p></article></body></html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラングトンループ / Langton’s Loops — ALIFE Collection</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Explore Langton’s self-reproducing loops in your browser. Watch signals build a colony, place loops, and edit cells. ラングトンループの自己複製を実験。">
+<link rel="canonical" href="https://hamzworkerz.com/langtons-loops/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hamzworkerz.com/langtons-loops/">
+<meta property="og:title" content="ラングトンループ / Langton’s Loops — ALIFE Collection">
+<meta property="og:description" content="Explore Langton’s self-reproducing loops in your browser. Watch signals build a colony, place loops, and edit cells. ラングトンループの自己複製を実験。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ラングトンループ / Langton’s Loops — ALIFE Collection">
+<meta name="twitter:description" content="Explore Langton’s self-reproducing loops in your browser. Watch signals build a colony, place loops, and edit cells. ラングトンループの自己複製を実験。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; position:relative; min-width:0;
+    background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+  }
+  #canvas{ display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+  #fps{ position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162; pointer-events:none; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  #menuToggle{
+    display:none; position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--panel-border);
+    color:var(--text); font-size:19px;
+    align-items:center; justify-content:center; cursor:pointer;
+  }
+  #sidebarBackdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40;
+  }
+  @media (max-width: 760px){
+    #menuToggle{ display:flex; }
+    #sidebar{
+      position:fixed; top:0; right:0; height:100%;
+      width:82vw; max-width:340px;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:50;
+      box-shadow:-10px 0 30px rgba(0,0,0,0.5);
+    }
+    #sidebar.open{ transform:translateX(0); }
+    #sidebarBackdrop.open{ display:block; }
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:44px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+
+#app{height:100dvh}#stats{position:absolute;top:16px;left:16px;right:65px;color:var(--text-dim);font-size:12px;pointer-events:none;line-height:1.6}#stageHint{position:absolute;bottom:76px;left:12px;right:12px;text-align:center;font-size:11px;color:var(--text-dim);pointer-events:none}#transport{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;width:min(94%,410px)}#transport button{min-height:44px;padding:7px 5px}#sidebar label{display:block;font-size:12px;margin:10px 0 8px}#sidebar input[type=range]{display:block;width:100%;margin:0;min-height:28px}#sidebar button{min-height:38px}.links{display:flex;justify-content:space-between;gap:10px;margin-bottom:14px}.links a{font-size:11px}a{color:var(--accent);text-decoration:none}.space{margin-top:12px}#legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}#legend span{font:12px monospace;border-bottom:4px solid;padding:4px}#notice{font-size:12px;color:var(--accent2);line-height:1.6;margin:8px 0 0}button:disabled,select:disabled{opacity:.45;cursor:default}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}@media(max-width:760px){#sidebar{padding-top:66px;width:88vw}}@media(prefers-reduced-motion:reduce){#sidebar{transition:none}}
+</style>
+</head>
+<body>
+<button id="menuToggle" type="button" aria-label="設定 / Settings" aria-controls="sidebar" aria-expanded="false">⚙</button>
+<div id="sidebarBackdrop"></div>
+<div id="app">
+  <main id="stage" aria-label="シミュレーション / Simulation">
+    <canvas id="canvas" aria-label="ラングトンループの盤面。移動、ループ配置、セル編集ができます。">Canvas対応ブラウザが必要です。 / Canvas is required.</canvas>
+    <div id="stats"></div>
+    <div id="stageHint">ドラッグで移動 · ホイールで拡大 / Drag to pan · Scroll to zoom</div>
+    <div id="transport"><button id="play" class="primary">一時停止 / Pause</button><button id="step">1ステップ / Step</button><button id="reset">リセット / Reset</button></div>
+  </main>
+  <aside id="sidebar" aria-label="設定 / Settings">
+    <div><div class="links"><a href="../index.html">← 図鑑 / Gallery</a><a href="about.html">使い方・解説 / Guide →</a></div>
+      <h1>ラングトンループ</h1><p class="sub">Langton’s Loops · Self-reproducing cellular automaton</p></div>
+    <div class="card"><h2>自己複製 / Self-reproduction</h2>
+      <p class="note">輪を巡る信号が腕を伸ばし、次の輪を組み立てます。8つの状態と、隣接セルのルールだけで生まれる自己複製。</p>
+      <p class="note" lang="en">Signals circulate, extend an arm, and build another loop. Watch local rules grow a colony.</p>
+      <label for="preset">初期配置 / Starting pattern</label><select id="preset"><option value="single">1つのループ / Single loop</option><option value="pair">2つのループ / Two loops</option></select>
+      <label for="speed">速度 / Steps per second</label><select id="speed"><option value="10">10 · ゆっくり / Slow</option><option value="60" selected>60 · 標準 / Normal</option><option value="200">200 · 速い / Fast</option><option value="600">600 · 高速 / Faster</option></select>
+      <div class="btnrow space"><button id="advance">+151ステップ</button><button id="colony">+1,000ステップ</button></div>
+      <p class="note">早送り後は停止します。 / Fast-forward runs the rules, then pauses.</p>
+    </div>
+    <div class="card"><h2>盤面を触る / Explore</h2>
+      <label for="tool">操作 / Tool</label><select id="tool"><option value="pan">移動 / Pan</option><option value="seed">ループを置く / Place loop</option><option value="erase">削る / Erase</option><option value="paint">セルを描く / Paint cells</option></select>
+      <label for="rotation">配置するループの向き / Rotation</label><select id="rotation"><option value="0">0°</option><option value="1">90°</option><option value="2">180°</option><option value="3">270°</option></select>
+      <label for="state">描く状態 / Paint state</label><select id="state"><option value="0">0 · 空間 / Empty</option><option value="1" selected>1 · 内部 / Core</option><option value="2">2 · 外壁 / Sheath</option><option value="3">3 · 信号 / Signal</option><option value="4">4 · 信号 / Signal</option><option value="5">5 · 信号 / Signal</option><option value="6">6 · 信号 / Signal</option><option value="7">7 · 信号 / Signal</option></select>
+      <div id="legend" aria-label="状態の色 / State colors"></div>
+      <p class="note">編集すると停止します。ループは空いた場所に配置できます。 / Editing pauses. Place loops in empty space.</p>
+      <p id="notice" role="status" aria-live="polite"></p>
+    </div>
+    <div class="card"><h2>表示 / View</h2>
+      <label for="zoom">拡大率 / Zoom</label><input id="zoom" type="range" min="2" max="32" step="0.25" value="10">
+      <div class="btnrow"><button id="fit">全体を見る / Fit</button><button id="save">PNG保存 / Save</button></div>
+      <button id="clear" class="space">盤面を空に / Clear board</button>
+      <p class="note">160 × 160セル。外周は空の状態に固定。 / 160 × 160 cells with a fixed empty border.</p>
+    </div>
+    <div class="footer-note">hamzALIFE · <a href="about.html#credits">出典 / Credits</a> · <a href="../privacy.html">Privacy</a></div>
+  </aside>
+</div>
+<script type="module" src="app.js"></script>
+</body></html>
