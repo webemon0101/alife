@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L-System / エルシステム — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Learn L-system rewriting, turtle graphics and self-similar plant structures. エルシステムの書き換え規則と枝分かれを解説。">
+<link rel="canonical" href="https://hamzworkerz.com/l-system/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/l-system/about.html">
+<meta property="og:title" content="L-System / エルシステム — 使い方・理論背景">
+<meta property="og:description" content="Learn L-system rewriting, turtle graphics and self-similar plant structures. エルシステムの書き換え規則と枝分かれを解説。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="L-System / エルシステム — 使い方・理論背景">
+<meta name="twitter:description" content="Learn L-system rewriting, turtle graphics and self-similar plant structures. エルシステムの書き換え規則と枝分かれを解説。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article><h1>L-System（エルシステム）</h1><p class="lead">Self-similar plant growth — 書き換え規則から生まれる植物の形</p>
+<h2>使い方 / Getting started</h2><p>シダ状・枝分かれ・低木状・コッホ曲線から選び、世代数や角度を変えてください。開始文字列と規則を編集し「適用」を押すと、自分のモデルを描けます。「次の世代」は全ての文字にもう一度規則を適用します。</p><p lang="en">Choose a fern-like plant, branching tree, bush-like plant, or Koch curve. Adjust generations and turn angles, or edit the axiom and rules and press Apply. Next advances by one rewriting generation.</p><ul><li>ドラッグで移動、ホイールや拡大率でズーム。「全体表示」で戻ります。 / Drag to pan, zoom with the wheel or slider, and use Fit to restore the full view.</li><li>「描画」は線を順番に表示し、途中で停止・再開できます。 / Draw reveals the lines sequentially; pause and resume at any time.</li><li>PNG保存は現在の表示を保存します。スマートフォンでは⚙で設定を開きます。 / Save the current view as PNG. On mobile, open settings with ⚙.</li></ul>
+<h2>文字列を並列に書き換える / Parallel rewriting</h2><p>L-System（Lindenmayer system）は、開始文字列と書き換え規則から世代ごとの文字列を生成する仕組みです。同じ世代の文字は全て、その世代の開始時の文字列をもとに置き換えます。置き換え直後の文字に同じ世代でもう一度規則を適用することはありません。</p><div class="eqn">Axiom: F<br>Rule: F → F[+F]F[-F]F<br>Generation 0: F<br>Generation 1: F[+F]F[-F]F</div><p lang="en">An L-system generates strings by rewriting all symbols in parallel. A rule applies once per generation to each symbol in the previous string. Symbols without a rule remain unchanged.</p>
+<h2>文字を枝に変える / Turtle interpretation</h2><p>仮想のペンが上向きに原点から出発し、文字列を読み進めます。F・Gは線を描いて前進、fは描かずに前進、+は左回転、-は右回転です。[で位置・向きを保存し、]で保存した状態に戻るため、幹から枝分かれできます。Xなどの文字は描画せず、次の世代の書き換えに使います。</p><p lang="en">A virtual pen starts at the origin facing up. F/G draw forward; f moves without drawing; + turns left and - turns right. Brackets save and restore position and heading, creating branches. Other uppercase letters are rewriting placeholders.</p><p class="note">規則は1行に1つ、例：<code>F=FF</code>。空の右辺はその文字を消します。開始文字列と各規則の [ ] は対応させてください。 / Enter one rule per line. An empty replacement deletes a symbol. Brackets must balance within the axiom and each replacement.</p>
+<h2>自己相似と植物 / Self-similarity and plants</h2><p>同じ生成手順を枝の中でも繰り返すと、部分が全体に似た形を作ります。分岐角度や文字の置き換え方を変えるだけでも、背の高い形、広がる形、幾何学的な曲線へ変化します。色は枝分かれの深さ、太さの変化は見やすさのための表現です。</p><p lang="en">Repeated rules can produce parts resembling the whole. Branch angles and rewriting rules determine the resulting structure; color and taper visualize branch depth.</p><p>このページは決定的な2次元のL-Systemです。光・栄養・重力などの生理的な成長要因は扱いません。「描画」のアニメーションは完成した文字列をたどる表示で、植物の成長時間を再現したものではありません。</p><p lang="en">This is a deterministic 2D L-system, without physiological growth factors such as light or nutrients. The drawing animation reveals a completed string rather than simulating biological growth time.</p>
+<h2>計算の上限 / Limits</h2><p>0〜8世代、最大16万文字まで計算します。規則によって文字数は急増するため、上限を超える場合は前の描画を保ち、世代を減らす案内を表示します。</p><p lang="en">The simulator supports 0–8 generations and up to 160,000 symbols. If expansion exceeds the limit, the previous drawing is preserved.</p>
+<h2>参考資料 / References</h2><ul class="refs"><li><a class="inline" href="https://algorithmicbotany.org/papers/abop/abop.pdf">Prusinkiewicz &amp; Lindenmayer — The Algorithmic Beauty of Plants</a></li><li><a class="inline" href="https://algorithmicbotany.org/papers/graphical-applications-of-l-systems.html">Prusinkiewicz — Graphical applications of L-systems</a></li></ul><p class="refs">hamzALIFE · <a class="inline" href="../privacy.html">Privacy</a></p></article></body></html>

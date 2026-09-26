@@ -16,18 +16,18 @@
 
   gtag('config', 'G-6SYSH72RB4');
 </script>
-<meta name="description" content="ALIFE Zukan — a collection of browser-based Artificial Life simulators: Gray-Scott reaction-diffusion, Lenia, Boids, Particle Life, Conway's Game of Life, Langton’s Ant, and Physarum. Play with the equations directly, no install needed.">
+<meta name="description" content="ALIFE Zukan — a collection of browser-based Artificial Life simulators: Gray-Scott reaction-diffusion, Lenia, Boids, Particle Life, Conway's Game of Life, Langton’s Ant, L-systems, and Physarum. Play with the equations directly, no install needed.">
 <link rel="canonical" href="https://hamzworkerz.com/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hamzworkerz.com/">
 <meta property="og:title" content="ALIFE Zukan — Artificial Life Simulators in Your Browser">
-<meta property="og:description" content="A collection of browser-based Artificial Life simulators: Gray-Scott reaction-diffusion, Lenia, Boids, Particle Life, Conway's Game of Life, Langton’s Ant, and Physarum.">
+<meta property="og:description" content="A collection of browser-based Artificial Life simulators: Gray-Scott reaction-diffusion, Lenia, Boids, Particle Life, Conway's Game of Life, Langton’s Ant, L-systems, and Physarum.">
 <meta property="og:image" content="https://hamzworkerz.com/og-image.png">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ALIFE Zukan — Artificial Life Simulators in Your Browser">
-<meta name="twitter:description" content="Gray-Scott, Lenia, Boids, Particle Life, Game of Life, Langton’s Ant, Physarum — play with the equations directly in your browser.">
+<meta name="twitter:description" content="Gray-Scott, Lenia, Boids, Particle Life, Game of Life, Langton’s Ant, L-systems, Physarum — play with the equations directly in your browser.">
 <meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
 <style>
   :root{
@@ -131,12 +131,31 @@
   カードを選ぶとそのモデルのシミュレーターが開きます。各ページ内から使い方・理論背景の解説にも飛べます。
   スマートフォンでは、各シミュレーターページ右上の⚙アイコンをタップすると操作パネル(スライダー)が開きます。</p>
   <p class="en">ALIFE Zukan is a collection of Artificial Life simulators — Gray-Scott reaction-diffusion, Lenia,
-  Boids, Particle Life, Conway's Game of Life, Langton’s Ant, and Physarum — built to run and play with directly in your browser.
+  Boids, Particle Life, Conway's Game of Life, Langton’s Ant, L-systems, and Physarum — built to run and play with directly in your browser.
   Pick a card below to open its simulator; each page links to a write-up covering how to use it and the theory
   behind it. On mobile, tap the ⚙ icon in the top-right corner of any simulator page to open its control panel.</p>
 </header>
 <main>
   <div class="grid">
+    <a class="card" href="particle-life/index.html">
+      <div class="thumb">🧬</div>
+      <div class="body">
+        <span class="tag">Multi-Agent</span>
+        <h2>Particle Life</h2>
+        <p>種類ごとの引力・斥力行列だけから、群れ・追いかけ合い・膜状の塊など多様な"生態"が生まれる。ルールをランダム化するたびに別の世界になる。</p>
+        <p class="en">A random attraction/repulsion matrix between particle types is enough to spawn flocks, chases, and cell-like clusters.</p>
+      </div>
+    </a>
+
+    <a class="card" href="l-system/index.html">
+      <div class="thumb">🌿</div>
+      <div class="body">
+        <span class="tag">L-System / Algorithmic Botany</span>
+        <h2>L-System（エルシステム）</h2>
+        <p>文字列の書き換えと枝分かれから、植物の自己相似構造が生まれる。世代数・分岐角度・生成規則を変えて、シダや樹木のような形を育てる。</p>
+        <p class="en">L-systems turn simple rewriting rules into self-similar plants and fractals. Explore generations, branching angles, and custom grammars.</p>
+      </div>
+    </a>
 
     <a class="card" href="langtons-ant/index.html">
       <div class="thumb">🐜</div>
@@ -179,15 +198,7 @@
       </div>
     </a>
 
-    <a class="card" href="particle-life/index.html">
-      <div class="thumb">🧬</div>
-      <div class="body">
-        <span class="tag">Multi-Agent</span>
-        <h2>Particle Life</h2>
-        <p>種類ごとの引力・斥力行列だけから、群れ・追いかけ合い・膜状の塊など多様な"生態"が生まれる。ルールをランダム化するたびに別の世界になる。</p>
-        <p class="en">A random attraction/repulsion matrix between particle types is enough to spawn flocks, chases, and cell-like clusters.</p>
-      </div>
-    </a>
+
 
     <a class="card" href="boids/index.html">
       <div class="thumb">🐦</div>
