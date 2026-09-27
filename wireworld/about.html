@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireworld / ワイヤーワールド — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Learn Wireworld’s four rules, draw wires, inject signals and explore branching and collisions. ワイヤーワールドの使い方とセルオートマトンの仕組み。">
+<link rel="canonical" href="https://hamzworkerz.com/wireworld/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/wireworld/about.html">
+<meta property="og:title" content="Wireworld / ワイヤーワールド — 使い方・理論背景">
+<meta property="og:description" content="Learn Wireworld’s four rules, draw wires, inject signals and explore branching and collisions. ワイヤーワールドの使い方とセルオートマトンの仕組み。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Wireworld / ワイヤーワールド — 使い方・理論背景">
+<meta name="twitter:description" content="Learn Wireworld’s four rules, draw wires, inject signals and explore branching and collisions. ワイヤーワールドの使い方とセルオートマトンの仕組み。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article>
+<h1>Wireworld / ワイヤーワールド</h1><p class="lead">4つの状態から生まれる、動く回路の世界</p>
+<h2>まず遊んでみる / Getting started</h2><p>最初は「光の回路」が動きます。大きさの異なるループを巡る青い信号を眺めたり、速度を落として1セルずつ追ってみてください。OSの「動きを減らす」設定が有効なら停止状態で始まります。「再生」で動かせます。</p>
+<p lang="en">The circuit garden starts with many loops and moving signals. Slow it down or step through each update. With reduced motion enabled, press Play to start.</p>
+<ol><li>「導線を描く」を選び、ドラッグして金色の配線を描きます。 / Select Draw wire and drag to lay a path.</li><li>「電子を流す」と向きを選び、配線上をタップ。頭と、その後ろに尾を置きます。 / Choose Inject electron and a direction, then tap a wire to place a head and a tail behind it.</li><li>「再生」で信号の動きを確認。配線を切ったりつないだりしてみましょう。 / Press Play, then try cutting or joining paths.</li></ol>
+<p class="note">編集すると停止します。注入位置とその1セル後方の両方に導線が必要です。「頭を描く」「尾を描く」では状態を直接編集できます。頭だけを置くと、複数方向へ信号が広がる場合があります。</p>
+<p lang="en">Editing pauses playback. Injection needs two wire cells: one for the head and one behind it for the tail. Paint head/tail edits states directly; an isolated head can send signals in multiple directions.</p>
+<h2>プリセット / Presets</h2><ul><li><b>光の回路 / Circuit garden：</b>周期や向きの違う複数のループ。独立した配線を眺めたり、つないで変化を観察。 / Independent loops of different lengths and directions; connect them to experiment.</li><li><b>1つのループ / Single loop：</b>1つの信号が巡る、基本の観察用。 / Follow a single circulating signal.</li><li><b>信号の分岐 / Branching signals：</b>ループから送り出した信号が枝に伝わる。 / A loop feeds signals into branching wires.</li><li><b>信号の衝突 / Colliding signals：</b>左右から来る信号が出会って消える。再実験はリセット。 / Opposing signals meet and die out; reset to repeat.</li><li><b>白紙 / Blank canvas：</b>自分で配線を描くための空の盤面。 / An empty board for your own circuits.</li></ul>
+<h2>4つの状態とルール / Four states, four rules</h2><p>Brian Silvermanが1987年に考案した2次元セルオートマトンです。自分と周囲8セルの状態を使い、すべてのセルを同時に更新します。</p>
+<p lang="en">Wireworld, introduced by Brian Silverman in 1987, updates every cell synchronously using its state and eight surrounding neighbors.</p>
+<ul><li><b>空間 / Empty：</b>そのまま空間。 / Stays empty.</li><li><b>電子の頭 / Head（青）：</b>次は尾へ。 / Becomes a tail.</li><li><b>電子の尾 / Tail（赤）：</b>次は導線へ。 / Becomes a conductor.</li><li><b>導線 / Conductor（金）：</b>周囲に頭がちょうど1個か2個なら頭へ。それ以外は導線のまま。 / Becomes a head with exactly one or two neighboring heads; otherwise stays a conductor.</li></ul>
+<p>斜めのセルも隣接と数えます。近すぎる配線は信号を伝え合うため、独立させたい線の間には空間を空けてください。回路の形によって論理ゲートなども構成できますが、実際の電圧や電流を計算する電気回路シミュレーターではありません。</p>
+<p lang="en">Diagonal cells count as neighbors. Leave space between independent wires. Suitable layouts can implement logic gates; this is a cellular automaton, not a voltage/current simulator.</p>
+<h2>操作と表示 / Controls</h2><ul><li>移動：ドラッグ。拡大：ホイールまたは拡大率。「全体を見る」で配線全体へ戻ります。 / Drag to pan, wheel or slider to zoom, Fit to frame all wires.</li><li>元に戻す：編集や再生前など、直近20件の保存状態へ戻ります。 / Undo restores up to 20 saved states from before edits, playback and other actions.</li><li>電子を消す：頭と尾だけを導線に戻します。 / Clear signals converts all heads and tails into wire.</li><li>+100ステップ：100回計算して停止。リセットで早送りを中止。 / Advance 100 updates and pause; Reset cancels fast-forward.</li><li>リセット：選択中のプリセットへ戻ります。 / Reset restores the selected preset.</li><li>PNG保存：盤面全体を640 × 640ピクセルで保存。発光は画面表示だけの効果です。 / Save the full board as a 640 × 640 PNG; glow is a display-only effect.</li></ul>
+<p>スマートフォンでは右上の⚙で設定を開きます。盤面は160 × 160セル、外側は空間として扱い、反対側にはつながりません。別タブ表示中は通常再生を止めます。速度は端末性能によって設定値を下回ることがあります。</p>
+<p lang="en">Use ⚙ for settings on mobile. The 160 × 160 grid has empty space outside, without wrapping. Normal playback pauses in hidden tabs. Actual speed depends on your device. Glow is omitted above 500 heads to keep rendering responsive.</p>
+<h2 id="credits">出典 / References</h2><p>標準のWireworldルールに基づき、ブラウザ用の計算処理・操作画面・プリセットをALIFE Collection向けに実装しています。学習済みの重みや外部の回路データは使用していません。</p>
+<p lang="en">The browser engine, controls and preset layouts were implemented for ALIFE Collection from the standard Wireworld rules. No pretrained weights or third-party circuit data are used.</p>
+<ul class="refs"><li>V. Gladkikh &amp; A. Nigay (2018), <a class="inline" href="https://doi.org/10.25088/ComplexSystems.27.1.19">Wireworld++: A Cellular Automaton for Simulation of Nonplanar Digital Electronic Circuits</a> — Introduction: standard Wireworld history and rules. 本サイトは拡張版++ではなく、標準の4状態モデルです。</li></ul>
+<p class="refs">hamzALIFE · <a class="inline" href="../privacy.html">Privacy</a></p></article></body></html>
