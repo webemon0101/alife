@@ -679,8 +679,9 @@
       accumulator+=dtMs;
       let stepsRun=0;
       if(useGPU()){
-        if(accumulator>=FIXED_DT_MS&&!gpuBusy)stepGPU();
-        accumulator=0;
+        // Preserve sub-step time on high-refresh displays; never queue catch-up work.
+        accumulator=Math.min(accumulator,gpuBusy?FIXED_DT_MS:2*FIXED_DT_MS);
+        if(accumulator+0.000001>=FIXED_DT_MS&&!gpuBusy){accumulator=Math.max(0,accumulator-FIXED_DT_MS);stepGPU();}
       }
       while(!useGPU() && accumulator>=FIXED_DT_MS && stepsRun<MAX_STEPS_PER_FRAME){
         if(mode==='pl'){
