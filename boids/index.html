@@ -153,6 +153,8 @@
 
     <div class="card" id="paramsPL" style="display:none;">
       <h2>パラメータ (Particle Life)</h2>
+      <label for="boundaryMode" style="font-size:12px">境界 / Boundary</label>
+      <select id="boundaryMode" style="margin:8px 0"><option value="wall">壁 / Walls</option><option value="loop">ループ / Wrap around</option></select>
       <label for="computeMode" style="font-size:12px">計算 / Compute</label>
       <select id="computeMode" style="margin:8px 0"><option value="auto">自動 / Auto</option><option value="cpu">CPU</option><option value="gpu" disabled>GPU / WebGPU</option></select>
       <p id="computeStatus" class="note" role="status">GPUを確認中 / Checking GPU…</p>
@@ -284,13 +286,33 @@
   }
 
   // ---------- spatial grid ----------
+  const boundaryMode=document.getElementById('boundaryMode');
+  const looping=()=>mode==='pl'&&boundaryMode.value==='loop';
+  const wrap=(v,size)=>((v%size)+size)%size;
+  const shortest=(d,size)=>d-size*Math.floor(d/size+0.5);
+  function plDelta(d,size){return looping()?shortest(d,size):d;}
+  function applyPLBoundary(i){
+    if(looping()){x[i]=wrap(x[i],canvas.width);y[i]=wrap(y[i],canvas.height);return;}
+    if(x[i]<0){x[i]=0;vx[i]*=-1;}if(x[i]>canvas.width){x[i]=canvas.width;vx[i]*=-1;}
+    if(y[i]<0){y[i]=0;vy[i]*=-1;}if(y[i]>canvas.height){y[i]=canvas.height;vy[i]*=-1;}
+  }
+  boundaryMode.addEventListener('change',()=>{
+    gpuEpoch++;accumulator=0;gpuWorkMs=0;resetLoadGuard();
+    if(looping())for(let i=0;i<N;i++){x[i]=wrap(x[i],canvas.width);y[i]=wrap(y[i],canvas.height);}
+    ctx.clearRect(0,0,canvas.width,canvas.height);renderDirty=true;
+  });
+  let gridCols=1,gridRows=1,gridW=60,gridH=60;
+  function cellX(v){return looping()?Math.floor(wrap(v,canvas.width)/gridW)%gridCols:Math.floor(v/cellSize);}
+  function cellY(v){return looping()?Math.floor(wrap(v,canvas.height)/gridH)%gridRows:Math.floor(v/cellSize);}
   let cellSize = 60;
   let gridMap = new Map();
   function buildGrid(){
     gridMap.clear();
     cellSize = Math.max(20, mode==='boids' ? B.radius : PL.radius);
+    gridCols=Math.max(1,Math.floor(canvas.width/cellSize));gridRows=Math.max(1,Math.floor(canvas.height/cellSize));
+    gridW=canvas.width/gridCols;gridH=canvas.height/gridRows;
     for(let i=0;i<N;i++){
-      const cx = Math.floor(x[i]/cellSize), cy = Math.floor(y[i]/cellSize);
+      const cx = cellX(x[i]), cy = cellY(y[i]);
       const key = cx*100000 + cy;
       let arr = gridMap.get(key);
       if(!arr){ arr=[]; gridMap.set(key, arr); }
@@ -298,10 +320,13 @@
     }
   }
   function forEachNeighbor(i, cb){
-    const cx = Math.floor(x[i]/cellSize), cy = Math.floor(y[i]/cellSize);
+    const cx = cellX(x[i]), cy = cellY(y[i]);
+    const visited=looping()?new Set():null;
     for(let dx=-1;dx<=1;dx++){
       for(let dy=-1;dy<=1;dy++){
-        const key = (cx+dx)*100000 + (cy+dy);
+        const key = looping()?wrap(cx+dx,gridCols)*100000+wrap(cy+dy,gridRows):(cx+dx)*100000+(cy+dy);
+        if(visited?.has(key))continue;
+        visited?.add(key);
         const arr = gridMap.get(key);
         if(arr) for(let k=0;k<arr.length;k++){ const j=arr[k]; if(j!==i) cb(j); }
       }
@@ -349,13 +374,13 @@
     let nearest=null, nearestD2=senseR*senseR;
     for(let k=0;k<foods.length;k++){
       const f=foods[k];
-      const dx=f.x-x[i], dy=f.y-y[i], d2=dx*dx+dy*dy;
+      const dx=plDelta(f.x-x[i],canvas.width), dy=plDelta(f.y-y[i],canvas.height), d2=dx*dx+dy*dy;
       if(d2<nearestD2){ nearestD2=d2; nearest=f; }
     }
     if(!nearest) return [0,0];
     const d = Math.sqrt(nearestD2)||0.001;
     if(d < FOOD_EAT_RADIUS) nearest.amount -= FOOD_EAT_RATE;
-    return [(nearest.x-x[i])/d*strength, (nearest.y-y[i])/d*strength];
+    return [plDelta(nearest.x-x[i],canvas.width)/d*strength, plDelta(nearest.y-y[i],canvas.height)/d*strength];
   }
   function decayFoods(){
     foods = foods.filter(f=>f.amount>0);
@@ -425,7 +450,7 @@
     for(let i=0;i<N;i++){
       let fx=0, fy=0;
       forEachNeighbor(i, j=>{
-        const dx=x[j]-x[i], dy=y[j]-y[i];
+        const dx=plDelta(x[j]-x[i],canvas.width), dy=plDelta(y[j]-y[i],canvas.height);
         const d = Math.hypot(dx,dy);
         if(d>0.01 && d<R){
           const r = d/R;
@@ -447,8 +472,7 @@
     for(let i=0;i<N;i++){
       vx[i]=newVx[i]; vy[i]=newVy[i];
       x[i]+=vx[i]; y[i]+=vy[i];
-      if(x[i]<0){x[i]=0; vx[i]*=-1;} if(x[i]>canvas.width){x[i]=canvas.width; vx[i]*=-1;}
-      if(y[i]<0){y[i]=0; vy[i]*=-1;} if(y[i]>canvas.height){y[i]=canvas.height; vy[i]*=-1;}
+      applyPLBoundary(i);
     }
     decayFoods();
     return true;
@@ -625,7 +649,7 @@
     const warning=setTimeout(()=>{if(token===gpuEpoch&&!document.hidden)pauseForLoad();},250);
     const timeout=setTimeout(()=>{if(gpu===engine)fallbackGPU();},2000);
     try{
-      const forces=await engine.forces(x,y,ptype,matrix,PL.radius,PL.beta);
+      const forces=await engine.forces(x,y,ptype,matrix,PL.radius,PL.beta,canvas.width,canvas.height,looping());
       if(token!==gpuEpoch||paused||document.hidden||mode!=='pl'||gpu!==engine)return;
       const elapsed=performance.now()-started;
       if(elapsed>250){pauseForLoad();return;}
@@ -636,8 +660,7 @@
       }
       for(let i=0;i<N;i++){
         x[i]+=vx[i];y[i]+=vy[i];
-        if(x[i]<0){x[i]=0;vx[i]*=-1;}if(x[i]>canvas.width){x[i]=canvas.width;vx[i]*=-1;}
-        if(y[i]<0){y[i]=0;vy[i]*=-1;}if(y[i]>canvas.height){y[i]=canvas.height;vy[i]*=-1;}
+        applyPLBoundary(i);
       }
       decayFoods();renderDirty=true;
       gpuWorkMs=elapsed>50?gpuWorkMs+elapsed:Math.max(0,gpuWorkMs-25);

@@ -89,6 +89,9 @@
     パラメータをいじって、3つの力のバランスがどう群れの性格を変えるか試してみてください。Separationを強くしすぎると散り散りに、Cohesionを強くしすぎると1つの塊に潰れます。
   </p>
 
+  <h2>境界 / Boundary</h2>
+  <p>Particle Lifeの「境界」で壁とループを切り替えられます。初期設定は壁です。ループでは上下・左右がつながり、端を越えた粒子は反対側へ移動します。粒子間の力と餌への反応も、端をまたぐ最短距離で計算します。CPU・GPUの両方に対応し、切り替えても種類や相互作用ルールを保持します。</p>
+  <p lang="en">Choose Walls (default) or Wrap around in Particle Life. Wrapped edges connect both horizontally and vertically; particles and food interact across the seam using the shortest distance. Both CPU and GPU support this setting without resetting types or interaction rules.</p>
   <h2>GPUと自動判定 / GPU &amp; automatic selection</h2>
   <p>「自動」ではWebGPUの初期化を試し、成功すると粒子間の力をGPUで計算します。未対応・初期化失敗時はCPUで続行します。「CPU」を手動選択することもできます。種類数は最大30種類、粒子数は最大5,000個です。CPUへの切り替えでも種類やルールを保持できるよう、CPU版も30種類を扱えます。</p>
   <p lang="en">Auto initializes WebGPU and uses it for pairwise force calculations when available; otherwise it uses the CPU. CPU can also be selected manually. Both backends support 30 types and 5,000 particles, preserving types and rules on fallback.</p>

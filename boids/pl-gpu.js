@@ -1,6 +1,6 @@
 // WebGPU acceleration for Particle Life forces. UI/integration remain on the CPU.
 const shader = `
-struct Params { n:u32, k:u32, radius:f32, beta:f32 }
+struct Params { n:u32, k:u32, radius:f32, beta:f32, width:f32, height:f32, wrapped:u32, padding:u32 }
 @group(0) @binding(0) var<storage,read> particles:array<vec4<f32>>;
 @group(0) @binding(1) var<storage,read> matrix:array<f32>;
 @group(0) @binding(2) var<storage,read_write> forces:array<vec2<f32>>;
@@ -10,7 +10,9 @@ fn main(@builtin(global_invocation_id) id:vec3<u32>){
   let i=id.x; if(i>=p.n){return;}
   let a=particles[i]; var force=vec2<f32>(0.0);
   for(var j=0u;j<p.n;j++){
-    let b=particles[j];let delta=b.xy-a.xy;let d2=dot(delta,delta);
+    let b=particles[j];var delta=b.xy-a.xy;
+    if(p.wrapped!=0u){let size=vec2<f32>(p.width,p.height);delta-=size*floor(delta/size+vec2<f32>(0.5));}
+    let d2=dot(delta,delta);
     if(d2>0.0001 && d2<p.radius*p.radius){
       let d=sqrt(d2);let r=d/p.radius;
       let attraction=matrix[u32(a.z)*p.k+u32(b.z)];
@@ -39,18 +41,18 @@ export async function createParticleGPU(onFailure){
     const matrix=buffer(30*30*4,GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST);
     const forces=buffer(5000*8,GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_SRC);
     const read=buffer(5000*8,GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST);
-    const params=buffer(16,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);
+    const params=buffer(32,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);
     const bind=device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[particles,matrix,forces,params].map((b,i)=>({binding:i,resource:{buffer:b}}))});
     let inFlight=false;
     return {
-      async forces(x,y,types,coefficients,radius,beta){
+      async forces(x,y,types,coefficients,radius,beta,width=1,height=1,loop=false){
         if(closed||inFlight)throw new Error('GPU unavailable or busy');
         const n=x.length,k=coefficients.length;if(n>5000||k>30)throw new Error('Capacity exceeded');
         inFlight=true;
         try{
           const data=new Float32Array(n*4);
           for(let i=0;i<n;i++){data[i*4]=x[i];data[i*4+1]=y[i];data[i*4+2]=types[i];}
-          const uniform=new ArrayBuffer(16);new Uint32Array(uniform).set([n,k]);new Float32Array(uniform).set([radius,beta],2);
+          const uniform=new ArrayBuffer(32);new Uint32Array(uniform).set([n,k]);new Float32Array(uniform).set([radius,beta,width,height],2);new Uint32Array(uniform)[6]=loop?1:0;
           device.queue.writeBuffer(particles,0,data);device.queue.writeBuffer(matrix,0,new Float32Array(coefficients.flat()));device.queue.writeBuffer(params,0,uniform);
           const encoder=device.createCommandEncoder(),pass=encoder.beginComputePass();
           pass.setPipeline(pipeline);pass.setBindGroup(0,bind);pass.dispatchWorkgroups(Math.ceil(n/64));pass.end();
