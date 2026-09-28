@@ -97,6 +97,7 @@
   .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
   .modebtns button{ font-size:11px; padding:6px 4px; }
   .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+#loadNotice{position:absolute;top:38px;left:12px;right:62px;max-width:460px;z-index:5;padding:12px;background:#12151cf2;border:1px solid var(--accent2);border-radius:8px;font-size:12px;line-height:1.6}#loadNotice[hidden]{display:none}#loadNotice p{margin:0 0 8px}#loadNotice .btnrow{flex-wrap:wrap}#loadNotice button{min-height:40px}#paramsPL input[type=range]{min-height:22px}#sidebar{padding-bottom:32px}@media(max-width:760px){#sidebar{padding-top:66px}}
 </style>
 </head>
 <body>
@@ -106,6 +107,10 @@
   <div id="stage">
     <span id="fps">-- fps</span>
     <canvas id="canvas"></canvas>
+    <div id="loadNotice" role="status" aria-live="polite" hidden>
+      <p>負荷が高いため一時停止しました。粒子数や相互作用半径を下げて再開できます。<br><span lang="en">Paused due to high load. Reduce particle count or interaction radius before resuming.</span></p>
+      <div class="btnrow"><button id="reduceParticles">粒子を半分に / Halve</button><button id="resumeLoad">再開 / Resume</button></div>
+    </div>
   </div>
 
   <div id="sidebar">
@@ -158,8 +163,12 @@
       <input type="range" id="forceSlider" min="0.1" max="3" step="0.05" style="width:100%; margin:0 0 12px;">
       <div class="row"><label>摩擦</label><span class="val" id="fricVal">-</span></div>
       <input type="range" id="fricSlider" min="0" max="0.3" step="0.005" style="width:100%; margin:0 0 12px;">
-      <div class="row"><label>個体数</label><span class="val" id="nPLVal">-</span></div>
-      <input type="range" id="nPLSlider" min="100" max="1500" step="10" style="width:100%;">
+      <div class="row"><label for="nPLSlider">個体数 / Particles</label><span class="val" id="nPLVal">-</span></div>
+      <input type="range" id="nPLSlider" min="100" max="5000" step="10" style="width:100%;">
+      <p class="note">最大5,000個。少しずつ増やしてください。指を離すと個体数を適用し、配置をリセットします。高負荷時は自動停止します。<br><span lang="en">Up to 5,000. Increase gradually; release to apply and reset positions. High load pauses playback.</span></p>
+      <div class="row"><label for="plSizeSlider">粒子の半径 / Radius</label><span class="val" id="plSizeVal">2.6 px</span></div>
+      <input type="range" id="plSizeSlider" min="0.5" max="5" step="0.1" value="2.6" style="width:100%;">
+      <p class="note">見た目だけを変更します。相互作用の距離・計算量は変わりません。<br><span lang="en">Display size only; interaction distances and calculation count stay the same.</span></p>
       <div class="btnrow" style="margin-top:10px;">
         <button id="randomizeMatrix">🎲 ルールをランダム化</button>
       </div>
@@ -186,7 +195,9 @@
   const ctx = canvas.getContext('2d');
   const fpsEl = document.getElementById('fps');
 
+  let renderDirty = true;
   function resize(){
+    renderDirty = true;
     canvas.width = stage.clientWidth;
     canvas.height = stage.clientHeight;
   }
@@ -195,6 +206,18 @@
 
   let mode = 'boids';
   let paused = false;
+  let slowWorkMs = 0;
+  const loadNotice = document.getElementById('loadNotice');
+  function resetLoadGuard(){ slowWorkMs=0; loadNotice.hidden=true; }
+  function pauseForLoad(){
+    paused=true; accumulator=0; slowWorkMs=0;
+    document.getElementById('playpause').textContent='▶ 再生';
+    loadNotice.hidden=false; renderDirty=true;
+  }
+  function setPaused(value){
+    paused=value; accumulator=0; lastFrameTime=null; resetLoadGuard(); renderDirty=true;
+    document.getElementById('playpause').textContent=paused?'▶ 再生':'⏸ 一時停止';
+  }
 
   // ---------- particle state (shared) ----------
   let N = 400;
@@ -205,7 +228,7 @@
 
   // ---------- particle life params ----------
   let K = 5;
-  const PL = { radius:80, beta:0.3, forceScale:1.0, friction:0.05 };
+  const PL = { radius:80, beta:0.3, forceScale:1.0, friction:0.05, displayRadius:2.6 };
   let matrix = [];
 
   function randomizeMatrix(){
@@ -218,6 +241,7 @@
   }
 
   function initParticles(){
+    renderDirty=true; resetLoadGuard();
     x = new Float32Array(N); y = new Float32Array(N);
     vx = new Float32Array(N); vy = new Float32Array(N);
     ptype = new Int32Array(N);
@@ -269,6 +293,7 @@
   const FOOD_EAT_RATE = 0.03; // amount consumed per nearby agent per frame
 
   function dropFood(px,py){
+    renderDirty=true;
     foods.push({x:px, y:py, amount:1.0});
     if(foods.length>40) foods.shift();
   }
@@ -364,9 +389,12 @@
   }
 
   function stepPL(){
+    const deadline = performance.now()+50;
+    // Commit positions only after the entire synchronous update is computed.
+    // An over-budget step leaves the world (including food) unchanged.
     buildGrid();
     const R = PL.radius;
-    const newVx = new Float32Array(N), newVy = new Float32Array(N);
+    const newVx = new Float64Array(N), newVy = new Float64Array(N);
     for(let i=0;i<N;i++){
       let fx=0, fy=0;
       forEachNeighbor(i, j=>{
@@ -379,10 +407,15 @@
           fx += (dx/d)*f; fy += (dy/d)*f;
         }
       });
+      newVx[i] = fx;
+      newVy[i] = fy;
+      if((i&31)===31 && performance.now()>deadline) return false;
+    }
+    if(performance.now()>deadline) return false;
+    for(let i=0;i<N;i++){
       const [fax,fay] = seekFood(i, FOOD_SENSE_RADIUS, 0.5);
-      fx += fax; fy += fay;
-      newVx[i] = (vx[i] + fx*PL.forceScale) * (1-PL.friction);
-      newVy[i] = (vy[i] + fy*PL.forceScale) * (1-PL.friction);
+      newVx[i] = (vx[i] + (newVx[i]+fax)*PL.forceScale) * (1-PL.friction);
+      newVy[i] = (vy[i] + (newVy[i]+fay)*PL.forceScale) * (1-PL.friction);
     }
     for(let i=0;i<N;i++){
       vx[i]=newVx[i]; vy[i]=newVy[i];
@@ -391,6 +424,7 @@
       if(y[i]<0){y[i]=0; vy[i]*=-1;} if(y[i]>canvas.height){y[i]=canvas.height; vy[i]*=-1;}
     }
     decayFoods();
+    return true;
   }
 
   // ---------- render ----------
@@ -416,7 +450,7 @@
       for(let i=0;i<N;i++){
         ctx.fillStyle = PL_COLORS[ptype[i]%PL_COLORS.length];
         ctx.beginPath();
-        ctx.arc(x[i], y[i], 2.6, 0, Math.PI*2);
+        ctx.arc(x[i], y[i], PL.displayRadius, 0, Math.PI*2);
         ctx.fill();
       }
     }
@@ -448,6 +482,7 @@
   const fricSlider=document.getElementById('fricSlider'), fricVal=document.getElementById('fricVal');
   const nPLSlider=document.getElementById('nPLSlider'), nPLVal=document.getElementById('nPLVal');
 
+  const plSizeSlider=document.getElementById('plSizeSlider'), plSizeVal=document.getElementById('plSizeVal');
   function refreshBoidsLabels(){
     sepVal.textContent=B.sep.toFixed(2); aliVal.textContent=B.ali.toFixed(2); cohVal.textContent=B.coh.toFixed(2);
     radVal.textContent=B.radius; spdVal.textContent=B.maxSpeed.toFixed(1); nBoidsVal.textContent=N;
@@ -477,7 +512,20 @@
   betaSlider.addEventListener('input', ()=>{ PL.beta=parseFloat(betaSlider.value); refreshPLLabels(); });
   forceSlider.addEventListener('input', ()=>{ PL.forceScale=parseFloat(forceSlider.value); refreshPLLabels(); });
   fricSlider.addEventListener('input', ()=>{ PL.friction=parseFloat(fricSlider.value); refreshPLLabels(); });
-  nPLSlider.addEventListener('input', ()=>{ N=parseInt(nPLSlider.value); refreshPLLabels(); initParticles(); });
+  nPLSlider.addEventListener('input', ()=>{ nPLVal.textContent=nPLSlider.value; });
+  nPLSlider.addEventListener('change', ()=>{ N=parseInt(nPLSlider.value); refreshPLLabels(); initParticles(); });
+  plSizeSlider.addEventListener('input', ()=>{
+    PL.displayRadius=parseFloat(plSizeSlider.value); plSizeVal.textContent=PL.displayRadius.toFixed(1)+' px';
+    ctx.clearRect(0,0,canvas.width,canvas.height); renderDirty=true;
+  });
+  document.addEventListener('input', ()=>{renderDirty=true;});
+  document.getElementById('reduceParticles').addEventListener('click', ()=>{
+    N=Math.max(100,Math.floor(N/20)*10); nPLSlider.value=N; refreshPLLabels();
+    // Retain the surviving particles, their velocities and the interaction rules.
+    x=x.slice(0,N);y=y.slice(0,N);vx=vx.slice(0,N);vy=vy.slice(0,N);ptype=ptype.slice(0,N);
+    setPaused(true);
+  });
+  document.getElementById('resumeLoad').addEventListener('click', ()=>setPaused(false));
   document.getElementById('randomizeMatrix').addEventListener('click', ()=>{ randomizeMatrix(); });
 
   const menuToggle = document.getElementById('menuToggle');
@@ -492,7 +540,7 @@
 
   document.getElementById('reset').addEventListener('click', ()=>{ initParticles(); });
   const playBtn = document.getElementById('playpause');
-  playBtn.addEventListener('click', ()=>{ paused=!paused; playBtn.textContent = paused?'▶ 再生':'⏸ 一時停止'; });
+  playBtn.addEventListener('click', ()=>setPaused(!paused));
 
   function activateBoids(){
     mode='boids';
@@ -503,7 +551,7 @@
     document.getElementById('eqnBoids').style.display='block';
     document.getElementById('eqnPL').style.display='none';
     N = parseInt(nBoidsSlider.value);
-    initParticles();
+    refreshBoidsLabels(); initParticles();
   }
   function activatePL(){
     mode='pl';
@@ -515,18 +563,14 @@
     document.getElementById('eqnPL').style.display='block';
     N = parseInt(nPLSlider.value);
     randomizeMatrix();
-    initParticles();
+    refreshPLLabels(); initParticles();
   }
   document.getElementById('modeBoids').addEventListener('click', activateBoids);
   document.getElementById('modePL').addEventListener('click', activatePL);
 
   // ---------- main loop ----------
-  // Physics runs on a fixed timestep (matching the 60fps assumption the force
-  // constants were tuned under), decoupled from however fast this particular
-  // machine can actually render. A slow device just renders choppier instead
-  // of the whole simulation running in slow motion; a fast device doesn't run
-  // it in fast-forward either. MAX_STEPS_PER_FRAME + dropping leftover backlog
-  // prevents a "spiral of death" if a machine falls far behind.
+  // Preserve the fixed physics timestep. Limit catch-up work so controls
+  // get a chance to run; under load, simulated time may lag wall-clock time.
   randomizeMatrix();
   // Deep link: boids/index.html?mode=pl (or particle-life) opens straight into
   // Particle Life instead of the Boids default, so it can have its own gallery
@@ -544,32 +588,41 @@
   let accumulator = 0;
   let fpsAccum=0, fpsWindowStart=0;
 
+  document.addEventListener('visibilitychange',()=>{
+    lastFrameTime=null; accumulator=0; slowWorkMs=0;
+  });
   function loop(currentTime){
-    if(lastFrameTime===null){
-      lastFrameTime = currentTime;
-      fpsWindowStart = currentTime;
-      requestAnimationFrame(loop);
-      return;
-    }
-    const dtMs = Math.min(currentTime - lastFrameTime, 250); // clamp huge gaps (e.g. tab was backgrounded)
-    lastFrameTime = currentTime;
-    accumulator += dtMs;
-
+    if(document.hidden){lastFrameTime=null;accumulator=0;requestAnimationFrame(loop);return;}
+    if(lastFrameTime===null){lastFrameTime=currentTime;fpsWindowStart=currentTime;fpsAccum=0;}
+    const dtMs=Math.min(currentTime-lastFrameTime,250);
+    lastFrameTime=currentTime;
+    const frameStart=performance.now();
+    const wasRunning=!paused;
     if(!paused){
-      let stepsRun = 0;
-      while(accumulator >= FIXED_DT_MS && stepsRun < MAX_STEPS_PER_FRAME){
-        if(mode==='boids') stepBoids(); else stepPL();
-        accumulator -= FIXED_DT_MS;
-        stepsRun++;
+      accumulator+=dtMs;
+      let stepsRun=0;
+      while(accumulator>=FIXED_DT_MS && stepsRun<MAX_STEPS_PER_FRAME){
+        if(mode==='pl'){
+          if(!stepPL()){pauseForLoad();break;}
+        }else stepBoids();
+        accumulator-=FIXED_DT_MS;stepsRun++;renderDirty=true;
+        if(mode==='pl' && performance.now()-frameStart>=12){accumulator=0;break;}
       }
-      if(stepsRun===MAX_STEPS_PER_FRAME) accumulator = 0; // drop backlog rather than spiral
+      if(stepsRun===MAX_STEPS_PER_FRAME)accumulator=0;
+    }else accumulator=0;
+    if(renderDirty || !paused){
+      if(paused)ctx.clearRect(0,0,canvas.width,canvas.height);
+      render();renderDirty=false;
     }
-
-    render();
+    const workMs=performance.now()-frameStart;
+    if(mode==='pl' && wasRunning && !paused){
+      slowWorkMs=workMs>32?slowWorkMs+workMs:Math.max(0,slowWorkMs-16);
+      if(workMs>120 || slowWorkMs>1000)pauseForLoad();
+    }
     fpsAccum++;
     if(currentTime-fpsWindowStart>500){
-      fpsEl.textContent = (fpsAccum*1000/(currentTime-fpsWindowStart)).toFixed(0)+' fps · N='+N;
-      fpsAccum=0; fpsWindowStart=currentTime;
+      fpsEl.textContent=paused?'Paused · N='+N:(fpsAccum*1000/(currentTime-fpsWindowStart)).toFixed(0)+' fps · N='+N;
+      fpsAccum=0;fpsWindowStart=currentTime;
     }
     requestAnimationFrame(loop);
   }

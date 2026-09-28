@@ -69,7 +69,7 @@
   <h2>使い方</h2>
   <ul>
     <li><b>モード切り替え</b>：BoidsとParticle Lifeを切り替えられます。それぞれ全く違う仕組みですが、同じ「多数のエージェント＋近傍だけを見る局所ルール」という枠組みを共有しています。</li>
-    <li><b>キャンバス上のドラッグ</b>：マウス位置の周囲に反発力を発生させます。群れを散らしたり、Particle Lifeの構造を突いて壊してみたりできます。</li>
+    <li><b>キャンバス上のドラッグ</b>：餌を置き、近くの粒子や個体を引き寄せます。</li>
     <li><b>🎲 ルールをランダム化</b>（Particle Lifeのみ）：種類間の相互作用行列を全く新しいランダム値に差し替えます。同じ種類数・同じ力の強さでも、行列が変わるだけで群れる・追いかけ合う・膜状に固まる・完全に散逸する、など挙動がガラリと変わります。</li>
   </ul>
 
@@ -89,6 +89,13 @@
     パラメータをいじって、3つの力のバランスがどう群れの性格を変えるか試してみてください。Separationを強くしすぎると散り散りに、Cohesionを強くしすぎると1つの塊に潰れます。
   </p>
 
+  <h2>Particle Lifeの個体数・表示サイズ / Count &amp; display size</h2>
+  <p>個体数は100〜5,000個で調整できます。スライダーから指を離すと適用され、配置がリセットされます。初期値は500個です。粒子の半径は0.5〜5pxで、見た目だけを変えます。小さくしても相互作用の距離や力は変わらず、粒子間の計算回数も減りません。</p>
+  <p lang="en">Set 100–5,000 particles (default 500); release the slider to apply and reset positions. Display radius ranges from 0.5 to 5px. Size only changes rendering, not forces, interaction distances or the number of pair calculations.</p>
+  <p>個体数、密集度、相互作用半径が大きいほど計算が重くなります。高負荷を検知すると盤面を保持して自動停止します。画面の「粒子を半分に」は一部の粒子を残して数を減らし、停止状態を保ちます。「再開」で続行します。同じ条件では再び自動停止する場合があります。</p>
+  <p lang="en">More particles, denser clusters and larger interaction radii increase load. High load pauses playback while keeping the board. Halve retains a subset of particles and stays paused; Resume continues. The same settings can trigger another pause.</p>
+  <p>長すぎる計算ステップは位置を更新する前に中止します。端末によっては検知まで一時的に操作が遅れる場合があります。停止中は必要なときだけ描画し、別タブ表示中は計算を休止します。高負荷時は現実の時間よりシミュレーションの進行が遅くなることがあります。</p>
+  <p lang="en">Overlong steps are cancelled before positions are committed. A brief delay can occur before detection. Paused scenes redraw only when needed; hidden tabs suspend computation. Simulated time may run slower than real time under load.</p>
   <h2>Particle Life</h2>
   <div class="eqn">
     F(r) = r/β − 1&nbsp;&nbsp;(r &lt; β、常に反発)<br>
