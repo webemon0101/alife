@@ -153,8 +153,11 @@
 
     <div class="card" id="paramsPL" style="display:none;">
       <h2>パラメータ (Particle Life)</h2>
+      <label for="computeMode" style="font-size:12px">計算 / Compute</label>
+      <select id="computeMode" style="margin:8px 0"><option value="auto">自動 / Auto</option><option value="cpu">CPU</option><option value="gpu" disabled>GPU / WebGPU</option></select>
+      <p id="computeStatus" class="note" role="status">GPUを確認中 / Checking GPU…</p>
       <div class="row"><label>種類数 K</label><span class="val" id="kVal">-</span></div>
-      <input type="range" id="kSlider" min="2" max="8" step="1" style="width:100%; margin:0 0 12px;">
+      <input type="range" id="kSlider" aria-label="種類数 / Types" min="2" max="30" step="1" style="width:100%; margin:0 0 12px;">
       <div class="row"><label>相互作用半径</label><span class="val" id="plRadVal">-</span></div>
       <input type="range" id="plRadSlider" min="20" max="200" step="1" style="width:100%; margin:0 0 12px;">
       <div class="row"><label>反発帯 β</label><span class="val" id="betaVal">-</span></div>
@@ -196,8 +199,31 @@
   const fpsEl = document.getElementById('fps');
 
   let renderDirty = true;
+  let gpu=null, gpuBusy=false, gpuEpoch=0, gpuChecked=false, gpuWorkMs=0;
+  const computeMode=document.getElementById('computeMode');
+  const computeStatus=document.getElementById('computeStatus');
+  function useGPU(){return mode==='pl'&&gpu&&computeMode.value!=='cpu';}
+  function updateComputeStatus(){
+    computeStatus.textContent=useGPU()?'GPU計算 / WebGPU · 最大30種類':gpuChecked?'CPU計算 / CPU · '+(gpu?'手動選択 / Selected':'WebGPUを利用できません / WebGPU unavailable'):'CPU計算 · GPUを確認中 / Checking GPU…';
+  }
+  function fallbackGPU(){
+    gpuEpoch++;const old=gpu;gpu=null;gpuChecked=true;old?.destroy();
+    computeMode.querySelector('[value="gpu"]').disabled=true;
+    if(computeMode.value==='gpu')computeMode.value='auto';
+    updateComputeStatus();
+    if(mode==='pl'){setPaused(true);computeStatus.textContent='GPUが停止しました。状態を保持してCPUへ切り替えました。再生で続行。 / GPU stopped; switched to CPU and paused.';}
+  }
+  async function detectGPU(){
+    try{
+      const {createParticleGPU}=await import('./pl-gpu.js');
+      gpu=await createParticleGPU(fallbackGPU);
+      computeMode.querySelector('[value="gpu"]').disabled=false;
+    }catch(error){gpu=null;}
+    gpuChecked=true;gpuEpoch++;updateComputeStatus();
+  }
+  computeMode.addEventListener('change',()=>{gpuEpoch++;gpuWorkMs=0;resetLoadGuard();updateComputeStatus();});
   function resize(){
-    renderDirty = true;
+    renderDirty = true; gpuEpoch++;
     canvas.width = stage.clientWidth;
     canvas.height = stage.clientHeight;
   }
@@ -208,14 +234,14 @@
   let paused = false;
   let slowWorkMs = 0;
   const loadNotice = document.getElementById('loadNotice');
-  function resetLoadGuard(){ slowWorkMs=0; loadNotice.hidden=true; }
+  function resetLoadGuard(){ slowWorkMs=0; gpuWorkMs=0; loadNotice.hidden=true; }
   function pauseForLoad(){
-    paused=true; accumulator=0; slowWorkMs=0;
+    gpuEpoch++; paused=true; accumulator=0; slowWorkMs=0;
     document.getElementById('playpause').textContent='▶ 再生';
     loadNotice.hidden=false; renderDirty=true;
   }
   function setPaused(value){
-    paused=value; accumulator=0; lastFrameTime=null; resetLoadGuard(); renderDirty=true;
+    gpuEpoch++; paused=value; accumulator=0; lastFrameTime=null; resetLoadGuard(); renderDirty=true;
     document.getElementById('playpause').textContent=paused?'▶ 再生':'⏸ 一時停止';
   }
 
@@ -232,6 +258,7 @@
   let matrix = [];
 
   function randomizeMatrix(){
+    gpuEpoch++;
     matrix = [];
     for(let i=0;i<K;i++){
       const row = [];
@@ -241,7 +268,7 @@
   }
 
   function initParticles(){
-    renderDirty=true; resetLoadGuard();
+    gpuEpoch++; renderDirty=true; resetLoadGuard();
     x = new Float32Array(N); y = new Float32Array(N);
     vx = new Float32Array(N); vy = new Float32Array(N);
     ptype = new Int32Array(N);
@@ -428,7 +455,7 @@
   }
 
   // ---------- render ----------
-  const PL_COLORS = ['#e0665a','#5ad1c7','#e0a55a','#8a7ce0','#7ce08a','#e07cc4','#7ca8e0','#d4e07c'];
+  const PL_COLORS = ['#e0665a','#5ad1c7','#e0a55a','#8a7ce0','#7ce08a','#e07cc4','#7ca8e0','#d4e07c',...Array.from({length:22},(_,i)=>`hsl(${i*360/22} 82% ${i%2?72:52}%)`)];
   function render(){
     ctx.fillStyle = 'rgba(6,7,8,0.35)';
     ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -518,7 +545,7 @@
     PL.displayRadius=parseFloat(plSizeSlider.value); plSizeVal.textContent=PL.displayRadius.toFixed(1)+' px';
     ctx.clearRect(0,0,canvas.width,canvas.height); renderDirty=true;
   });
-  document.addEventListener('input', ()=>{renderDirty=true;});
+  document.addEventListener('input', ()=>{gpuEpoch++;renderDirty=true;});
   document.getElementById('reduceParticles').addEventListener('click', ()=>{
     N=Math.max(100,Math.floor(N/20)*10); nPLSlider.value=N; refreshPLLabels();
     // Retain the surviving particles, their velocities and the interaction rules.
@@ -543,7 +570,7 @@
   playBtn.addEventListener('click', ()=>setPaused(!paused));
 
   function activateBoids(){
-    mode='boids';
+    mode='boids'; gpuEpoch++; updateComputeStatus();
     document.getElementById('modeBoids').classList.add('active');
     document.getElementById('modePL').classList.remove('active');
     document.getElementById('paramsBoids').style.display='block';
@@ -554,7 +581,7 @@
     refreshBoidsLabels(); initParticles();
   }
   function activatePL(){
-    mode='pl';
+    mode='pl'; gpuEpoch++; updateComputeStatus();
     document.getElementById('modePL').classList.add('active');
     document.getElementById('modeBoids').classList.remove('active');
     document.getElementById('paramsBoids').style.display='none';
@@ -589,8 +616,35 @@
   let fpsAccum=0, fpsWindowStart=0;
 
   document.addEventListener('visibilitychange',()=>{
-    lastFrameTime=null; accumulator=0; slowWorkMs=0;
+    gpuEpoch++; lastFrameTime=null; accumulator=0; slowWorkMs=0; gpuWorkMs=0;
   });
+  async function stepGPU(){
+    if(gpuBusy||!useGPU())return;
+    gpuBusy=true;const token=gpuEpoch,engine=gpu,started=performance.now();
+    // Only one dispatch/readback may be outstanding. Never build a GPU backlog.
+    const warning=setTimeout(()=>{if(token===gpuEpoch&&!document.hidden)pauseForLoad();},250);
+    const timeout=setTimeout(()=>{if(gpu===engine)fallbackGPU();},2000);
+    try{
+      const forces=await engine.forces(x,y,ptype,matrix,PL.radius,PL.beta);
+      if(token!==gpuEpoch||paused||document.hidden||mode!=='pl'||gpu!==engine)return;
+      const elapsed=performance.now()-started;
+      if(elapsed>250){pauseForLoad();return;}
+      for(let i=0;i<N;i++){
+        const [fax,fay]=seekFood(i,FOOD_SENSE_RADIUS,0.5);
+        vx[i]=(vx[i]+(forces[i*2]+fax)*PL.forceScale)*(1-PL.friction);
+        vy[i]=(vy[i]+(forces[i*2+1]+fay)*PL.forceScale)*(1-PL.friction);
+      }
+      for(let i=0;i<N;i++){
+        x[i]+=vx[i];y[i]+=vy[i];
+        if(x[i]<0){x[i]=0;vx[i]*=-1;}if(x[i]>canvas.width){x[i]=canvas.width;vx[i]*=-1;}
+        if(y[i]<0){y[i]=0;vy[i]*=-1;}if(y[i]>canvas.height){y[i]=canvas.height;vy[i]*=-1;}
+      }
+      decayFoods();renderDirty=true;
+      gpuWorkMs=elapsed>50?gpuWorkMs+elapsed:Math.max(0,gpuWorkMs-25);
+      if(gpuWorkMs>1000)pauseForLoad();
+    }catch(error){if(gpu===engine)fallbackGPU();}
+    finally{clearTimeout(warning);clearTimeout(timeout);gpuBusy=false;}
+  }
   function loop(currentTime){
     if(document.hidden){lastFrameTime=null;accumulator=0;requestAnimationFrame(loop);return;}
     if(lastFrameTime===null){lastFrameTime=currentTime;fpsWindowStart=currentTime;fpsAccum=0;}
@@ -601,7 +655,11 @@
     if(!paused){
       accumulator+=dtMs;
       let stepsRun=0;
-      while(accumulator>=FIXED_DT_MS && stepsRun<MAX_STEPS_PER_FRAME){
+      if(useGPU()){
+        if(accumulator>=FIXED_DT_MS&&!gpuBusy)stepGPU();
+        accumulator=0;
+      }
+      while(!useGPU() && accumulator>=FIXED_DT_MS && stepsRun<MAX_STEPS_PER_FRAME){
         if(mode==='pl'){
           if(!stepPL()){pauseForLoad();break;}
         }else stepBoids();
@@ -626,6 +684,7 @@
     }
     requestAnimationFrame(loop);
   }
+  detectGPU();
   requestAnimationFrame(loop);
 })();
 </script>

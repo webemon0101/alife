@@ -89,6 +89,13 @@
     パラメータをいじって、3つの力のバランスがどう群れの性格を変えるか試してみてください。Separationを強くしすぎると散り散りに、Cohesionを強くしすぎると1つの塊に潰れます。
   </p>
 
+  <h2>GPUと自動判定 / GPU &amp; automatic selection</h2>
+  <p>「自動」ではWebGPUの初期化を試し、成功すると粒子間の力をGPUで計算します。未対応・初期化失敗時はCPUで続行します。「CPU」を手動選択することもできます。種類数は最大30種類、粒子数は最大5,000個です。CPUへの切り替えでも種類やルールを保持できるよう、CPU版も30種類を扱えます。</p>
+  <p lang="en">Auto initializes WebGPU and uses it for pairwise force calculations when available; otherwise it uses the CPU. CPU can also be selected manually. Both backends support 30 types and 5,000 particles, preserving types and rules on fallback.</p>
+  <p>GPUの検出は性能の保証ではありません。粒子の位置更新・餌・描画は引き続きJavaScriptとCanvas 2Dを使います。小規模な場面ではGPUとのデータ転送が負担になる場合もあります。GPUとCPUでは計算精度・加算順序の違いにより、長時間の軌跡が異なる場合があります。</p>
+  <p lang="en">Availability is not a performance guarantee. Integration, food and rendering remain in JavaScript/Canvas 2D. Readback overhead can outweigh the benefit for small simulations. Floating-point differences can produce different long-term trajectories.</p>
+  <p>GPU計算は1回ずつ処理し、待ち時間が長い場合も自動停止します。停止や設定変更の前に送った計算結果は破棄します。GPUの異常・切断時は最後に反映できた状態でCPUへ切り替えて停止します。再開は手動です。</p>
+  <p lang="en">Only one GPU update is in flight. Slow completion pauses playback; stale results after pause or edits are discarded. GPU errors or device loss switch to CPU and pause at the last committed state. Resume manually. Submitted GPU work cannot be instantly cancelled.</p>
   <h2>Particle Lifeの個体数・表示サイズ / Count &amp; display size</h2>
   <p>個体数は100〜5,000個で調整できます。スライダーから指を離すと適用され、配置がリセットされます。初期値は500個です。粒子の半径は0.5〜5pxで、見た目だけを変えます。小さくしても相互作用の距離や力は変わらず、粒子間の計算回数も減りません。</p>
   <p lang="en">Set 100–5,000 particles (default 500); release the slider to apply and reset positions. Display radius ranges from 0.5 to 5px. Size only changes rendering, not forces, interaction distances or the number of pair calculations.</p>
