@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primordial Particle System / 原始粒子系 — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="原始粒子系の胞子・細胞、運動ルール、CPUとGPU、プリセットの解説。 Guide to PPS rules and presets.">
+<link rel="canonical" href="https://hamzworkerz.com/primordial-particles/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/primordial-particles/about.html">
+<meta property="og:title" content="Primordial Particle System / 原始粒子系 — 使い方・理論背景">
+<meta property="og:description" content="Learn Wireworld’s four rules, draw wires, inject signals and explore branching and collisions. ワイヤーワールドの使い方とセルオートマトンの仕組み。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Primordial Particle System / 原始粒子系 — 使い方・理論背景">
+<meta name="twitter:description" content="Learn Wireworld’s four rules, draw wires, inject signals and explore branching and collisions. ワイヤーワールドの使い方とセルオートマトンの仕組み。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article><h1>原始粒子系 / Primordial Particle System</h1><p class="lead">1種類の粒子から育つ、胞子や細胞のような構造</p>
+<h2>まず観察する / Getting started</h2><p>最初は原論文方式で2,000ステップ動かした「生態系」です。リング状・三角形の細胞や密な胞子をプリセットから選び、拡大して観察できます。「原始のスープ」はランダムな粒子から始まり、構造が育つまで数百〜数千ステップかかる場合があります。胞子や細胞という呼称は形と振る舞いの比喩で、生物や進化の実現を意味しません。</p><p lang="en">Start with an ecosystem evolved for 2,000 original sequential updates. Presets include a compact spore, a ring-like cell and a triangular cell sampled from our own simulations. Primordial soup begins with random particles. Structures take time to emerge and can change or dissolve. These are life-like patterns, not biological organisms.</p>
+<h2>プリセット / Presets</h2><ul><li>生態系：2,048粒子、160×160の世界、密度0.08。 / Ecosystem: 2,048 particles in a 160×160 world.</li><li>原始のスープ：同じ密度のランダムな初期状態。 / Soup: randomized positions and headings.</li><li>胞子・リング状細胞・三角形細胞：自前の計算から切り出した状態を、500粒子・100×100の環境の中央に配置。周囲の粒子はランダムです。 / Spore, ring and triangle: sampled structures placed in a randomized habitat.</li></ul><p>プリセットは形を強制する仕組みではありません。リセット後も同じ運動ルールだけで変化します。原論文の著者が配布した座標データではなく、本サイトの実装で生成した例です。原論文Fig. 4に対応する形態を目安に選んでいます。</p>
+<h2>ルール / Rule</h2><p>Schmickl、Stefanec、Crailsheimが2016年に発表したモデルです。粒子は向きを持ち、半径r以内の左側L・右側Rの粒子数を数えます。N=L+Rとして、向きの変化は <code>Δφ = α + βN sign(R−L)</code>。向きを変えてから一定距離vだけ前進します。左右が同数なら追加の旋回は0です。粒子自体は増減せず、引力・斥力行列もありません。</p><p lang="en">Each particle turns by α + βN sign(R−L), then moves forward by v. N counts neighbors within radius r; R and L count neighbors on either side of its heading. Equal counts give no density-dependent turn. Our screen coordinates use positive clockwise turns. All particles obey the same rule, with no attraction matrix or particle birth/death.</p><p>代表値はα=180°、β=17°、r=5、v=0.67。初期状態は位置と向きを一様ランダムに分布させます。原論文の胞子・細胞の再現は密度や更新方式に依存し、常に分裂するとは限りません。</p>
+<h2>CPUとGPU / Update order matters</h2><p>初期設定の「CPU・原論文方式」は、各ステップで順番をシャッフルし、1粒子ずつ位置を更新する逐次方式です。CPU計算はWeb Workerで行い、操作画面を応答可能に保ちます。「自動・同時更新」はWebGPUが使えればGPU、使えなければCPUで、全粒子を同じ直前の状態から更新します。</p><p class="note">同時更新はGPUに適した派生版です。更新順序というモデルの条件が違うため、原論文方式と同一の構造・寿命・分裂頻度は保証しません。原論文のパターンを観察する場合は「CPU・原論文方式」を使ってください。</p><p lang="en">Original mode uses shuffled sequential CPU updates in a Web Worker. Auto parallel selects WebGPU when available, otherwise synchronous CPU updates. Synchronous updating is a model variant, not an exact acceleration of the paper's sequential algorithm. Structures and lifetimes can differ; use Original mode for the reference presets. GPU and synchronous CPU also differ in floating-point precision.</p>
+<h2>粒子数・大きさ・境界 / Controls</h2><p>粒子数は100〜5,000個。増減は世界の大きさを固定したまま行うため、密度も変わります。表示する粒子の大きさは物理ルールに影響しません。拡大は中央を拡大する表示操作です。画面回転やリサイズも世界の大きさや密度を変えません。プリセットのリセットは粒子数・世界の大きさ・運動パラメータ・拡大率をそのプリセットに戻します。</p><p>原論文の境界は上下左右がつながるループです。端をまたいだ粒子も最短距離で数えます。壁モードは反射境界による比較実験用で、原論文の条件とは異なります。粒子の色は局所密度の目安で、種類ではありません。緑は疎、茶は中間、青・黄は密、桃は特に小さな範囲の密集を強調しています。色分けは可視化用に調整してあり、構造を自動認識しているわけではありません。</p><p lang="en">Particle count changes density in a fixed-size world. Dot radius and zoom affect drawing only. Resizing the browser preserves the simulated world. Wrapped boundaries are the reference; reflecting walls are an experimental extension. Colors visualize local density, with compact neighborhoods highlighted in pink; they are not particle types or a structure classifier.</p>
+<h2>負荷保護 / Load protection</h2><p>計算は1回ずつ実行し、遅くなったら更新頻度を下げます。継続的に重い場合や応答がない場合は停止し、粒子を半分にして手動で再開できます。GPUの異常時は状態を保持して同時更新のCPUへ切り替え、停止します。別タブの表示中は新しい計算を送りません。設定変更・リセット・一時停止より前の計算結果は破棄します。OSの「動きを減らす」が有効な場合は停止状態で始まります。</p><p lang="en">Only one update is in flight. Slow processing reduces the update rate; sustained load or timeouts pause playback. Halve particles and resume manually. GPU errors preserve the last committed state and fall back to synchronous CPU mode, paused. Hidden tabs suspend scheduling. Stale results are discarded. Reduced-motion preferences start paused.</p>
+<h2 id="credits">出典・実装 / Sources and implementation</h2><p>運動ルールは原論文に基づき、本サイト用のCPU・GPUコード、操作画面、プリセットの計算データを独自に作成しました。第三者のソースコードや図版をコピーしていません。</p><ul class="refs"><li>Schmickl, T., Stefanec, M. &amp; Crailsheim, K. (2016). <a class="inline" href="https://doi.org/10.1038/srep37969">How a life-like system emerges from a simple particle motion law</a>. Scientific Reports 6, 37969. Rule, default parameters, sequential updating and cell/spore observations.</li><li><a class="inline" href="https://alife.uni-graz.at/projects/primordial-particle-systems/">Artificial Life Laboratory Graz: Primordial Particle Systems</a>.</li></ul><p class="refs">hamzALIFE · <a class="inline" href="../privacy.html">Privacy</a></p></article></body></html>
