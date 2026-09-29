@@ -137,6 +137,8 @@
 
     <div class="card" id="paramsBoids">
       <h2>パラメータ (Boids)</h2>
+      <label for="boidsBoundaryMode" style="font-size:12px">境界 / Boundary</label>
+      <select id="boidsBoundaryMode" style="margin:8px 0"><option value="wall">壁 / Walls</option><option value="loop">ループ / Wrap around</option></select>
       <div class="row"><label>Separation（分離）</label><span class="val" id="sepVal">-</span></div>
       <input type="range" id="sepSlider" min="0" max="3" step="0.05" style="width:100%; margin:0 0 12px;">
       <div class="row"><label>Alignment（整列）</label><span class="val" id="aliVal">-</span></div>
@@ -287,7 +289,8 @@
 
   // ---------- spatial grid ----------
   const boundaryMode=document.getElementById('boundaryMode');
-  const looping=()=>mode==='pl'&&boundaryMode.value==='loop';
+  const boidsBoundaryMode=document.getElementById('boidsBoundaryMode');
+  const looping=()=>(mode==='pl'?boundaryMode:boidsBoundaryMode).value==='loop';
   const wrap=(v,size)=>((v%size)+size)%size;
   const shortest=(d,size)=>d-size*Math.floor(d/size+0.5);
   function plDelta(d,size){return looping()?shortest(d,size):d;}
@@ -296,7 +299,7 @@
     if(x[i]<0){x[i]=0;vx[i]*=-1;}if(x[i]>canvas.width){x[i]=canvas.width;vx[i]*=-1;}
     if(y[i]<0){y[i]=0;vy[i]*=-1;}if(y[i]>canvas.height){y[i]=canvas.height;vy[i]*=-1;}
   }
-  boundaryMode.addEventListener('change',()=>{
+  for(const control of [boundaryMode,boidsBoundaryMode])control.addEventListener('change',()=>{
     gpuEpoch++;accumulator=0;gpuWorkMs=0;resetLoadGuard();
     if(looping())for(let i=0;i<N;i++){x[i]=wrap(x[i],canvas.width);y[i]=wrap(y[i],canvas.height);}
     ctx.clearRect(0,0,canvas.width,canvas.height);renderDirty=true;
@@ -396,25 +399,28 @@
       let aliX=0, aliY=0, aliN=0;
       let cohX=0, cohY=0, cohN=0;
       forEachNeighbor(i, j=>{
-        const dx=x[j]-x[i], dy=y[j]-y[i];
+        const dx=plDelta(x[j]-x[i],canvas.width), dy=plDelta(y[j]-y[i],canvas.height);
         const d2 = dx*dx+dy*dy;
         if(d2 < R2 && d2 > 0.01){
           const d = Math.sqrt(d2);
           sepX -= dx/d/d; sepY -= dy/d/d; sepN++;
           aliX += vx[j]; aliY += vy[j]; aliN++;
-          cohX += x[j]; cohY += y[j]; cohN++;
+          cohX += dx; cohY += dy; cohN++;
         }
       });
       let ax=0, ay=0;
       if(sepN>0){ ax += (sepX/sepN)*B.sep*8; ay += (sepY/sepN)*B.sep*8; }
       if(aliN>0){ ax += (aliX/aliN - vx[i])*B.ali*0.06; ay += (aliY/aliN - vy[i])*B.ali*0.06; }
-      if(cohN>0){ ax += (cohX/cohN - x[i])*B.coh*0.0015; ay += (cohY/cohN - y[i])*B.coh*0.0015; }
+      if(cohN>0){ ax += (cohX/cohN)*B.coh*0.0015; ay += (cohY/cohN)*B.coh*0.0015; }
 
+      if(!looping()){
       const margin=70;
       if(x[i]<margin) ax += (margin-x[i])*0.03;
       if(x[i]>canvas.width-margin) ax -= (x[i]-(canvas.width-margin))*0.03;
       if(y[i]<margin) ay += (margin-y[i])*0.03;
       if(y[i]>canvas.height-margin) ay -= (y[i]-(canvas.height-margin))*0.03;
+
+      }
 
       const [fax,fay] = seekFood(i, FOOD_SENSE_RADIUS, 0.35);
       ax += fax; ay += fay;
@@ -429,6 +435,7 @@
     for(let i=0;i<N;i++){
       vx[i]=newVx[i]; vy[i]=newVy[i];
       x[i]+=vx[i]; y[i]+=vy[i];
+      if(looping()){x[i]=wrap(x[i],canvas.width);y[i]=wrap(y[i],canvas.height);continue;}
       if(x[i]<0)x[i]=0; if(x[i]>canvas.width)x[i]=canvas.width;
       if(y[i]<0)y[i]=0; if(y[i]>canvas.height)y[i]=canvas.height;
     }
