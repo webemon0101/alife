@@ -92,6 +92,13 @@
   <h2>境界 / Boundary</h2>
   <p>BoidsとParticle Lifeそれぞれの「境界」で壁とループを切り替えられます。初期設定は壁です。ループでは上下・左右がつながり、端を越えた粒子は反対側へ移動します。粒子間の力と餌への反応も、端をまたぐ最短距離で計算します。Boidsでは分離・整列・結合も端をまたいだ近隣を使い、壁を避ける力は働きません。Particle LifeはCPU・GPUの両方に対応し、切り替えても種類や相互作用ルールを保持します。</p>
   <p lang="en">Choose Walls (default) or Wrap around independently in Boids and Particle Life. Boids uses wrapped neighbors for separation, alignment and cohesion, without wall avoidance. Wrapped edges connect both horizontally and vertically; particles and food interact across the seam using the shortest distance. Both CPU and GPU support this setting without resetting types or interaction rules.</p>
+  <h2>状態を保存・交換 / Save and exchange</h2>
+  <p>Particle Lifeの「状態を保存」でJSONをダウンロードできます。粒子の位置・速度・種類、相互作用行列、力・摩擦・大きさ、餌、境界、世界の大きさを記録します。保存すると一時停止します。ファイルを他の人へ渡し、「JSONを開く」または画面へのドロップで同じ状態を復元できます。Boids画面から読み込むとParticle Lifeに切り替わります。</p>
+  <p lang="en">Save a Particle Life world as JSON, including positions, velocities, types, interaction matrix, parameters, food, boundaries and world dimensions. Saving pauses playback. Share the file and use Open or drop it onto the simulator to restore. Opening from Boids switches to Particle Life.</p>
+  <p>読み込み後は停止状態です。「再生」で続きを動かしてください。保存・復元後は世界の寸法を固定し、異なる画面サイズでも縦横比を保って全体を表示します。余白は世界の外側です。CPU・GPUや端末の数値精度の違いで、長時間後の軌跡は異なる場合があります。再現するのは保存時点の状態とルールで、将来の動きの完全一致を保証するものではありません。</p>
+  <p lang="en">Load restores a paused state. Press Play to continue. Saved worlds retain their dimensions when the screen resizes; the whole world is fitted without changing its aspect ratio. CPU/GPU precision and summation order may change long-term trajectories.</p>
+  <p>ファイルは端末内で読み込み、サーバーには送信しません。最大2 MB、100〜5,000粒子・2〜30種類に対応します。形式・数値・配列長を確認し、不正なファイルは現在の世界を置き換えずに拒否します。以前の開発者ツールで保存したversion 1のJSONも読み込めます。Boidsの状態保存には対応していません。</p>
+  <p lang="en">Files are processed locally without upload. Maximum 2 MB, 100–5,000 particles and 2–30 types. Validation rejects unsupported or malformed snapshots before replacing the world. Version 1 snapshots saved with the earlier console export are supported. Boids state export is not supported.</p>
   <h2>GPUと自動判定 / GPU &amp; automatic selection</h2>
   <p>「自動」ではWebGPUの初期化を試し、成功すると粒子間の力をGPUで計算します。未対応・初期化失敗時はCPUで続行します。「CPU」を手動選択することもできます。種類数は最大30種類、粒子数は最大5,000個です。CPUへの切り替えでも種類やルールを保持できるよう、CPU版も30種類を扱えます。</p>
   <p lang="en">Auto initializes WebGPU and uses it for pairwise force calculations when available; otherwise it uses the CPU. CPU can also be selected manually. Both backends support 30 types and 5,000 particles, preserving types and rules on fallback.</p>

@@ -98,6 +98,7 @@
   .modebtns button{ font-size:11px; padding:6px 4px; }
   .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
 #loadNotice{position:absolute;top:38px;left:12px;right:62px;max-width:460px;z-index:5;padding:12px;background:#12151cf2;border:1px solid var(--accent2);border-radius:8px;font-size:12px;line-height:1.6}#loadNotice[hidden]{display:none}#loadNotice p{margin:0 0 8px}#loadNotice .btnrow{flex-wrap:wrap}#loadNotice button{min-height:40px}#paramsPL input[type=range]{min-height:22px}#sidebar{padding-bottom:32px}@media(max-width:760px){#sidebar{padding-top:66px}}
+#canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}#stateCard button{min-height:42px}#fileStatus{overflow-wrap:anywhere;margin-bottom:0}#saveState:disabled{opacity:.4;cursor:default}#worldSize{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -133,6 +134,15 @@
         <button id="reset">🌱 リセット</button>
         <button id="playpause" class="primary">⏸ 一時停止</button>
       </div>
+    </div>
+
+    <div class="card" id="stateCard">
+      <h2>Particle Lifeを交換 / Share a world</h2>
+      <div class="btnrow"><button id="saveState" disabled>状態を保存 / Save</button><button id="openState">JSONを開く / Open</button></div>
+      <input id="stateFile" type="file" accept=".json,application/json" hidden>
+      <p class="note">JSONを画面にドロップしても復元できます。保存・復元時は一時停止します。 / Drop a JSON file to restore. Save and load pause playback.</p>
+      <p id="worldSize" class="note"></p>
+      <p id="fileStatus" class="note" role="status" aria-live="polite">粒子・速度・ルール・餌・境界を保存。 / Saves particles, velocities, rules, food and boundaries.</p>
     </div>
 
     <div class="card" id="paramsBoids">
@@ -171,7 +181,7 @@
       <div class="row"><label>摩擦</label><span class="val" id="fricVal">-</span></div>
       <input type="range" id="fricSlider" min="0" max="0.3" step="0.005" style="width:100%; margin:0 0 12px;">
       <div class="row"><label for="nPLSlider">個体数 / Particles</label><span class="val" id="nPLVal">-</span></div>
-      <input type="range" id="nPLSlider" min="100" max="5000" step="10" style="width:100%;">
+      <input type="range" id="nPLSlider" min="100" max="5000" step="1" style="width:100%;">
       <p class="note">最大5,000個。少しずつ増やしてください。指を離すと個体数を適用し、配置をリセットします。高負荷時は自動停止します。<br><span lang="en">Up to 5,000. Increase gradually; release to apply and reset positions. High load pauses playback.</span></p>
       <div class="row"><label for="plSizeSlider">粒子の半径 / Radius</label><span class="val" id="plSizeVal">2.6 px</span></div>
       <input type="range" id="plSizeSlider" min="0.5" max="5" step="0.1" value="2.6" style="width:100%;">
@@ -202,6 +212,7 @@
   const ctx = canvas.getContext('2d');
   const fpsEl = document.getElementById('fps');
 
+  let savedWorld=null;
   let renderDirty = true;
   let gpu=null, gpuBusy=false, gpuEpoch=0, gpuChecked=false, gpuWorkMs=0;
   const computeMode=document.getElementById('computeMode');
@@ -228,8 +239,11 @@
   computeMode.addEventListener('change',()=>{gpuEpoch++;gpuWorkMs=0;resetLoadGuard();updateComputeStatus();});
   function resize(){
     renderDirty = true; gpuEpoch++;
-    canvas.width = stage.clientWidth;
-    canvas.height = stage.clientHeight;
+    const width=savedWorld?.width||Math.max(1,stage.clientWidth),height=savedWorld?.height||Math.max(1,stage.clientHeight);
+    if(canvas.width!==width)canvas.width=width;
+    if(canvas.height!==height)canvas.height=height;
+    const scale=Math.min(stage.clientWidth/width,stage.clientHeight/height);
+    canvas.style.width=(width*scale)+'px';canvas.style.height=(height*scale)+'px';
   }
   window.addEventListener('resize', resize);
   resize();
@@ -349,12 +363,12 @@
 
   function dropFood(px,py){
     renderDirty=true;
-    foods.push({x:px, y:py, amount:1.0});
+    foods.push({x:Math.max(0,Math.min(canvas.width,px)), y:Math.max(0,Math.min(canvas.height,py)), amount:1.0});
     if(foods.length>40) foods.shift();
   }
   function updateMouse(e){
     const rect = canvas.getBoundingClientRect();
-    return [e.clientX-rect.left, e.clientY-rect.top];
+    return [(e.clientX-rect.left)*canvas.width/rect.width, (e.clientY-rect.top)*canvas.height/rect.height];
   }
   canvas.addEventListener('pointerdown', e=>{
     dragging = true;
@@ -602,6 +616,7 @@
 
   function activateBoids(){
     mode='boids'; gpuEpoch++; updateComputeStatus();
+    document.getElementById('saveState').disabled=true;savedWorld=null;resize();document.getElementById('worldSize').textContent='';
     document.getElementById('modeBoids').classList.add('active');
     document.getElementById('modePL').classList.remove('active');
     document.getElementById('paramsBoids').style.display='block';
@@ -613,6 +628,7 @@
   }
   function activatePL(){
     mode='pl'; gpuEpoch++; updateComputeStatus();
+    document.getElementById('saveState').disabled=false;savedWorld??={width:canvas.width,height:canvas.height};
     document.getElementById('modePL').classList.add('active');
     document.getElementById('modeBoids').classList.remove('active');
     document.getElementById('paramsBoids').style.display='none';
@@ -715,6 +731,75 @@
     }
     requestAnimationFrame(loop);
   }
+  // Snapshot files are data only: validate completely before touching the world.
+  const saveStateButton=document.getElementById('saveState');
+  const stateFile=document.getElementById('stateFile');
+  const fileStatus=document.getElementById('fileStatus');
+  let fileRequest=0;
+  function fileMessage(message){fileStatus.textContent=message;}
+  function validateSnapshot(d){
+    const fail=()=>{throw new Error('この形式のParticle Lifeファイルは読み込めません。 / Invalid Particle Life snapshot.');};
+    const number=(v,min,max)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
+    const integer=(v,min,max)=>Number.isInteger(v)&&number(v,min,max);
+    if(!d||typeof d!=='object'||d.format!=='alife-particle-life-snapshot'||d.version!==1||d.mode!=='pl')fail();
+    if(!integer(d.N,100,5000)||!integer(d.K,2,30)||!integer(d.width,1,8192)||!integer(d.height,1,8192)||d.width*d.height>16777216)fail();
+    if(!['loop','wall'].includes(d.boundary)||!['auto','cpu','gpu'].includes(d.compute))fail();
+    if(d.engine!==undefined&&d.engine!=='particle-life-v1')fail();
+    const p=d.parameters;if(!p||typeof p!=='object')fail();
+    const ranges={radius:[20,200],beta:[.1,.6],forceScale:[.1,3],friction:[0,.3],displayRadius:[.5,5]},parameters={};
+    for(const [key,[min,max]] of Object.entries(ranges)){if(!number(p[key],min,max))fail();parameters[key]=p[key];}
+    const array=(key,min,max,isInteger=false)=>{const arr=d[key];if(!Array.isArray(arr)||arr.length!==d.N||!arr.every(v=>isInteger?integer(v,min,max):number(v,min,max)))fail();return arr.slice();};
+    const xx=array('x',0,d.width),yy=array('y',0,d.height),vxx=array('vx',-1e6,1e6),vyy=array('vy',-1e6,1e6),types=array('types',0,d.K-1,true);
+    if(!Array.isArray(d.matrix)||d.matrix.length!==d.K||!d.matrix.every(row=>Array.isArray(row)&&row.length===d.K&&row.every(v=>number(v,-1,1))))fail();
+    if(!Array.isArray(d.foods)||d.foods.length>40||!d.foods.every(f=>f&&number(f.x,0,d.width)&&number(f.y,0,d.height)&&number(f.amount,0,1)))fail();
+    return {N:d.N,K:d.K,width:d.width,height:d.height,parameters,boundary:d.boundary,compute:d.compute,matrix:d.matrix.map(row=>row.slice()),x:new Float32Array(xx),y:new Float32Array(yy),vx:new Float32Array(vxx),vy:new Float32Array(vyy),types:new Int32Array(types),foods:d.foods.map(f=>({x:f.x,y:f.y,amount:f.amount}))};
+  }
+  function snapshot(){
+    return {format:'alife-particle-life-snapshot',version:1,engine:'particle-life-v1',savedAt:new Date().toISOString(),mode:'pl',width:canvas.width,height:canvas.height,N,K,parameters:{...PL},boundary:boundaryMode.value,compute:computeMode.value,backend:useGPU()?'gpu':'cpu',matrix:matrix.map(row=>row.slice()),x:Array.from(x),y:Array.from(y),vx:Array.from(vx),vy:Array.from(vy),types:Array.from(ptype),foods:foods.map(f=>({...f}))};
+  }
+  function applySnapshot(s){
+    // No await between validation, invalidating outstanding GPU work and commit.
+    setPaused(true);activatePL();
+    savedWorld={width:s.width,height:s.height};resize();
+    N=s.N;K=s.K;Object.assign(PL,s.parameters);matrix=s.matrix;
+    x=s.x;y=s.y;vx=s.vx;vy=s.vy;ptype=s.types;foods=s.foods;dragging=false;
+    boundaryMode.value=s.boundary;
+    computeMode.value=s.compute==='gpu'&&!gpu?'auto':s.compute;
+    kSlider.value=K;nPLSlider.value=N;plRadSlider.value=PL.radius;betaSlider.value=PL.beta;
+    forceSlider.value=PL.forceScale;fricSlider.value=PL.friction;plSizeSlider.value=PL.displayRadius;plSizeVal.textContent=PL.displayRadius.toFixed(1)+' px';
+    refreshPLLabels();updateComputeStatus();setPaused(true);ctx.clearRect(0,0,canvas.width,canvas.height);render();renderDirty=false;
+    document.getElementById('worldSize').textContent=`世界 / World: ${s.width} × ${s.height}（固定 / fixed）`;
+  }
+  async function loadStateFile(file){
+    const request=++fileRequest;
+    try{
+      if(!file||file.size>2*1024*1024)throw new Error('2 MB以下のJSONを1個選んでください。 / Choose one JSON file up to 2 MB.');
+      const text=await file.text();if(request!==fileRequest)return;
+      let d;try{d=JSON.parse(text.replace(/^\uFEFF/,''));}catch(error){throw new Error('JSONとして読み込めません。 / Invalid JSON.');}
+      const s=validateSnapshot(d);applySnapshot(s);
+      fileMessage(`読み込みました：${file.name} · ${N}粒子 / particles。「再生」で続行。 / Loaded, paused. Press Play.`);
+    }catch(error){if(request===fileRequest)fileMessage(error.message+' 現在の状態は置き換えていません。 / Current state was not replaced.');}
+  }
+  saveStateButton.addEventListener('click',()=>{
+    if(mode!=='pl')return;
+    try{
+      setPaused(true);const d=snapshot();validateSnapshot(d);
+      savedWorld={width:d.width,height:d.height};resize();
+      const url=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));
+      const link=document.createElement('a');link.href=url;link.download='particle-life-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      document.getElementById('worldSize').textContent=`世界 / World: ${d.width} × ${d.height}（固定 / fixed）`;
+      fileMessage('JSONを保存しました。一時停止中です。「再生」で続行。 / Saved as JSON; paused.');
+    }catch(error){fileMessage('保存できませんでした。 / Could not save. '+error.message);}
+  });
+  document.getElementById('openState').addEventListener('click',()=>{stateFile.value='';stateFile.click();});
+  stateFile.addEventListener('change',()=>{if(stateFile.files.length===1)loadStateFile(stateFile.files[0]);stateFile.value='';});
+  window.addEventListener('dragover',e=>{if(Array.from(e.dataTransfer?.types||[]).includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy';}});
+  window.addEventListener('drop',e=>{
+    if(!Array.from(e.dataTransfer?.types||[]).includes('Files'))return;
+    e.preventDefault();if(e.dataTransfer.files.length!==1){fileRequest++;fileMessage('JSONファイルを1個ずつドロップしてください。 / Drop one JSON file.');return;}
+    loadStateFile(e.dataTransfer.files[0]);
+  });
+
   detectGPU();
   requestAnimationFrame(loop);
 })();
