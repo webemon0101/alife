@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Particle Lenia / 粒子レニア — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Particle Leniaの局所エネルギーと操作方法。 Local energy gradients and controls.">
+<link rel="canonical" href="https://hamzworkerz.com/particle-lenia/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/particle-lenia/about.html">
+<meta property="og:title" content="Particle Lenia / 粒子レニア — 使い方・理論背景">
+<meta property="og:description" content="Particle Lenia: local energy gradients, self-organization and browser controls.">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Particle Lenia / 粒子レニア — 使い方・理論背景">
+<meta name="twitter:description" content="Particle Lenia: local energy gradients, self-organization and browser controls.">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article><h1>粒子レニア / Particle Lenia</h1><p class="lead">粒子が作る場と、その場を変える粒子。</p><h2>観察する / Explore</h2><p>まず200粒子の雲を動かしてください。輪と2つの集団も初期配置から試せます。これらは本サイトの初期配置で、作者の発見個体を複製したものではありません。形の変化や持続する動きを観察しますが、特定の回転・分裂・自己複製は保証しません。シードとリセットで同じ初期条件に戻ります。粒子数変更とプリセット変更も初期化し、運動パラメーターを代表値に戻します。</p><p lang="en">Start with a 200-particle cloud, ring or two groups. These are starting layouts, not archived creatures. Reset restores the seed and reference parameters. Count and preset changes reset the simulation. Outcomes vary.</p><h2>局所的な運動ルール / Local dynamics</h2><p>2022年にAlexander Mordvintsev、Eyvind Niklasson、Ettore Randazzoが公開したモデルに基づきます。各粒子が作る環状カーネルを足した場Uに、好む密度を選ぶ関数Gを適用し、近距離の反発Rと組み合わせます。</p><div class="eqn">K(r) = w exp(−((r−μK)/σK)²)<br>U(x) = Σ K(|x−pⱼ|)<br>G(U) = exp(−((U−μG)/σG)²)<br>R(x) = c/2 Σ max(1−|x−pⱼ|, 0)²<br>dpᵢ/dt = −∇[R−G](pᵢ)</div><p>他の粒子の位置を固定した局所空間勾配を計算します。慣性や粒子の増減はありません。系全体のエネルギーの勾配降下とは異なり、総エネルギーの単調減少を仮定しません。Uには自分のカーネル値も含め、重なった点の勾配を0としています。</p><p lang="en">Particles follow the local spatial gradient with source positions held fixed, without momentum. This is not gradient descent of total system energy. The density field includes each particle's own kernel value; the gradient at coincident positions is set to zero.</p><h2>計算と表示 / Computation</h2><p>代表値μK=4、σK=1、w=0.022、μG=0.6、σG=0.15、c=1、時間刻み0.1。境界のない2次元平面を陽的Euler法で同時更新します。CPUのWeb Workerで全粒子対を計算し、50〜800粒子に対応します。時間刻みを小さくすると数値誤差を調べられます。更新速度は実時間当たりのステップ数で、運動ルールを変えません。</p><p>全体が収まるよう表示を追従させています。画面の伸縮・移動はカメラの変化の場合があります。粒子半径と色は描画だけに影響します。色の違いは種類の違いではありません。重い場合は減速し、継続的な高負荷や応答停止時には最後に完了した状態で停止します。</p><p lang="en">CPU Web Worker, all-pairs local gradients, explicit Euler integration and an unbounded plane. Display auto-fits all particles; apparent scaling can be camera motion. Dot size and colors affect rendering only. Slow devices reduce the update rate or pause. Smaller time steps help assess numerical sensitivity.</p><h2>保存と交換 / Snapshots</h2><p>保存ボタンで位置・運動パラメーター・ステップ数をJSONに出力し、一時停止します。開くボタンまたはドロップで復元して再生できます。ファイルはサーバーに送信しません。Particle LifeのJSONや原作者の画像形式とは互換性がありません。端末間の丸め誤差で長期の軌道は変わる場合があります。</p><p lang="en">Save positions, parameters and step count as JSON; open or drop to restore paused. Files stay in your browser. This format is distinct from Particle Life JSON and the authors' image snapshots. Long-term trajectories can diverge across devices.</p><h2>出典 / Sources</h2><p>数式から本サイト用に実装しました。原典のコード・画像・個体データの転載はしていません。</p><ul><li><a class="inline" href="https://google-research.github.io/self-organising-systems/particle-lenia/">Mordvintsev, Niklasson &amp; Randazzo (2022), Particle Lenia and the energy-based formulation</a></li><li><a class="inline" href="https://observablehq.com/@znah/particle-lenia-from-scratch">Author's implementation tutorial</a></li></ul></article></body></html>
