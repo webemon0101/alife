@@ -1,0 +1,1 @@
+import {advance,order} from './core.js';onmessage=({data:d})=>{try{const t=performance.now(),state=advance(d.state,d.noise,d.speed);postMessage({state,order:order(state.p),ms:performance.now()-t});}catch(e){postMessage({error:e.message});}};

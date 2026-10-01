@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vicsek Model / ヴィツェック・モデル — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Vicsekモデルのノイズと集団運動。 Noise and collective motion.">
+<link rel="canonical" href="https://hamzworkerz.com/vicsek/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/vicsek/about.html">
+<meta property="og:title" content="Vicsek Model / ヴィツェック・モデル — 使い方・理論背景">
+<meta property="og:description" content="Vicsek model: noise, density and collective alignment.">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Vicsek Model / ヴィツェック・モデル — 使い方・理論背景">
+<meta name="twitter:description" content="Vicsek model: noise, density and collective alignment.">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article><h1>Vicsek Model / ヴィツェック・モデル</h1><p class="lead">近隣との整列と方向の乱れが競合する、自己駆動粒子モデル。</p><h2>観察 / Explore</h2><p>ノイズを小さくすると方向がそろいやすく、大きくすると乱れやすくなります。色は進行方向、矢印の長さは表示設定です。集団全体の整列度Φは0〜1。有限個のランダム粒子では完全な0にはなりません。</p><p lang="en">Lower noise favors alignment; higher noise disrupts it. Color shows heading. Order Φ ranges from 0 to 1; finite random populations generally have a small nonzero value.</p><h2>運動ルール / Dynamics</h2><p>Vicsekらの1995年のモデルに基づき、半径1以内の粒子（自分を含む）の単位方向ベクトルを平均して次の向きを決め、独立な一様角度ノイズを足します。全粒子を同時更新。位置は更新前の向きで進めます。</p><div class="eqn">θᵢ(t+1) = atan2(Σ sin θⱼ, Σ cos θⱼ) + ξᵢ<br>ξᵢ ∈ [−πη, πη), η ∈ [0,1]<br>xᵢ(t+1) = xᵢ(t) + v(cos θᵢ(t), sin θᵢ(t))<br>Φ = |Σ(cos θᵢ, sin θᵢ)| / N</div><p>原論文の角度ノイズ幅を2πで割った値をスライダーηとして表示します。合計ベクトルがほぼ0なら直前の向きを使います。密度ρ=N/L²で正方形の辺長を決め、上下左右はループです。密度変更時には新しい世界に初期化。引力・斥力や衝突回避はありません。ノイズは実際の温度ではなく方向の乱れです。</p><p lang="en">Synchronous forward updates use old headings for motion and neighbor alignment plus uniform angular noise for new headings. Noise is normalized to a full 2π range, not physical temperature. The square world has L=√(N/ρ) and periodic boundaries. There is no attraction, repulsion or collision avoidance.</p><h2>自動観察 / Noise sweep</h2><p>ノイズ1から0まで0.1刻みの11条件を調べます。各条件は同じシードのランダム配置から始め、200ステップの待機後、200ステップの整列度を平均します。実行中は条件変更を無効化し、一時停止・再開が可能です。「走査を終了」で途中結果もCSVに保存できます。</p><p>CSVの標準偏差は時間変動の大きさであり、独立試行による誤差や信頼区間ではありません。待機時間が十分とは限らず、相転移の証明・転移点の確定には使えません。系のサイズ、試行数、待機時間を変える検証が必要です。描画速度は物理ステップの定義を変えません。</p><p lang="en">The sweep restarts the same seeded random state at each of 11 noise levels, discards 200 steps and averages 200 more. CSV includes temporal standard deviation and simulation settings. These are short single-run observations, not confidence intervals or a determination of a phase transition.</p><h2>実装 / Implementation</h2><p>CPU Web Workerと近傍探索用の空間分割を使用します。100〜1,500粒子。高負荷では減速・停止し、非表示タブでは新たな計算を止めます。乱数はシード付きで、一時停止で破棄した未完了ステップは状態や乱数を進めません。本サイト用に数式から実装しました。</p><p lang="en">CPU worker with spatial neighbor search and seeded randomness. Heavy load slows or pauses. Hidden tabs suspend work. Cancelled steps leave both the committed state and random seed unchanged.</p><h2>出典 / Sources</h2><ul><li><a class="inline" href="https://arxiv.org/abs/cond-mat/0611743">Vicsek et al. (1995), Novel Type of Phase Transition in a System of Self-Driven Particles</a></li><li><a class="inline" href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.92.025702">Grégoire &amp; Chaté (2004), Onset of Collective and Cohesive Motion</a></li></ul></article></body></html>
