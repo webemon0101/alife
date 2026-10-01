@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EvoGym-inspired / ボクセル生物 — ALIFE Collection</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Evolve voxel bodies and neural controllers in a lightweight EvoGym-inspired browser experiment. 体と動かし方を一緒に進化。">
+<link rel="canonical" href="https://hamzworkerz.com/evogym/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hamzworkerz.com/evogym/">
+<meta property="og:title" content="EvoGym-inspired / ボクセル生物 — ALIFE Collection">
+<meta property="og:description" content="Evolve voxel bodies and neural controllers in a lightweight EvoGym-inspired browser experiment. 体と動かし方を一緒に進化。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="EvoGym-inspired / ボクセル生物 — ALIFE Collection">
+<meta name="twitter:description" content="Evolve voxel bodies and neural controllers in a lightweight EvoGym-inspired browser experiment. 体と動かし方を一緒に進化。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; position:relative; min-width:0;
+    background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+  }
+  #canvas{ display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+  #fps{ position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162; pointer-events:none; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  #menuToggle{
+    display:none; position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--panel-border);
+    color:var(--text); font-size:19px;
+    align-items:center; justify-content:center; cursor:pointer;
+  }
+  #sidebarBackdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40;
+  }
+  @media (max-width: 760px){
+    #menuToggle{ display:flex; }
+    #sidebar{
+      position:fixed; top:0; right:0; height:100%;
+      width:82vw; max-width:340px;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:50;
+      box-shadow:-10px 0 30px rgba(0,0,0,0.5);
+    }
+    #sidebar.open{ transform:translateX(0); }
+    #sidebarBackdrop.open{ display:block; }
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:44px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+
+#app{height:100dvh}#stats{position:absolute;top:16px;left:16px;right:65px;color:var(--text-dim);font-size:12px;pointer-events:none;line-height:1.6}#stageHint{position:absolute;bottom:76px;left:12px;right:12px;text-align:center;font-size:11px;color:var(--text-dim);pointer-events:none}#transport{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;width:min(94%,410px)}#transport button{min-height:44px;padding:7px 5px}#sidebar label{display:block;font-size:12px;margin:10px 0 8px}#sidebar input[type=range]{display:block;width:100%;margin:0;min-height:28px}#sidebar button{min-height:38px}.links{display:flex;justify-content:space-between;gap:10px;margin-bottom:14px}.links a{font-size:11px}a{color:var(--accent);text-decoration:none}.space{margin-top:12px}#legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}#legend span{font:12px monospace;border-bottom:4px solid;padding:4px}#notice{font-size:12px;color:var(--accent2);line-height:1.6;margin:8px 0 0}button:disabled,select:disabled{opacity:.45;cursor:default}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}@media(max-width:760px){#sidebar{padding-top:66px;width:88vw}}@media(prefers-reduced-motion:reduce){#sidebar{transition:none}}
+
+#sidebar .check{display:flex;align-items:center;gap:8px}#legend{gap:12px}#legend span{font:11px system-ui}#canvas{image-rendering:pixelated}
+</style>
+<style>fieldset{border:0;padding:0;margin:0;min-width:0}#sidebar{gap:12px}#controls>div{margin-bottom:12px}#notice{position:absolute;z-index:4;top:55px;left:12px;right:12px;max-width:450px;background:#12151cf5;border:1px solid #e0a55a;border-radius:8px;padding:12px}#notice[hidden]{display:none}#notice p{margin:0 0 10px}#loading{position:absolute;top:45%;left:10%;right:10%;text-align:center}#legend{font-size:11px;line-height:1.8}#legend span{font-family:inherit}#presetNote,#ruleNote{min-height:36px}#stageHint{bottom:78px}#transport{max-width:360px}.rangehead{display:flex;align-items:center;justify-content:space-between}.rangehead output{color:var(--accent);font-size:12px}#sidebar select{min-height:40px}@media(max-width:760px){#sidebar{padding-bottom:40px}}</style><style>
+#editor{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:210px;max-width:100%;margin:12px auto}#editor button{aspect-ratio:1;padding:0;min-height:0;border:1px solid #455066;color:#101721;font-size:20px;font-weight:700;border-radius:5px}#editor button:focus-visible{outline:3px solid white}#progress{font-size:12px;line-height:1.7;min-height:42px}#stageHint{bottom:84px}#transport{max-width:440px}#stats{font-size:12px}.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;line-height:1.7}.legend i{display:inline-block;width:9px;height:9px;margin-right:4px;border-radius:2px}#chart{width:100%;height:120px}#seed{width:100%;background:#181e28;color:#e6e9ef;border:1px solid #303b4d;border-radius:6px;padding:8px}#sidebar .check{display:flex;align-items:center;gap:8px}#sidebar .check input{width:auto}#loading{pointer-events:none}.sub{line-height:1.65}#replay{margin-top:10px}#scoreLabel{font-size:12px;color:var(--accent);line-height:1.6}#importing{color:var(--accent2)}progress{width:100%;height:5px;accent-color:var(--accent)}
+</style></head>
+<body><div id="app"><main id="stage"><canvas id="canvas" aria-label="初代と進化したボクセル生物 / First and evolved voxel creatures"></canvas><div id="stats"></div><div id="notice" role="status" hidden></div><div id="stageHint">上：比較の基準　下：これまでの最優秀個体<br>Top: baseline · Bottom: best so far</div><div id="transport"><button id="play" class="primary">進化を開始 / Start</button><button id="step">1世代 / Generation</button></div></main><div id="sidebarBackdrop"></div><button id="menuToggle" aria-label="設定 / Settings" aria-expanded="false" aria-controls="sidebar">⚙</button><aside id="sidebar"><div class="links"><a href="../index.html">← 図鑑 / Gallery</a><a href="about.html">使い方・理論 / Guide →</a></div><h1>ボクセル生物<br>EvoGym-inspired</h1><p class="sub">体と動かし方を一緒に進化させる。<br>Evolve a body and the way it moves.</p><p class="note">EvoGymに着想を得た軽量版。独自の物理計算とGAを使用します。 / A lightweight adaptation with custom physics and a genetic algorithm.</p>
+<div class="card"><h2>進化 / Evolution</h2><p id="progress" role="status"></p><progress id="bar" value="0" max="24" aria-label="世代の評価進捗 / Evaluation progress"></progress><p id="scoreLabel"></p><label for="population">集団サイズ / Population</label><select id="population"><option>12</option><option selected>24</option><option>48</option></select><label class="check"><input id="morph" type="checkbox" checked>体も進化 / Evolve body too</label><label for="mutation">脳の突然変異率 / Brain mutation <output id="mutationVal">0.12</output></label><input id="mutation" type="range" min="0.02" max="0.4" step="0.01" value="0.12"><label for="seed">乱数シード / Seed</label><input id="seed" type="number" min="0" max="4294967295" value="42"><button id="reset" class="space">現在の初期体からやり直す / Reset</button><p class="note">集団サイズの変更で初期化。体の進化・変異率は次の世代の子に適用。 / Population changes reset; mutation controls affect the next offspring.</p></div>
+<div class="card"><h2>体を描く / Body editor</h2><label for="template">初期体 / Template</label><select id="template"><option value="walker">二脚型 / Two legs</option><option value="worm">横長 / Long body</option><option value="square">四角 / Square</option></select><label for="material">描く素材 / Paint material</label><select id="material"><option value="0">空白 / Empty</option><option value="1">硬い / Rigid</option><option value="2">柔らかい / Soft</option><option value="3" selected>横に伸縮 / Horizontal muscle</option><option value="4">縦に伸縮 / Vertical muscle</option></select><div id="editor" role="group" aria-label="5 × 5 body editor"></div><button id="apply">この体で初めから / Use this body</button><p class="note">辺でつながる4個以上のセルと、筋肉が1個以上必要です。選択・編集後にボタンで反映。 / At least four edge-connected cells and one muscle. Apply to restart.</p><div class="legend"><span><i style="background:#aab6c9"></i>硬 / Rigid</span><span><i style="background:#6acaba"></i>柔 / Soft</span><span><i style="background:#eeac54"></i>横 / H</span><span><i style="background:#b591ef"></i>縦 / V</span></div></div>
+<div class="card"><h2>成績 / Fitness history</h2><canvas id="chart" width="280" height="120" aria-label="最優秀と平均の移動距離 / Best and mean distance"></canvas><p class="note">水色：最優秀、灰：有効個体の平均。6秒間の右向き移動距離（1目盛り＝1ボクセル）。 / Best and valid mean; rightward travel in six seconds, in voxel units.</p></div>
+<div class="card"><h2>個体を交換 / Share a creature</h2><button id="save" disabled>最優秀個体を保存 / Save champion</button><button id="open" class="space">個体を開く / Open creature</button><input id="file" type="file" accept=".json,application/json" hidden><p id="importing" role="status"></p><p class="note">JSONをドロップしても再現できます。体と脳を保存し、同じ開始姿勢から再生。全世代のバックアップではありません。 / Save body and brain, replay from the same start. Not a full evolution checkpoint.</p></div>
+<div class="card"><h2>比較再生 / Replay</h2><button id="replay">再生を止める / Pause replay</button><button id="demo" class="space">進化例を見る / Load evolved example</button><p class="note">6秒ごとに最新の最優秀個体へ更新。カメラは個体を追従。例の読み込みは現在の探索を置き換えます。 / The latest champion is picked every six seconds; following cameras. Loading the example replaces the current search.</p></div>
+<p class="note">CPU / Web Worker。非表示中は計算を中断し、高負荷では自動停止します。 / Background suspension and automatic load protection.</p><p class="footer-note">hamzALIFE · <a href="../privacy.html">Privacy</a> · <a href="THIRD_PARTY_NOTICES.md">Licenses</a></p></aside></div><script type="module" src="app.js"></script></body></html>

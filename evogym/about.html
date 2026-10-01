@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EvoGym-inspired / ボクセル生物 — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="EvoGym-inspired voxel body and neural control co-evolution. 体と制御の共進化。">
+<link rel="canonical" href="https://hamzworkerz.com/evogym/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/evogym/about.html">
+<meta property="og:title" content="EvoGym-inspired / ボクセル生物 — 使い方・理論背景">
+<meta property="og:description" content="EvoGym-inspired voxel body and neural control co-evolution. 体と制御の共進化。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="EvoGym-inspired / ボクセル生物 — 使い方・理論背景">
+<meta name="twitter:description" content="EvoGym-inspired voxel body and neural control co-evolution. 体と制御の共進化。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article><h1>ボクセル生物 / EvoGym-inspired</h1><p class="lead">体の形と動かし方を、一緒に進化させる。</p>
+<h2>最初の実験 / Try it</h2><p>「進化を開始」で、移動距離の大きい個体を親にして世代交代します。上段は最初の世代の最優秀個体、下段はこれまでの最優秀個体です。色は素材を表し、橙は横に伸縮する筋肉、紫は縦に伸縮する筋肉です。転がる・這う・跳ねるなど、右に進めれば選ばれます。歩行姿勢を指定するルールはありません。</p><p lang="en">Start evolution to select creatures that travel farther to the right. Compare the first-generation champion above with the best-so-far below. Orange muscles contract horizontally; purple muscles vertically. Crawling, rolling or hopping can all succeed; upright walking is not prescribed.</p>
+<h2>公式EvoGymとの関係 / Relationship to EvoGym</h2><p><a class="inline" href="https://evolutiongym.github.io/">EvoGym（NeurIPS 2021）</a>は、柔らかいボクセルロボットの形態と制御を研究するベンチマークです。公式環境はC++の物理エンジンとPython APIを備え、強化学習（例：PPO）や形態探索、多数の課題に対応します。</p><p>このページは、その素材の組み合わせと共進化に着想を得た独自のブラウザ版です。公式シミュレータのWebAssembly移植ではありません。平らな床での移動に限定し、独自のばね物理と、体・ニューラルネット重みを同時に探索する遺伝的アルゴリズムを使います。PPO、公式の課題、学習済みモデル、性能スコアとの互換性はありません。</p><p lang="en">This educational browser adaptation is inspired by Evolution Gym (NeurIPS 2021), not a port of its official engine. It uses custom spring physics and a genetic algorithm for joint body/controller search on flat ground. It does not implement PPO or the official tasks, and is not compatible with official policies, robot files or benchmark scores.</p>
+<h2>体と脳 / Body and controller</h2><p>体は5×5の格子。空白・硬い素材・柔らかい素材・横筋肉・縦筋肉を配置します。辺で連結した4個以上のセルと、筋肉1個以上が必要です。各セルの四隅を質点、辺と対角線をばねにし、隣接セルの角と辺を共有します。硬い素材も有限のばね剛性を持つ近似です。</p><p>脳は8入力→8隠れユニット→25出力、297個の重み・バイアスを持つtanhネットです。入力は1 Hzの時計（sin/cos）、重心速度2成分、体の横辺の平均方向2成分、接地割合、重心高さです。出力を筋肉の自然長0.7〜1.3倍に変換し、共有される筋肉辺は指令を平均します。空白や受動セルの出力は使いません。30 Hzで制御し、物理更新は240 Hzです。</p><p lang="en">A connected 5×5 voxel grid uses shared corner masses, edge springs and diagonal braces. The controller is an 8→8→25 tanh network with 297 parameters: clock, center velocity, average horizontal edge orientation, ground contact and height inputs. Muscle rest lengths range from 0.7 to 1.3. Control runs at 30 Hz, physics at 240 Hz.</p>
+<h2>評価と世代交代 / Evaluation and evolution</h2><p>各試行は静止配置で1秒間落ち着かせた後、6秒間の重心の右向き移動距離を測ります。単位は1ボクセル幅で、身体幅で割りません。世代内の上位2個体を保持し、3個体のトーナメント選択と重みの突然変異で子を作ります。交叉は行いません。「体も進化」が有効な場合、子ごとに55%の確率でランダムな1セルの素材変更を試し、連結条件を満たす変更だけ採用します。無効な変更や同じ素材を選んだ場合は形が変わりません。</p><p>平均値は物理的に有効な個体だけを対象にします。体の反転・大きな自己貫通・数値発散は失敗とし選択上の評価を−100にします。最優秀個体として保存・再生はしません。改善は毎世代保証されません。成績グラフは直近500世代です。</p><p lang="en">After one second of passive settling, fitness is six-second rightward center-of-mass displacement in voxel units. Two elites survive; tournament selection and mutation create offspring, without crossover. Optional morphology mutation attempts one material change with 55% probability per child, preserving connectivity. Invalid physics receives −100 for selection and is excluded from the plotted mean. Improvement is not guaranteed each generation.</p>
+<h2>限界と負荷 / Limits and performance</h2><p>床との摩擦と重力を扱う簡易シミュレーションです。複雑な接触解法はなく、セルの反転や0.06単位を超える自己貫通を検知した個体は失敗として扱います。検査は制御更新ごとで、微小な貫通を完全には防ぎません。エネルギー効率、生命の代謝、繁殖、生物進化の現実的再現は目的にしていません。</p><p>評価はCPUのWeb Workerで行います。長い評価や継続的な高負荷では停止し、画面を隠すと未完了の世代を中断します。集団サイズ12から試すと負荷を抑えられます。再生の描画速度と評価の物理時間は分離しています。</p><p lang="en">This simplified gravity/friction simulation rejects detected cell inversions and self-penetration over 0.06 units instead of resolving full self-contact. Small penetrations remain possible. There is no metabolic or energy-efficiency objective. Worker evaluation has load limits, and hiding the page cancels unfinished work. Use population 12 on slower devices.</p>
+<h2>保存・読み込み / Sharing</h2><p>JSONに体と脳、物理バージョンを保存します。読み込んだ個体は同じ開始姿勢から試行し、保存された成績を信用せず端末で再評価します。「進化を開始」で、その個体を親とする新しい探索を開始できます。過去の集団や途中の姿勢を復元する機能ではありません。異なるブラウザでは浮動小数点計算により長期的に微差が生じる場合があります。データはサーバーへ送信しません。</p><p lang="en">JSON stores the body, brain and physics version. Import re-evaluates the creature locally from the standard start, and seeds a new population. It does not restore a full population or an in-flight pose. Small cross-browser numerical differences are possible. No creature data is uploaded.</p>
+<h2>参考・ライセンス / References and licensing</h2><ul><li><a class="inline" href="https://evolutiongym.github.io/">Bhatia et al., Evolution Gym: A Large-Scale Benchmark for Evolving Soft Robots (NeurIPS 2021)</a></li><li><a class="inline" href="https://github.com/EvolutionGym/evogym">Official EvoGym repository</a></li><li><a class="inline" href="THIRD_PARTY_NOTICES.md">利用箇所・改変内容 / Adaptation notices</a> · <a class="inline" href="LICENSE-EvoGym.txt">EvoGym MIT license</a> · <a class="inline" href="../LICENSE">Original software MIT license</a></li></ul><p>筋肉が共有する辺の指令平均化は公式実装を参照してJavaScriptへ翻案しています。その他の簡易物理、GA、UI、進化例は本サイト用に作成。公式プロジェクトによる提供・監修・推奨を意味しません。</p></article></body></html>

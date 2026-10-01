@@ -12,6 +12,7 @@ Standalone editorial text, logos, images (including og-image.png), trademarks, a
 
 | Files | Source / owner | License and notices |
 | --- | --- | --- |
+| evogym/core.js (shared actuator edge averaging) | EvolutionGym/evogym, jagdeepsb; adapted to JavaScript | MIT; evogym/LICENSE-EvoGym.txt and evogym/THIRD_PARTY_NOTICES.md |
 | lenia/orbium-data.js | Bert Chan, Chakazul/Lenia; four decoded Orbium patterns | MIT; lenia/LICENSE-Lenia.txt and lenia/THIRD_PARTY_NOTICES.md |
 | nca/ca.js | Growing Neural Cellular Automata authors; original inference code | Apache-2.0; nca/licenses/APACHE-2.0.txt |
 | nca/models/*.json | Growing Neural Cellular Automata; nine pretrained models | Repository CC BY 4.0; nca/licenses/CC-BY-4.0.txt |
