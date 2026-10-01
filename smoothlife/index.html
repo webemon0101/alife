@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmoothLife / スムーズライフ — ALIFE Collection</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="SmoothLife: continuous cellular automata, moving patterns and interactive painting. 連続セルオートマトンを描いて観察。">
+<link rel="canonical" href="https://hamzworkerz.com/smoothlife/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hamzworkerz.com/smoothlife/">
+<meta property="og:title" content="SmoothLife / スムーズライフ — ALIFE Collection">
+<meta property="og:description" content="SmoothLife: continuous cellular automata, moving patterns and interactive painting. 連続セルオートマトンを描いて観察。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SmoothLife / スムーズライフ — ALIFE Collection">
+<meta name="twitter:description" content="SmoothLife: continuous cellular automata, moving patterns and interactive painting. 連続セルオートマトンを描いて観察。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; width:100vw; }
+  #stage{
+    flex:1; position:relative; min-width:0;
+    background:radial-gradient(ellipse at center, #0f1218 0%, #060708 100%);
+  }
+  #canvas{ display:block; width:100%; height:100%; cursor:crosshair; touch-action:none; }
+  #fps{ position:absolute; top:10px; left:10px; font-size:11px; color:#4a5162; pointer-events:none; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  #menuToggle{
+    display:none; position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--panel-border);
+    color:var(--text); font-size:19px;
+    align-items:center; justify-content:center; cursor:pointer;
+  }
+  #sidebarBackdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40;
+  }
+  @media (max-width: 760px){
+    #menuToggle{ display:flex; }
+    #sidebar{
+      position:fixed; top:0; right:0; height:100%;
+      width:82vw; max-width:340px;
+      transform:translateX(100%);
+      transition:transform .25s ease;
+      z-index:50;
+      box-shadow:-10px 0 30px rgba(0,0,0,0.5);
+    }
+    #sidebar.open{ transform:translateX(0); }
+    #sidebarBackdrop.open{ display:block; }
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .row:last-child{margin-bottom:0;}
+  .row label{ font-size:12.5px; color:var(--text); flex-shrink:0; }
+  .row .val{ font-size:11.5px; color:var(--accent); font-variant-numeric:tabular-nums; min-width:44px; text-align:right; }
+  input[type=range]{ flex:1; margin:0 8px; accent-color:var(--accent); height:4px; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:7px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  .btnrow{ display:flex; gap:8px; }
+  .btnrow button{ flex:1; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .navlink{ font-size:11px; text-decoration:none; }
+  .modebtns{ display:flex; gap:6px; margin-bottom:4px; }
+  .modebtns button{ font-size:11px; padding:6px 4px; }
+  .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+
+#app{height:100dvh}#stats{position:absolute;top:16px;left:16px;right:65px;color:var(--text-dim);font-size:12px;pointer-events:none;line-height:1.6}#stageHint{position:absolute;bottom:76px;left:12px;right:12px;text-align:center;font-size:11px;color:var(--text-dim);pointer-events:none}#transport{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;width:min(94%,410px)}#transport button{min-height:44px;padding:7px 5px}#sidebar label{display:block;font-size:12px;margin:10px 0 8px}#sidebar input[type=range]{display:block;width:100%;margin:0;min-height:28px}#sidebar button{min-height:38px}.links{display:flex;justify-content:space-between;gap:10px;margin-bottom:14px}.links a{font-size:11px}a{color:var(--accent);text-decoration:none}.space{margin-top:12px}#legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}#legend span{font:12px monospace;border-bottom:4px solid;padding:4px}#notice{font-size:12px;color:var(--accent2);line-height:1.6;margin:8px 0 0}button:disabled,select:disabled{opacity:.45;cursor:default}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}@media(max-width:760px){#sidebar{padding-top:66px;width:88vw}}@media(prefers-reduced-motion:reduce){#sidebar{transition:none}}
+
+#sidebar .check{display:flex;align-items:center;gap:8px}#legend{gap:12px}#legend span{font:11px system-ui}#canvas{image-rendering:pixelated}
+</style>
+<style>fieldset{border:0;padding:0;margin:0;min-width:0}#sidebar{gap:12px}#controls>div{margin-bottom:12px}#notice{position:absolute;z-index:4;top:55px;left:12px;right:12px;max-width:450px;background:#12151cf5;border:1px solid #e0a55a;border-radius:8px;padding:12px}#notice[hidden]{display:none}#notice p{margin:0 0 10px}#loading{position:absolute;top:45%;left:10%;right:10%;text-align:center}#legend{font-size:11px;line-height:1.8}#legend span{font-family:inherit}#presetNote,#ruleNote{min-height:36px}#stageHint{bottom:78px}#transport{max-width:360px}.rangehead{display:flex;align-items:center;justify-content:space-between}.rangehead output{color:var(--accent);font-size:12px}#sidebar select{min-height:40px}@media(max-width:760px){#sidebar{padding-bottom:40px}}</style></head>
+<body><div id="app"><main id="stage"><canvas id="canvas" aria-label="SmoothLife drawing canvas"></canvas><div id="stats"></div><div id="notice" role="status" hidden></div><div id="stageHint">ドラッグで描画。右クリックまたは消去モードで消す。<br>Drag to paint; right-click or Erase to remove.</div><div id="transport"><button id="play" class="primary">⏸ 一時停止 / Pause</button><button id="step">1ステップ / Step</button></div></main><div id="sidebarBackdrop"></div><button id="menuToggle" aria-label="設定 / Settings" aria-expanded="false" aria-controls="sidebar">⚙</button><aside id="sidebar"><div class="links"><a href="../index.html">← 図鑑 / Gallery</a><a href="about.html">使い方・理論 / Guide →</a></div><h1>SmoothLife / スムーズライフ</h1><p class="sub">滑らかな状態から、膜や動く塊が生まれる。<br>Continuous states, emergent shapes and motion.</p><div class="card"><h2>初期配置 / Starting patterns</h2><label for="preset">配置 / Layout</label><select id="preset"><option value="soup">斑点のスープ / Random patches</option><option value="single">ひとつの塊 / Single patch</option><option value="empty">空白 / Empty canvas</option></select><label for="seed">乱数シード / Seed</label><input id="seed" type="number" min="0" max="4294967295" value="42" style="width:100%"><div class="btnrow space"><button id="reset">配置リセット / Reset layout</button><button id="shuffle">新しい配置 / New seed</button></div><button id="reference" class="space">代表ルールに戻す / Reference rule</button><p class="note">形や分裂は保証されません。描いて変化を探索できます。 / Explore outcomes; division is not guaranteed.</p></div><div class="card"><h2>世界と操作 / World & tools</h2><label for="resolution">格子 / Grid</label><select id="resolution"><option value="128">128 × 128</option><option value="192">192 × 192</option><option value="256">256 × 256</option></select><label for="mode">時間更新 / Time update</label><select id="mode"><option value="discrete">離散時間 / Discrete</option><option value="continuous">連続時間近似 / Continuous approximation</option></select><p class="note">時間方式を変えると別の振る舞いになります。境界は上下左右ループ。 / Update modes produce different dynamics. Wrapped boundaries.</p><label for="tool">筆 / Brush</label><select id="tool"><option value="paint">描く / Paint</option><option value="erase">消す / Erase</option></select></div><div class="card"><h2>ルールと表示 / Controls</h2><label for="radius">外側半径 / Outer radius <output id="radiusVal">15</output></label><input id="radius" type="range" min="8" max="24" step="1" value="15"><label for="b1">誕生下限 / Birth low <output id="b1Val">0.278</output></label><input id="b1" type="range" min="0.1" max="0.5" step="0.001" value="0.278"><label for="b2">誕生上限 / Birth high <output id="b2Val">0.365</output></label><input id="b2" type="range" min="0.2" max="0.6" step="0.001" value="0.365"><label for="d1">生存下限 / Survival low <output id="d1Val">0.267</output></label><input id="d1" type="range" min="0.1" max="0.5" step="0.001" value="0.267"><label for="d2">生存上限 / Survival high <output id="d2Val">0.445</output></label><input id="d2" type="range" min="0.2" max="0.7" step="0.001" value="0.445"><label for="an">近隣の滑らかさ / αn <output id="anVal">0.028</output></label><input id="an" type="range" min="0.01" max="0.1" step="0.001" value="0.028"><label for="am">内側の滑らかさ / αm <output id="amVal">0.147</output></label><input id="am" type="range" min="0.03" max="0.3" step="0.001" value="0.147"><label for="dt">時間刻み / Time step <output id="dtVal">0.1</output></label><input id="dt" type="range" min="0.01" max="0.3" step="0.01" value="0.1"><label for="rate">更新速度 / Steps per second <output id="rateVal">20</output></label><input id="rate" type="range" min="1" max="30" step="1" value="20"><label for="brush">筆の半径 / Brush radius <output id="brushVal">6</output></label><input id="brush" type="range" min="2" max="16" step="1" value="6"><p class="note">内側半径は外側の1/3。時間刻みは連続時間モードにだけ適用。 / Inner radius = outer / 3. Time step applies only to continuous mode.</p></div><div class="card"><h2>保存・交換 / Snapshots</h2><div class="btnrow"><button id="save">保存 / Save JSON</button><button id="open">開く / Open</button></div><input id="file" type="file" accept=".json,application/json" hidden><p class="note">ファイルのドロップにも対応。読み込むと一時停止します。 / Drop a snapshot to restore, paused.</p></div><p class="note">CPU / Web Worker。高負荷で減速・停止します。格子サイズ変更は初期化します。 / High load slows or pauses; grid changes reset.</p><p class="footer-note">hamzALIFE · <a href="../privacy.html">Privacy</a></p></aside></div><script type="module" src="app.js"></script></body></html>

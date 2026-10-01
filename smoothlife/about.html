@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmoothLife / スムーズライフ — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="SmoothLifeの更新ルールと操作方法。 Continuous cellular automata and controls.">
+<link rel="canonical" href="https://hamzworkerz.com/smoothlife/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/smoothlife/about.html">
+<meta property="og:title" content="SmoothLife / スムーズライフ — 使い方・理論背景">
+<meta property="og:description" content="SmoothLife: continuous states, disk and annulus neighborhoods, interactive painting.">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SmoothLife / スムーズライフ — 使い方・理論背景">
+<meta name="twitter:description" content="SmoothLife: continuous states, disk and annulus neighborhoods, interactive painting.">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article><h1>SmoothLife / スムーズライフ</h1><p class="lead">円と環で近隣を調べる、滑らかなライフゲーム。</p><h2>まず観察する / Explore</h2><p>斑点のスープから始め、膜や移動する塊の変化を観察してください。ドラッグで状態を加え、消去モードまたは右クリックで削れます。空白から自分で描くこともできます。初期配置は本サイトで生成したもので、既知のグライダーを収録したものではありません。分裂や生存を保証しません。</p><p lang="en">Start from random patches, a single patch or an empty canvas. Drag to paint; use Erase or right-click to remove. These are generated starting layouts, not archived gliders. Division and survival are not guaranteed.</p><h2>ルール / Rule</h2><p>Stephan Raflerが2011年に発表したSmoothLifeに基づきます。状態は0〜1。内側の円の平均mと外側の環の平均nを計算し、シグモイドで滑らかにした誕生・生存区間から次の状態sを決めます。内側半径は外側の1/3、円の縁を幅1格子の重みで平滑化しています。</p><div class="eqn">σ(x,a,α) = 1 / [1 + exp(−4(x−a)/α)]<br>t = σ(m, 0.5, αm)<br>lo = b₁(1−t) + d₁t, hi = b₂(1−t) + d₂t<br>s = σ(n, lo, αn) · [1 − σ(n, hi, αn)]</div><p>離散時間では次の状態をsに置換します。連続時間近似ではf ← clamp(f + dt(2s−1), 0, 1)。両者は異なる挙動を示し、同じ設定でグライダーが維持されるとは限りません。代表ルールの区間値は原論文Fig. 1に基づきますが、初期の外側半径は軽量化のため15（図では21）です。</p><p lang="en">Discrete updates replace the state with s. Continuous approximation integrates 2s−1 with explicit Euler and clamps to [0,1]. These are different dynamics. Reference thresholds follow Fig. 1; our default outer radius is 15 rather than 21. Grid sampling approximates the continuous spatial model.</p><h2>見方と限界 / Interpretation</h2><p>密度は状態の平均で、独立した栄養場ではありません。分裂は同一個体の完全複製とは限らず、消滅や変形もあります。画面は格子を滑らかに表示しますが、実際の数値計算は有限格子上です。解像度を変えると、半径が格子単位のため世界内の相対的な構造サイズも変わります。境界は上下左右のループです。</p><p lang="en">Local density is not a separate nutrient field. Splitting does not imply exact self-replication. Computation uses a finite grid with periodic boundaries. Changing grid size resets the world and changes the relative scale of fixed-radius structures.</p><h2>操作と負荷 / Controls and performance</h2><p>リセットは現在のルールのままシードに基づく初期配置を復元します。「代表ルールに戻す」はルールも初期値に戻します。CPUのWeb Workerで計算し、高負荷では更新頻度を下げ、継続する場合や応答がない場合は停止します。別タブでは新たな計算を止めます。128格子から試してください。</p><p lang="en">Reset keeps the rule and restores the seeded layout. Reference rule restores default parameters too. CPU calculations run in a Web Worker; heavy work slows or pauses. Start with a 128 grid. Hidden tabs suspend new work.</p><h2>保存と交換 / Snapshots</h2><p>JSON保存で格子状態・ルール・時間方式・ステップ数を保存します。開くボタンまたはドロップで一時停止状態に復元。ファイルはサーバーに送信しません。他モデルのJSONとは互換性がありません。</p><p lang="en">Save and restore the grid, rule, update mode and step count as JSON. Import pauses playback. Files stay in the browser and are specific to this simulator.</p><h2>出典 / Sources</h2><p>原典の数式に基づく独自実装です。第三者のコードや図版は転載していません。</p><ul><li><a class="inline" href="https://arxiv.org/abs/1111.1567">Rafler (2011): Generalization of Conway’s Game of Life to a continuous domain — SmoothLife</a></li><li><a class="inline" href="https://ccl.northwestern.edu/netlogo/models/SmoothLife">NetLogo SmoothLife: observations and further exploration</a></li></ul></article></body></html>
