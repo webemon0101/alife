@@ -1,0 +1,1 @@
+import {generation} from './core.js';onmessage=({data:d})=>{try{const t=performance.now();postMessage({...generation(d.pop,d.rate,d.seed),ms:performance.now()-t});}catch(e){postMessage({error:e.message});}};

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neuroevolution / 神経進化 — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="神経進化の遺伝的アルゴリズムと仮想生物。 Genetic algorithms and neural locomotion.">
+<link rel="canonical" href="https://hamzworkerz.com/neuroevolution/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/neuroevolution/about.html">
+<meta property="og:title" content="Neuroevolution / 神経進化 — 使い方・理論背景">
+<meta property="og:description" content="Neuroevolution: evolve neural controllers for locomotion.">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Neuroevolution / 神経進化 — 使い方・理論背景">
+<meta name="twitter:description" content="Neuroevolution: evolve neural controllers for locomotion.">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article><h1>神経進化 / Neuroevolution</h1><p class="lead">世代を重ねて、小さな脳が移動方法を探す。</p><h2>観察 / Explore</h2><p>「進化を開始」でランダムな脳の集団を評価します。上段は初代で最も遠くに進んだ個体、下段は全世代で最良の個体。同じ6秒間を繰り返し、動きの変化を比較します。画面は個体に追従するため背景の目盛りや移動距離も見てください。初代が選ばれるまでは静止した身体を表示します。</p><p lang="en">Start evolution to evaluate a population of random brains. Compare the first generation's champion with the best found so far in repeated six-second trials. Cameras follow each creature on a shared scale; read the ground ticks and distance.</p><h2>身体と脳 / Body and brain</h2><p>4つの質点を6本のばねで結んだ固定の身体です。重力・ばねの減衰・地面の簡易摩擦を計算します。神経回路は12入力（周期信号2、ばねの伸び6、接地4）、隠れユニット8、出力6。158個の重みとバイアスが遺伝子で、出力が各ばねの自然長を±25%変えます。周期信号は入力に与えますが、脚の運動順序は指定しません。</p><p lang="en">Four point masses and six damped springs form a fixed body. A 12–8–6 tanh neural network controls rest lengths within ±25%. Inputs are two clock signals, six spring strains and four ground contacts. Its 158 weights and biases form the genome. A clock is supplied; a gait is not prescribed.</p><h2>選択と突然変異 / Evolution</h2><p>各個体は同じ条件で1秒間受動的に落ち着かせた後、6秒間動かします。重心の右向き移動距離だけが評価値です。身体幅1が距離の単位。上位2個体をそのまま残し、3個体のトーナメント選択、一様交叉、重みの突然変異で次世代を作ります。重みは−5〜5に制限します。歩行の効率や直立は評価していないため、転がる・跳ねる動きも選ばれます。改善や二足歩行は保証しません。</p><p lang="en">Fitness is rightward center-of-mass displacement after a six-second trial following passive settling. Two elites survive; tournament selection, uniform crossover and weight mutation produce the rest. Energy efficiency and upright walking are not objectives. Improvement is not guaranteed.</p><h2>モデルの範囲 / Scope</h2><p>これは本サイト独自の2D教材です。固定構造のニューラルネットワークをGAで進化させます。接続構造を進化させるNEATではなく、身体形状も進化させるKarl Simsの研究の再現でもありません。物理は簡略化した質点・ばね系で、ばねの交差や質点同士の衝突は扱いません。数値積分は1/120秒の固定刻みです。</p><p lang="en">This original teaching model evolves fixed-topology neural weights, not NEAT or body morphology. It is not a reproduction of Karl Sims' system. Physics uses a simplified mass-spring model, fixed 1/120-second integration, ground contact, and no self-collision.</p><h2>操作・保存 / Controls and sharing</h2><p>集団サイズ変更は進化を初期化し、突然変異率変更は次回評価の繁殖に適用します。シードはリセットで反映。計算はCPUのWeb Workerで行い、高負荷や応答停止時は直前に完了した世代を保持します。非表示中は評価と再生を止めます。グラフは直近500世代です。</p><p>保存は最優秀個体と初代の脳をJSONに出力します。開く・ドロップで再現し、成績は再計算します。進化集団全体の途中再開データではありません。読み込み後の開始は保存した脳の集団から新しい進化を始めます。ファイルはサーバーへ送信しません。</p><p lang="en">Snapshots store the champion and baseline brains, not the whole evolutionary run. Import recalculates fitness and seeds a fresh population from the champion. Files stay in your browser. Evolution runs in a CPU worker with load protection; hidden tabs suspend work. The chart keeps 500 generations.</p><h2>関連研究 / Further reading</h2><p>以下は背景となる研究です。本モデルのコード・身体・パラメーターは独自のもので、原研究のコードや個体データは使用していません。</p><ul><li><a class="inline" href="https://karlsims.com/evolved-virtual-creatures.html">Karl Sims: Evolved Virtual Creatures (1994)</a></li><li><a class="inline" href="https://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf">Stanley &amp; Miikkulainen: NEAT (2002)</a></li></ul></article></body></html>
