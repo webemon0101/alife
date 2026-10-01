@@ -1,0 +1,1 @@
+import {advance} from './core.js';onmessage=({data:d})=>{try{const t=performance.now(),state=advance(d.state,d.params);postMessage({state,ms:performance.now()-t});}catch(e){postMessage({error:e.message});}};

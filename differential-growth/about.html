@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Differential Growth / 微分成長 — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="微分成長の曲線と局所相互作用。 Differential growth and organic curves.">
+<link rel="canonical" href="https://hamzworkerz.com/differential-growth/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/differential-growth/about.html">
+<meta property="og:title" content="Differential Growth / 微分成長 — 使い方・理論背景">
+<meta property="og:description" content="Differential growth: node insertion and organic curves.">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Differential Growth / 微分成長 — 使い方・理論背景">
+<meta name="twitter:description" content="Differential growth: node insertion and organic curves.">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 40px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  .eqn{ font-family:"Cambria Math","STIX Two Math",serif; font-size:13.5px; color:#c9cdd6;
+    background:#0a0c11; border:1px solid var(--panel-border); border-radius:8px; padding:14px 16px; line-height:2; margin:14px 0; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body><nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav><article><h1>微分成長 / Differential Growth</h1><p class="lead">つながった頂点を増やし、形の成長を観察する。</p><h2>観察 / Explore</h2><p>円・花形・一本の線から開始します。線が伸び、周囲から押されて折り曲がる様子を観察してください。反発距離を広げると周囲との間隔が変わり、滑らかさを増やすと細かい曲がりを抑えます。成長確率0では頂点を増やさず形だけが緩和します。初期化は現在の設定を保ち、シードから配置を作り直します。</p><p lang="en">Start from a circle, flower or open line. Adjust repulsion distance and smoothing to explore folding. Zero growth relaxes the existing curve without adding nodes. Reset preserves controls and regenerates the seeded starting shape.</p><h2>本サイトのルール / Our formulation</h2><p>これは微分成長の考え方に基づく独自の2D曲線モデルです。隣接頂点を自然長5のばねでつなぎ、近隣の頂点間に反発を加え、隣接2頂点の中点に向かう平滑化を加えます。半径170を越えると緩く中心へ戻し、広がるだけでなく折れ曲がる余地を作ります。移動量は1ステップ0.8までです。</p><p>長さ3を超える線分に、指定確率で中点を挿入します。接続順序を保ち、閉じた輪は閉じたまま、線の両端はつながないままです。頂点数の上限を越えません。時間は表示更新と分離した離散ステップです。特定の論文の厳密な再現や生物組織の定量モデルではありません。</p><p lang="en">An original 2D formulation combines neighbor springs of rest length 5, local repulsion, midpoint smoothing and soft confinement beyond radius 170. Motion is capped at 0.8 per step. Edges longer than 3 can receive a midpoint with the chosen probability, preserving open/closed topology. This is not a quantitative tissue model or an exact reproduction of a particular paper.</p><h2>L-Systemとの違い / Compared with L-systems</h2><p>L-Systemの文字列書き換えとは異なり、頂点の追加と位置の調整で形が育ちます。基本の曲線モデルなので分岐・合流、粘菌のネットワーク探索、3Dの面の成長は扱いません。頂点の反発はありますが線分同士の交差判定はないため、自己交差しないことは保証しません。</p><p lang="en">Unlike L-system rewriting, growth comes from added nodes and local position updates. No branching, fusion, network foraging or 3D surfaces are modeled. Node repulsion is not segment collision detection; self-intersections are possible.</p><h2>負荷と保存 / Performance and export</h2><p>CPU Web Workerと空間分割で近隣を計算。継続的な高負荷や応答停止、頂点上限で停止します。非表示中は新しい計算を止めます。描画は曲線全体が収まるよう拡縮するため、実際の成長と画面内の大きさは一致しない場合があります。</p><p>SVGは拡大できるベクトル画像、PNGは長辺1600ピクセルの画像です。どちらも保存時に停止し、同じ頂点を結ぶ折れ線を出力します。画像はシミュレーションの再開データではありません。端末内で生成し、サーバーには送信しません。</p><p lang="en">Worker-based spatial search with load protection and a node cap. The camera fits the whole curve. SVG is vector artwork; PNG has a 1600-pixel long side. Both export the actual polyline and pause playback. They are images, not resumable snapshots, and are generated locally.</p><h2>参考 / References</h2><p>以下の微分成長の実装・解説を背景として、本サイト用にコードを独自作成しました。第三者のコード・画像は転載していません。</p><ul><li><a class="inline" href="https://github.com/inconvergent/differential-line">Anders Hoff / Inconvergent: Differential Line</a></li><li><a class="inline" href="https://www.codeplastic.com/2017/07/22/differential-line-growth-with-processing/">Alberto Giachino: Differential line growth with Processing</a></li></ul></article></body></html>
