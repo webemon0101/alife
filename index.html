@@ -96,7 +96,7 @@
     padding:16px 18px 18px;
     display:flex; flex-direction:column; gap:6px; flex:1;
   }
-  .card h2{
+  .card h3{
     font-size:15px; margin:0; font-weight:600;
   }
   .card .tag{
@@ -124,6 +124,27 @@
     max-width:1080px; margin:0 auto; padding:0 24px 60px;
     font-size:11px; color:#4a5162;
   }
+
+  .category-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 18px}
+  .category-nav a{padding:14px 16px;border:1px solid var(--panel-border);border-radius:10px;background:var(--panel);color:var(--text);text-decoration:none;font-size:13px;line-height:1.6}
+  .category-nav a:hover{border-color:var(--accent);color:var(--accent)}
+  .category-nav small{display:block;color:var(--text-dim);font-size:11px}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+  .browse-note{color:var(--text-dim);font-size:12px;line-height:1.8;margin:0}
+  .category{margin-top:46px;scroll-margin-top:24px}
+  .category>h2{font-size:21px;margin:0 0 10px;line-height:1.5}
+  .category>h2 small{display:block;color:var(--accent);font-size:13px;font-weight:400}
+  .count{display:inline-block;margin-left:10px;font-size:12px;font-weight:400;color:var(--text-dim);vertical-align:middle}
+  .category-description{font-size:13px;line-height:1.8;color:var(--text-dim);margin:0}
+  .category-description span{font-size:12px}
+  .category .grid{margin-top:18px;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}
+  .highlights{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:12px 0 0;margin:auto 0 0}
+  .highlights li{font-size:10px;line-height:1.5;color:#a9ded9;border:1px solid #2b4749;border-radius:7px;padding:5px 8px;background:#152426}
+  .highlights small{display:block;font-size:9px;color:#95b9b8}
+  .highlights li[data-highlight=evolution]{border-color:#4c405f;background:#231e2e;color:#d5c0ee}
+  .highlights li[data-highlight=replication]{border-color:#564832;background:#292319;color:#e8c690}
+  @media(max-width:600px){.category-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.category-nav a{padding:11px;font-size:12px}.category>h2{font-size:19px}.category{margin-top:36px}}
+  @media(prefers-reduced-motion:reduce){a.card{transition:none}a.card:hover{transform:none}}
 </style>
 </head>
 <body>
@@ -138,147 +159,125 @@
   behind it. On mobile, tap the ⚙ icon in the top-right corner of any simulator page to open its control panel.</p>
 </header>
 <main>
-  <div class="grid">
-    <a class="card" href="particle-lenia/index.html"><div class="thumb">🫧</div><div class="body"><span class="tag">Particles / Local Energy</span><h2>粒子レニア / Particle Lenia</h2><p>粒子が作る場に沿って動き、まとまりや形の変化が生まれる。初期配置を選び、発見した状態を保存・交換。</p><p class="en">Explore self-organizing particles driven by local energy gradients. Save and share your discoveries.</p></div></a>
-
-
-    <a class="card" href="nca/index.html">
-      <div class="thumb">🦎</div>
-      <div class="body">
-        <span class="tag">Neural Cellular Automata</span>
-        <h2>NCA（ニューラル・セルオートマトン）</h2>
-        <p>学習した細胞のルールから形が育ち、傷ついた部分が再生する。トカゲ・蝶・木を育てて削り、成長・維持・自己修復の違いを観察。</p>
-        <p class="en">Grow and repair patterns with pretrained neural cellular automata. Erase cells and compare growing, persistent, and regenerating models.</p>
-      </div>
-    </a>
-
-    <a class="card" href="lenia/index.html">
-      <div class="thumb">🫧</div>
-      <div class="body">
-        <span class="tag">Continuous Cellular Automaton</span>
-        <h2>Lenia</h2>
-        <p>Game of Lifeを連続化した、なめらかで生物的な自己組織化パターン。Orbiumなど多様な"種"が発見されている。</p>
-        <p class="en">A continuous generalization of Conway's Life. Smooth, lifelike "creatures" like Orbium glide and rotate.</p>
-      </div>
-    </a>
-
-    <a class="card" href="particle-life/index.html">
-      <div class="thumb">🧬</div>
-      <div class="body">
-        <span class="tag">Multi-Agent</span>
-        <h2>Particle Life</h2>
-        <p>種類ごとの引力・斥力行列だけから、群れ・追いかけ合い・膜状の塊など多様な"生態"が生まれる。ルールをランダム化するたびに別の世界になる。</p>
-        <p class="en">A random attraction/repulsion matrix between particle types is enough to spawn flocks, chases, and cell-like clusters.</p>
-      </div>
-    </a>
-
-    <a class="card" href="primordial-particles/index.html">
-      <div class="thumb">🔬</div><div class="body"><span class="tag">Self-Propelled Particles / Emergence</span><h2>原始粒子系 / PPS</h2><p>1種類の粒子が近隣の数に応じて旋回するだけで、胞子や細胞のような構造が育つ。リング状・三角形の細胞をプリセットから観察。</p><p class="en">Primordial Particle System: simple turns produce spores and cell-like structures. Explore evolved presets with CPU and WebGPU.</p></div>
-    </a>
-
-    <a class="card" href="smoothlife/index.html"><div class="thumb">〰️</div><div class="body"><span class="tag">Continuous Cellular Automata</span><h2>SmoothLife / スムーズライフ</h2><p>滑らかなライフゲーム。円と環で近隣を調べ、膜や移動する塊の変化を観察。描いて探索し、状態を保存。</p><p class="en">Paint and explore a continuous Game of Life. Watch emergent shapes and save your discoveries.</p></div></a>
-
-    <a class="card" href="physarum/index.html">
-      <div class="thumb">🕸️</div>
-      <div class="body">
-        <span class="tag">Chemotaxis / Self-Organization</span>
-        <h2>Physarum 粘菌</h2>
-        <p>化学物質の跡を感知して進む粒子から、脈のような網目が育つ。餌や障害物を配置し、ネットワークの形成と再編成を観察。</p>
-        <p class="en">Particles that sense and follow chemical trails grow into vein-like networks, slime-mold style.</p>
-      </div>
-    </a>
-
-    <a class="card" href="vicsek/index.html"><div class="thumb">➶</div><div class="body"><span class="tag">Active Matter / Collective Motion</span><h2>Vicsek / ヴィツェック・モデル</h2><p>方向の乱れと整列の競合から群れが生まれる。ノイズ・密度を変え、整列度を測定。</p><p class="en">Explore noise-driven collective motion, track alignment and run a noise sweep.</p></div></a>
-
-    <a class="card" href="boids/index.html">
-      <div class="thumb">🐦</div>
-      <div class="body">
-        <span class="tag">Multi-Agent</span>
-        <h2>Boids</h2>
-        <p>分離・整列・結合という3つの局所ルールだけから、群れ行動が創発するCraig Reynolds(1986)の古典モデル。</p>
-        <p class="en">Craig Reynolds' 1986 classic: separation, alignment, and cohesion are enough to produce flocking.</p>
-      </div>
-    </a>
-
-
-    <a class="card" href="wireworld/index.html">
+<nav class="category-nav" aria-label="分類から探す / Browse categories"><a href="#cellular">セルオートマトン<small lang="en">Cellular Automata</small></a><a href="#fields">連続場・パターン形成<small lang="en">Continuous Fields & Patterns</small></a><a href="#particles">粒子の自己組織化<small lang="en">Particle Self-Organization</small></a><a href="#collective">群れ・生態系<small lang="en">Collective Behavior & Ecosystems</small></a><a href="#growth">成長・形態形成<small lang="en">Growth & Morphogenesis</small></a><a href="#evolution">進化・適応<small lang="en">Evolution & Adaptation</small></a></nav>
+<p class="browse-note">見どころのタグを目印に探せます。分類をまたぐ特徴もあります。<br><span lang="en">Use the highlight tags to explore. Models can share features across categories.</span></p>
+<section class="category" id="cellular" aria-labelledby="cellular-heading"><h2 id="cellular-heading">セルオートマトン<span class="count">4</span><small lang="en">Cellular Automata</small></h2><p class="category-description">マス目と局所ルールから生まれる動きや構造。<br><span lang="en">Patterns and motion from cells and local rules.</span></p><div class="grid">
+<a class="card" href="wireworld/index.html">
       <div class="thumb">⚡</div>
       <div class="body">
-        <span class="tag">Cellular Automaton / Signal Processing</span>
-        <h2>Wireworld / ワイヤーワールド</h2>
+        <h3>Wireworld / ワイヤーワールド</h3>
         <p>金色の配線を青い信号が駆け巡る。導線を描き、電子を流して、ループ・分岐・衝突を実験する4状態のセルオートマトン。</p>
         <p class="en">Glowing signals race along golden wires. Draw circuits and explore loops, branching, and collisions with four simple states.</p>
-      </div>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="signals">信号・計算<small lang="en">Signals / computation</small></li></ul></div>
     </a>
-
-    <a class="card" href="langtons-ant/index.html">
+<a class="card" href="langtons-ant/index.html">
       <div class="thumb">🐜</div>
       <div class="body">
-        <span class="tag">Cellular Automaton / Turmite</span>
-        <h2>ラングトンのアリ</h2>
+        <h3>ラングトンのアリ</h3>
         <p>白で右、黒で左。色を反転させながら歩くアリが、複雑な軌跡から「高速道路」を作り出す。多色ルールや盤面の描き換えも実験。</p>
         <p class="en">Langton’s Ant: simple turns create complex paths and an emergent highway. Explore multicolor rules and edit the landscape.</p>
-      </div>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
     </a>
-
-    <a class="card" href="langtons-loops/index.html">
+<a class="card" href="langtons-loops/index.html">
       <div class="thumb">🔁</div>
       <div class="body">
-        <span class="tag">Cellular Automaton / Self-Reproduction</span>
-        <h2>ラングトンループ</h2>
+        <h3>ラングトンループ</h3>
         <p>輪の中を巡る信号が腕を伸ばし、新しい輪を組み立てる。8つの状態と局所ルールから生まれる自己複製と群体の成長を観察。</p>
         <p class="en">Langton’s Loops: circulating signals build new loops. Explore self-reproduction, growing colonies, and collisions.</p>
-      </div>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="replication">自己複製・分裂<small lang="en">Replication / division</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
     </a>
-
-    <a class="card" href="gray-scott/index.html">
-      <div class="thumb">🧫</div>
-      <div class="body">
-        <span class="tag">Reaction-Diffusion</span>
-        <h2>Gray-Scott 散逸構造</h2>
-        <p>反応拡散方程式による自己組織化パターン。Feed/Kill rateで斑点・迷路・カオスなど多様な模様が生まれる、非平衡開放系の基本モデル。</p>
-        <p class="en">A reaction-diffusion system. Tune feed/kill rates for spots, mazes, or spatiotemporal chaos.</p>
-      </div>
-    </a>
-
-    <a class="card" href="game-of-life/index.html">
+<a class="card" href="game-of-life/index.html">
       <div class="thumb">▦</div>
       <div class="body">
-        <span class="tag">Cellular Automaton</span>
-        <h2>コンウェイのライフゲーム</h2>
+        <h3>コンウェイのライフゲーム</h3>
         <p>周囲8セルの生死だけから、静止・振動・移動するパターンが生まれる。グライダー銃を観察し、セルを描いて誕生・生存ルールも実験。</p>
         <p class="en">The classic cellular automaton: still lifes, oscillators, and gliders emerge from one simple rule.</p>
-      </div>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
     </a>
-
-
-
-    <a class="card" href="l-system/index.html">
-      <div class="thumb">🌿</div>
+</div></section>
+<section class="category" id="fields" aria-labelledby="fields-heading"><h2 id="fields-heading">連続場・パターン形成<span class="count">4</span><small lang="en">Continuous Fields & Patterns</small></h2><p class="category-description">密度や濃度の変化から、模様や動く形が生まれる。<br><span lang="en">Changing fields form patterns and moving shapes.</span></p><div class="grid">
+<a class="card" href="nca/index.html">
+      <div class="thumb">🦎</div>
       <div class="body">
-        <span class="tag">L-System / Algorithmic Botany</span>
-        <h2>L-System（エルシステム）</h2>
-        <p>文字列の書き換えと枝分かれから、植物の自己相似構造が生まれる。世代数・分岐角度・生成規則を変えて、シダや樹木のような形を育てる。</p>
-        <p class="en">L-systems turn simple rewriting rules into self-similar plants and fractals. Explore generations, branching angles, and custom grammars.</p>
-      </div>
+        <h3>NCA（ニューラル・セルオートマトン）</h3>
+        <p>学習した細胞のルールから形が育ち、傷ついた部分が再生する。トカゲ・蝶・木を育てて削り、成長・維持・自己修復の違いを観察。</p>
+        <p class="en">Grow and repair patterns with pretrained neural cellular automata. Erase cells and compare growing, persistent, and regenerating models.</p>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
     </a>
-
-    <a class="card" href="predator-prey/index.html">
+<a class="card" href="lenia/index.html">
+      <div class="thumb">🫧</div>
+      <div class="body">
+        <h3>Lenia</h3>
+        <p>Game of Lifeを連続化した、なめらかで生物的な自己組織化パターン。Orbiumなど多様な"種"が発見されている。</p>
+        <p class="en">A continuous generalization of Conway's Life. Smooth, lifelike "creatures" like Orbium glide and rotate.</p>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
+    </a>
+<a class="card" href="smoothlife/index.html"><div class="thumb">〰️</div><div class="body"><h3>SmoothLife / スムーズライフ</h3><p>滑らかなライフゲーム。円と環で近隣を調べ、膜や移動する塊の変化を観察。描いて探索し、状態を保存。</p><p class="en">Paint and explore a continuous Game of Life. Watch emergent shapes and save your discoveries.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div></a>
+<a class="card" href="gray-scott/index.html">
+      <div class="thumb">🧫</div>
+      <div class="body">
+        <h3>Gray-Scott 散逸構造</h3>
+        <p>反応拡散方程式による自己組織化パターン。Feed/Kill rateで斑点・迷路・カオスなど多様な模様が生まれる、非平衡開放系の基本モデル。</p>
+        <p class="en">A reaction-diffusion system. Tune feed/kill rates for spots, mazes, or spatiotemporal chaos.</p>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
+    </a>
+</div></section>
+<section class="category" id="particles" aria-labelledby="particles-heading"><h2 id="particles-heading">粒子の自己組織化<span class="count">3</span><small lang="en">Particle Self-Organization</small></h2><p class="category-description">粒子同士の相互作用から、まとまりが現れる。<br><span lang="en">Local particle interactions create collective structures.</span></p><div class="grid">
+<a class="card" href="particle-lenia/index.html"><div class="thumb">🫧</div><div class="body"><h3>粒子レニア / Particle Lenia</h3><p>粒子が作る場に沿って動き、まとまりや形の変化が生まれる。初期配置を選び、発見した状態を保存・交換。</p><p class="en">Explore self-organizing particles driven by local energy gradients. Save and share your discoveries.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div></a>
+<a class="card" href="particle-life/index.html">
+      <div class="thumb">🧬</div>
+      <div class="body">
+        <h3>Particle Life</h3>
+        <p>種類ごとの引力・斥力行列だけから、群れ・追いかけ合い・膜状の塊など多様な"生態"が生まれる。ルールをランダム化するたびに別の世界になる。</p>
+        <p class="en">A random attraction/repulsion matrix between particle types is enough to spawn flocks, chases, and cell-like clusters.</p>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
+    </a>
+<a class="card" href="primordial-particles/index.html">
+      <div class="thumb">🔬</div><div class="body"><h3>原始粒子系 / PPS</h3><p>1種類の粒子が近隣の数に応じて旋回するだけで、胞子や細胞のような構造が育つ。リング状・三角形の細胞をプリセットから観察。</p><p class="en">Primordial Particle System: simple turns produce spores and cell-like structures. Explore evolved presets with CPU and WebGPU.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="replication">自己複製・分裂<small lang="en">Replication / division</small></li></ul></div>
+    </a>
+</div></section>
+<section class="category" id="collective" aria-labelledby="collective-heading"><h2 id="collective-heading">群れ・生態系<span class="count">4</span><small lang="en">Collective Behavior & Ecosystems</small></h2><p class="category-description">移動・採食・捕食から、集団の振る舞いを観察。<br><span lang="en">Explore collective motion, foraging and predation.</span></p><div class="grid">
+<a class="card" href="physarum/index.html">
+      <div class="thumb">🕸️</div>
+      <div class="body">
+        <h3>Physarum 粘菌</h3>
+        <p>化学物質の跡を感知して進む粒子から、脈のような網目が育つ。餌や障害物を配置し、ネットワークの形成と再編成を観察。</p>
+        <p class="en">Particles that sense and follow chemical trails grow into vein-like networks, slime-mold style.</p>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="collective">群れ・ネットワーク<small lang="en">Swarms / networks</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
+    </a>
+<a class="card" href="vicsek/index.html"><div class="thumb">➶</div><div class="body"><h3>Vicsek / ヴィツェック・モデル</h3><p>方向の乱れと整列の競合から群れが生まれる。ノイズ・密度を変え、整列度を測定。</p><p class="en">Explore noise-driven collective motion, track alignment and run a noise sweep.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="collective">群れ・ネットワーク<small lang="en">Swarms / networks</small></li></ul></div></a>
+<a class="card" href="boids/index.html">
+      <div class="thumb">🐦</div>
+      <div class="body">
+        <h3>Boids</h3>
+        <p>分離・整列・結合という3つの局所ルールだけから、群れ行動が創発するCraig Reynolds(1986)の古典モデル。</p>
+        <p class="en">Craig Reynolds' 1986 classic: separation, alignment, and cohesion are enough to produce flocking.</p>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="collective">群れ・ネットワーク<small lang="en">Swarms / networks</small></li></ul></div>
+    </a>
+<a class="card" href="predator-prey/index.html">
       <div class="thumb">🐺</div>
       <div class="body">
-        <span class="tag">Flocking &amp; Food / Predator–Prey</span>
-        <h2>捕食者・被食者モデル</h2>
+        <h3>捕食者・被食者モデル</h3>
         <p>餌を探す群れと、それを追う捕食者。採食・繁殖・飢餓が生み出す個体数の変化を観察し、餌の再生や逃避の強さを実験。</p>
         <p class="en">Flocking &amp; Food: explore a predator-prey ecosystem with foraging, reproduction, and starvation. Tune food regrowth and escape behavior.</p>
-      </div>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="collective">群れ・ネットワーク<small lang="en">Swarms / networks</small></li></ul></div>
     </a>
-
-    <a class="card" href="neuroevolution/index.html"><div class="thumb">🧬</div><div class="body"><span class="tag">Genetic Algorithm / Neural Control</span><h2>神経進化 / Neuroevolution</h2><p>小さな脳を世代交代で進化させ、移動方法を探索。初代と最優秀個体を比較し、脳を保存・交換。</p><p class="en">Evolve neural locomotion controllers. Compare generations and share your best creature.</p></div></a>
-
-    <a class="card" href="differential-growth/index.html"><div class="thumb">🪸</div><div class="body"><span class="tag">Morphogenesis / Curve Growth</span><h2>微分成長 / Differential Growth</h2><p>頂点の追加と反発から曲線が折れ曲がり、有機的な輪郭へ。成長を調整し、SVG・PNGで保存。</p><p class="en">Grow organic curves with local interactions. Explore folding and export SVG or PNG artwork.</p></div></a>
-
-    <a class="card" href="evogym/index.html"><div class="thumb">🧩</div><div class="body"><span class="tag">Body &amp; Brain / Co-evolution</span><h2>ボクセル生物 / EvoGym-inspired</h2><p>体を描き、形と動かし方を一緒に進化。初代と比較し、個体を保存・交換できる軽量ブラウザ版。</p><p class="en">Evolve voxel bodies and neural controllers together. An EvoGym-inspired experiment with creature sharing.</p></div></a>
-  </div>
+</div></section>
+<section class="category" id="growth" aria-labelledby="growth-heading"><h2 id="growth-heading">成長・形態形成<span class="count">2</span><small lang="en">Growth & Morphogenesis</small></h2><p class="category-description">枝分かれや輪郭の成長から、有機的な形が育つ。<br><span lang="en">Branching and growing outlines create organic forms.</span></p><div class="grid">
+<a class="card" href="l-system/index.html">
+      <div class="thumb">🌿</div>
+      <div class="body">
+        <h3>L-System（エルシステム）</h3>
+        <p>文字列の書き換えと枝分かれから、植物の自己相似構造が生まれる。世代数・分岐角度・生成規則を変えて、シダや樹木のような形を育てる。</p>
+        <p class="en">L-systems turn simple rewriting rules into self-similar plants and fractals. Explore generations, branching angles, and custom grammars.</p>
+      <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
+    </a>
+<a class="card" href="differential-growth/index.html"><div class="thumb">🪸</div><div class="body"><h3>微分成長 / Differential Growth</h3><p>頂点の追加と反発から曲線が折れ曲がり、有機的な輪郭へ。成長を調整し、SVG・PNGで保存。</p><p class="en">Grow organic curves with local interactions. Explore folding and export SVG or PNG artwork.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div></a>
+</div></section>
+<section class="category" id="evolution" aria-labelledby="evolution-heading"><h2 id="evolution-heading">進化・適応<span class="count">2</span><small lang="en">Evolution & Adaptation</small></h2><p class="category-description">世代交代と選択によって、動かし方や体が変わる。<br><span lang="en">Selection changes controllers and bodies across generations.</span></p><div class="grid">
+<a class="card" href="evogym/index.html"><div class="thumb">🧩</div><div class="body"><h3>ボクセル生物 / EvoGym-inspired</h3><p>体を描き、形と動かし方を一緒に進化。初代と比較し、個体を保存・交換できる軽量ブラウザ版。</p><p class="en">Evolve voxel bodies and neural controllers together. An EvoGym-inspired experiment with creature sharing.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="evolution">進化<small lang="en">Evolution</small></li><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li></ul></div></a>
+<a class="card" href="neuroevolution/index.html"><div class="thumb">🧬</div><div class="body"><h3>神経進化 / Neuroevolution</h3><p>小さな脳を世代交代で進化させ、移動方法を探索。初代と最優秀個体を比較し、脳を保存・交換。</p><p class="en">Evolve neural locomotion controllers. Compare generations and share your best creature.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="evolution">進化<small lang="en">Evolution</small></li><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li></ul></div></a>
+</div></section>
 </main>
 <footer>hamzALIFE — ALIFE研究・実験のまとめ ・ <a href="privacy.html" style="color:inherit;">プライバシーポリシー</a> ・ <a href="https://forms.gle/bMW94AYhLcrwzMHJ9" style="color:inherit;" target="_blank" rel="noopener">お問い合わせ / Contact</a></footer>
 </body>
