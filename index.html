@@ -145,7 +145,7 @@
   .highlights li[data-highlight=replication]{border-color:#564832;background:#292319;color:#e8c690}
   @media(max-width:600px){.category-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.category-nav a{padding:11px;font-size:12px}.category>h2{font-size:19px}.category{margin-top:36px}}
   @media(prefers-reduced-motion:reduce){a.card{transition:none}a.card:hover{transform:none}}
-</style>
+.card .model-kind{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0 0 4px;color:#c5d6f0;font-size:10px;line-height:1.6}.model-kind span{border:1px solid #3e495c;background:#1c2533;border-radius:4px;padding:2px 6px}.model-kind small{font-size:10px;color:#a4b8d1}.label-guide{margin-top:16px;font-size:12px;line-height:1.8;color:var(--text-dim);max-width:760px}.label-guide summary{cursor:pointer;color:#a4b8d1;padding:8px 0}.label-guide summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.label-guide p{margin:10px 0}.label-guide strong{color:var(--text)}</style>
 </head>
 <body>
 <header>
@@ -161,6 +161,7 @@
 <main>
 <nav class="category-nav" aria-label="分類から探す / Browse categories"><a href="#cellular">セルオートマトン<small lang="en">Cellular Automata</small></a><a href="#fields">連続場・パターン形成<small lang="en">Continuous Fields & Patterns</small></a><a href="#particles">粒子の自己組織化<small lang="en">Particle Self-Organization</small></a><a href="#collective">群れ・生態系<small lang="en">Collective Behavior & Ecosystems</small></a><a href="#growth">成長・形態形成<small lang="en">Growth & Morphogenesis</small></a><a href="#evolution">進化・適応<small lang="en">Evolution & Adaptation</small></a></nav>
 <p class="browse-note">見どころのタグを目印に探せます。分類をまたぐ特徴もあります。<br><span lang="en">Use the highlight tags to explore. Models can share features across categories.</span></p>
+<details class="label-guide"><summary>モデルのラベルについて / About model labels</summary><p><strong>アレンジ版 / Adaptation</strong>：既存の考え方を基に、仕組みを簡略化・変更した図鑑向けの構成。<br><strong>複合モデル / Hybrid model</strong>：複数の仕組みを組み合わせた構成。</p><p lang="en">Adaptations simplify or modify existing ideas. Hybrid models combine mechanisms. Details and sources are given in each model’s guide.</p><p>出典・変更点・コードの由来は各モデルの解説に記載しています。ラベルは研究上の新規性やライセンスを示すものではなく、ラベルのないモデルが原典と完全に一致することを保証するものでもありません。</p><p lang="en">Labels describe the model’s relationship to prior work, not scientific novelty or licensing. An unlabeled model is not certified as an exact reproduction.</p></details>
 <section class="category" id="cellular" aria-labelledby="cellular-heading"><h2 id="cellular-heading">セルオートマトン<span class="count">4</span><small lang="en">Cellular Automata</small></h2><p class="category-description">マス目と局所ルールから生まれる動きや構造。<br><span lang="en">Patterns and motion from cells and local rules.</span></p><div class="grid">
 <a class="card" href="wireworld/index.html">
       <div class="thumb">⚡</div>
@@ -233,14 +234,14 @@
       <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
     </a>
 <a class="card" href="primordial-particles/index.html">
-      <div class="thumb">🔬</div><div class="body"><h3>原始粒子系 / PPS</h3><p>1種類の粒子が近隣の数に応じて旋回するだけで、胞子や細胞のような構造が育つ。リング状・三角形の細胞をプリセットから観察。</p><p class="en">Primordial Particle System: simple turns produce spores and cell-like structures. Explore evolved presets with CPU and WebGPU.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="replication">自己複製・分裂<small lang="en">Replication / division</small></li></ul></div>
+      <div class="thumb">🔬</div><div class="body"><p class="model-kind"><span>アレンジ版あり</span><small lang="en">Includes adaptation</small></p><h3>原始粒子系 / PPS</h3><p>1種類の粒子が近隣の数に応じて旋回するだけで、胞子や細胞のような構造が育つ。リング状・三角形の細胞をプリセットから観察。</p><p class="en">Primordial Particle System: simple turns produce spores and cell-like structures. Explore evolved presets with CPU and WebGPU.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li><li data-highlight="replication">自己複製・分裂<small lang="en">Replication / division</small></li></ul></div>
     </a>
 </div></section>
 <section class="category" id="collective" aria-labelledby="collective-heading"><h2 id="collective-heading">群れ・生態系<span class="count">4</span><small lang="en">Collective Behavior & Ecosystems</small></h2><p class="category-description">移動・採食・捕食から、集団の振る舞いを観察。<br><span lang="en">Explore collective motion, foraging and predation.</span></p><div class="grid">
 <a class="card" href="physarum/index.html">
       <div class="thumb">🕸️</div>
       <div class="body">
-        <h3>Physarum 粘菌</h3>
+        <p class="model-kind"><span>アレンジ版</span><small lang="en">Adaptation</small></p><h3>Physarum 粘菌</h3>
         <p>化学物質の跡を感知して進む粒子から、脈のような網目が育つ。餌や障害物を配置し、ネットワークの形成と再編成を観察。</p>
         <p class="en">Particles that sense and follow chemical trails grow into vein-like networks, slime-mold style.</p>
       <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="collective">群れ・ネットワーク<small lang="en">Swarms / networks</small></li><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
@@ -257,7 +258,7 @@
 <a class="card" href="predator-prey/index.html">
       <div class="thumb">🐺</div>
       <div class="body">
-        <h3>捕食者・被食者モデル</h3>
+        <p class="model-kind"><span>複合モデル</span><small lang="en">Hybrid model</small></p><h3>捕食者・被食者モデル</h3>
         <p>餌を探す群れと、それを追う捕食者。採食・繁殖・飢餓が生み出す個体数の変化を観察し、餌の再生や逃避の強さを実験。</p>
         <p class="en">Flocking &amp; Food: explore a predator-prey ecosystem with foraging, reproduction, and starvation. Tune food regrowth and escape behavior.</p>
       <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="collective">群れ・ネットワーク<small lang="en">Swarms / networks</small></li></ul></div>
@@ -272,11 +273,11 @@
         <p class="en">L-systems turn simple rewriting rules into self-similar plants and fractals. Explore generations, branching angles, and custom grammars.</p>
       <ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div>
     </a>
-<a class="card" href="differential-growth/index.html"><div class="thumb">🪸</div><div class="body"><h3>微分成長 / Differential Growth</h3><p>頂点の追加と反発から曲線が折れ曲がり、有機的な輪郭へ。成長を調整し、SVG・PNGで保存。</p><p class="en">Grow organic curves with local interactions. Explore folding and export SVG or PNG artwork.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div></a>
+<a class="card" href="differential-growth/index.html"><div class="thumb">🪸</div><div class="body"><p class="model-kind"><span>アレンジ版</span><small lang="en">Adaptation</small></p><h3>微分成長 / Differential Growth</h3><p>頂点の追加と反発から曲線が折れ曲がり、有機的な輪郭へ。成長を調整し、SVG・PNGで保存。</p><p class="en">Grow organic curves with local interactions. Explore folding and export SVG or PNG artwork.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="growth">模様・成長<small lang="en">Patterns / growth</small></li></ul></div></a>
 </div></section>
 <section class="category" id="evolution" aria-labelledby="evolution-heading"><h2 id="evolution-heading">進化・適応<span class="count">2</span><small lang="en">Evolution & Adaptation</small></h2><p class="category-description">世代交代と選択によって、動かし方や体が変わる。<br><span lang="en">Selection changes controllers and bodies across generations.</span></p><div class="grid">
-<a class="card" href="evogym/index.html"><div class="thumb">🧩</div><div class="body"><h3>ボクセル生物 / EvoGym-inspired</h3><p>体を描き、形と動かし方を一緒に進化。初代と比較し、個体を保存・交換できる軽量ブラウザ版。</p><p class="en">Evolve voxel bodies and neural controllers together. An EvoGym-inspired experiment with creature sharing.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="evolution">進化<small lang="en">Evolution</small></li><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li></ul></div></a>
-<a class="card" href="neuroevolution/index.html"><div class="thumb">🧬</div><div class="body"><h3>神経進化 / Neuroevolution</h3><p>小さな脳を世代交代で進化させ、移動方法を探索。初代と最優秀個体を比較し、脳を保存・交換。</p><p class="en">Evolve neural locomotion controllers. Compare generations and share your best creature.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="evolution">進化<small lang="en">Evolution</small></li><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li></ul></div></a>
+<a class="card" href="evogym/index.html"><div class="thumb">🧩</div><div class="body"><p class="model-kind"><span>アレンジ版</span><small lang="en">Adaptation</small></p><h3>ボクセル生物 / EvoGym-inspired</h3><p>体を描き、形と動かし方を一緒に進化。初代と比較し、個体を保存・交換できる軽量ブラウザ版。</p><p class="en">Evolve voxel bodies and neural controllers together. An EvoGym-inspired experiment with creature sharing.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="evolution">進化<small lang="en">Evolution</small></li><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li></ul></div></a>
+<a class="card" href="neuroevolution/index.html"><div class="thumb">🧬</div><div class="body"><p class="model-kind"><span>アレンジ版</span><small lang="en">Adaptation</small></p><h3>神経進化 / Neuroevolution</h3><p>小さな脳を世代交代で進化させ、移動方法を探索。初代と最優秀個体を比較し、脳を保存・交換。</p><p class="en">Evolve neural locomotion controllers. Compare generations and share your best creature.</p><ul class="highlights" aria-label="見どころ / Highlights"><li data-highlight="evolution">進化<small lang="en">Evolution</small></li><li data-highlight="motion">動く個体<small lang="en">Moving forms</small></li></ul></div></a>
 </div></section>
 </main>
 <footer>hamzALIFE — ALIFE研究・実験のまとめ ・ <a href="privacy.html" style="color:inherit;">プライバシーポリシー</a> ・ <a href="https://forms.gle/bMW94AYhLcrwzMHJ9" style="color:inherit;" target="_blank" rel="noopener">お問い合わせ / Contact</a></footer>
