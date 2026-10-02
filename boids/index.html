@@ -99,6 +99,9 @@
   .modebtns button.active{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
 #loadNotice{position:absolute;top:38px;left:12px;right:62px;max-width:460px;z-index:5;padding:12px;background:#12151cf2;border:1px solid var(--accent2);border-radius:8px;font-size:12px;line-height:1.6}#loadNotice[hidden]{display:none}#loadNotice p{margin:0 0 8px}#loadNotice .btnrow{flex-wrap:wrap}#loadNotice button{min-height:40px}#paramsPL input[type=range]{min-height:22px}#sidebar{padding-bottom:32px}@media(max-width:760px){#sidebar{padding-top:66px}}
 #canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}#stateCard button{min-height:42px}#fileStatus{overflow-wrap:anywhere;margin-bottom:0}#saveState:disabled{opacity:.4;cursor:default}#worldSize{font-variant-numeric:tabular-nums}
+#stageRandomizeMatrix{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:auto;max-width:calc(100% - 140px);min-height:42px;z-index:4;background:#12151ce6}
+#stageRandomizeMatrix[hidden]{display:none}
+#loadNotice{top:62px}
 </style>
 </head>
 <body>
@@ -108,6 +111,7 @@
   <div id="stage">
     <span id="fps">-- fps</span>
     <canvas id="canvas"></canvas>
+    <button id="stageRandomizeMatrix" hidden>🎲 ルールを変える / Change rules</button>
     <div id="loadNotice" role="status" aria-live="polite" hidden>
       <p>負荷が高いため一時停止しました。粒子数や相互作用半径を下げて再開できます。<br><span lang="en">Paused due to high load. Reduce particle count or interaction radius before resuming.</span></p>
       <div class="btnrow"><button id="reduceParticles">粒子を半分に / Halve</button><button id="resumeLoad">再開 / Resume</button></div>
@@ -166,7 +170,7 @@
     <div class="card" id="paramsPL" style="display:none;">
       <h2>パラメータ (Particle Life)</h2>
       <label for="boundaryMode" style="font-size:12px">境界 / Boundary</label>
-      <select id="boundaryMode" style="margin:8px 0"><option value="wall">壁 / Walls</option><option value="loop">ループ / Wrap around</option></select>
+      <select id="boundaryMode" style="margin:8px 0"><option value="wall">壁 / Walls</option><option value="loop" selected>ループ / Wrap around</option></select>
       <label for="computeMode" style="font-size:12px">計算 / Compute</label>
       <select id="computeMode" style="margin:8px 0"><option value="auto">自動 / Auto</option><option value="cpu">CPU</option><option value="gpu" disabled>GPU / WebGPU</option></select>
       <p id="computeStatus" class="note" role="status">GPUを確認中 / Checking GPU…</p>
@@ -183,11 +187,11 @@
       <div class="row"><label for="nPLSlider">個体数 / Particles</label><span class="val" id="nPLVal">-</span></div>
       <input type="range" id="nPLSlider" min="100" max="5000" step="1" style="width:100%;">
       <p class="note">最大5,000個。少しずつ増やしてください。指を離すと個体数を適用し、配置をリセットします。高負荷時は自動停止します。<br><span lang="en">Up to 5,000. Increase gradually; release to apply and reset positions. High load pauses playback.</span></p>
-      <div class="row"><label for="plSizeSlider">粒子の半径 / Radius</label><span class="val" id="plSizeVal">2.6 px</span></div>
-      <input type="range" id="plSizeSlider" min="0.5" max="5" step="0.1" value="2.6" style="width:100%;">
+      <div class="row"><label for="plSizeSlider">粒子の半径 / Radius</label><span class="val" id="plSizeVal">1.0 px</span></div>
+      <input type="range" id="plSizeSlider" min="0.5" max="5" step="0.1" value="1.0" style="width:100%;">
       <p class="note">見た目だけを変更します。相互作用の距離・計算量は変わりません。<br><span lang="en">Display size only; interaction distances and calculation count stay the same.</span></p>
       <div class="btnrow" style="margin-top:10px;">
-        <button id="randomizeMatrix">🎲 ルールをランダム化</button>
+        <button id="randomizeMatrix">🎲 ルールを変える / Change rules</button>
       </div>
     </div>
 
@@ -271,8 +275,8 @@
   const B = { sep:1.2, ali:1.0, coh:1.0, radius:55, maxSpeed:3.2 };
 
   // ---------- particle life params ----------
-  let K = 5;
-  const PL = { radius:80, beta:0.3, forceScale:1.0, friction:0.05, displayRadius:2.6 };
+  let K = 10;
+  const PL = { radius:75, beta:0.2, forceScale:0.3, friction:0.25, displayRadius:1.0 };
   let matrix = [];
 
   function randomizeMatrix(){
@@ -569,7 +573,7 @@
   refreshBoidsLabels();
 
   kSlider.value=K; plRadSlider.value=PL.radius; betaSlider.value=PL.beta;
-  forceSlider.value=PL.forceScale; fricSlider.value=PL.friction; nPLSlider.value=500;
+  forceSlider.value=PL.forceScale; fricSlider.value=PL.friction; nPLSlider.value=1000;
   refreshPLLabels();
 
   sepSlider.addEventListener('input', ()=>{ B.sep=parseFloat(sepSlider.value); refreshBoidsLabels(); });
@@ -598,7 +602,8 @@
     setPaused(true);
   });
   document.getElementById('resumeLoad').addEventListener('click', ()=>setPaused(false));
-  document.getElementById('randomizeMatrix').addEventListener('click', ()=>{ randomizeMatrix(); });
+  document.getElementById('randomizeMatrix').addEventListener('click', randomizeMatrix);
+  document.getElementById('stageRandomizeMatrix').addEventListener('click', randomizeMatrix);
 
   const menuToggle = document.getElementById('menuToggle');
   const sidebarBackdrop = document.getElementById('sidebarBackdrop');
@@ -616,6 +621,7 @@
 
   function activateBoids(){
     mode='boids'; gpuEpoch++; updateComputeStatus();
+    document.getElementById('stageRandomizeMatrix').hidden=true;
     document.getElementById('saveState').disabled=true;savedWorld=null;resize();document.getElementById('worldSize').textContent='';
     document.getElementById('modeBoids').classList.add('active');
     document.getElementById('modePL').classList.remove('active');
@@ -628,6 +634,7 @@
   }
   function activatePL(){
     mode='pl'; gpuEpoch++; updateComputeStatus();
+    document.getElementById('stageRandomizeMatrix').hidden=false;
     document.getElementById('saveState').disabled=false;savedWorld??={width:canvas.width,height:canvas.height};
     document.getElementById('modePL').classList.add('active');
     document.getElementById('modeBoids').classList.remove('active');
