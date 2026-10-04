@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MP4 → GIF 変換</title>
+<style>
+  :root{--bg:#12141a;--panel:#1c1f29;--line:#2c3040;--fg:#e8eaf0;--sub:#9aa0b4;--acc:#4da3ff;--acc2:#2f7fd6;--ok:#4cd68a;--err:#ff6b6b}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;line-height:1.5}
+  main{max-width:860px;margin:0 auto;padding:24px 16px 56px}
+  h1{font-size:1.5rem;margin:0 0 4px}
+  .lead{color:var(--sub);margin:0 0 20px;font-size:.92rem}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+  #drop{border:2px dashed var(--line);border-radius:12px;padding:36px 16px;text-align:center;color:var(--sub);cursor:pointer;transition:.15s}
+  #drop.over,#drop:hover{border-color:var(--acc);color:var(--fg);background:#1a2030}
+  #drop b{color:var(--fg)}
+  video,.out img{max-width:100%;border-radius:8px;background:#000;display:block;margin:0 auto}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+  label{display:block;font-size:.82rem;color:var(--sub);margin-bottom:4px}
+  input[type=number]{width:100%;background:#12141a;border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:8px 10px;font-size:1rem}
+  input[type=range]{width:100%}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+  button,a.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:10px 20px;font-size:1rem;cursor:pointer;text-decoration:none;display:inline-block}
+  button:hover,a.btn:hover{background:var(--acc2)}
+  button.sec{background:#2c3040}button.sec:hover{background:#383d52}
+  button:disabled{opacity:.5;cursor:default}
+  .bar{height:10px;background:#12141a;border-radius:6px;overflow:hidden;margin-top:12px}
+  .bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .1s}
+  #status{color:var(--sub);font-size:.88rem;margin-top:8px;min-height:1.3em}
+  .info{color:var(--sub);font-size:.85rem;margin-top:10px}
+  .info b{color:var(--fg)}
+  .err{color:var(--err)}
+  .hidden{display:none}
+  .chk{display:flex;align-items:center;gap:8px;color:var(--fg);font-size:.92rem;margin:0}
+  small{color:var(--sub)}
+</style>
+</head>
+<body>
+<main>
+  <h1>MP4 → GIF 変換</h1>
+  <p class="lead">ブラウザ内だけで変換します。動画はどこにもアップロードされません。</p>
+
+  <div id="drop" class="panel">
+    <p style="margin:0"><b>ここに MP4 をドラッグ＆ドロップ</b><br>またはクリックしてファイルを選択</p>
+    <input id="file" type="file" accept="video/mp4,video/*" class="hidden">
+  </div>
+
+  <section id="editor" class="panel hidden">
+    <video id="video" controls muted playsinline></video>
+    <div class="info" id="meta"></div>
+
+    <div class="grid" style="margin-top:16px">
+      <div><label>開始 (秒)</label><input id="start" type="number" min="0" step="0.1" value="0"></div>
+      <div><label>終了 (秒)</label><input id="end" type="number" min="0" step="0.1" value="0"></div>
+      <div><label>幅 (px) ※高さは自動</label><input id="width" type="number" min="16" max="1920" step="1" value="480"></div>
+      <div><label>フレームレート: <span id="fpsv">12</span> fps</label><input id="fps" type="range" min="1" max="30" value="12"></div>
+    </div>
+    <div class="row">
+      <label class="chk"><input id="dither" type="checkbox" checked> ディザリング（滑らかな色の階調）</label>
+      <label class="chk"><input id="loop" type="checkbox" checked> ループ再生</label>
+      <button class="sec" id="setcur" type="button">現在位置を開始に</button>
+      <button class="sec" id="setcure" type="button">現在位置を終了に</button>
+    </div>
+    <div class="info" id="est"></div>
+
+    <div class="row">
+      <button id="go" type="button">GIF に変換</button>
+      <button id="cancel" type="button" class="sec hidden">キャンセル</button>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+    <div id="status"></div>
+  </section>
+
+  <section id="result" class="panel out hidden">
+    <img id="gif" alt="変換結果">
+    <div class="info" id="rinfo" style="text-align:center"></div>
+    <div class="row" style="justify-content:center"><a id="dl" class="btn" download="output.gif">GIF をダウンロード</a></div>
+  </section>
+</main>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const video = $('video'), drop = $('drop'), fileIn = $('file');
+let srcName = 'output', srcUrl = null, cancelled = false, gifUrl = null;
+
+/* ---------- File loading ---------- */
+drop.addEventListener('click', () => fileIn.click());
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) load(e.dataTransfer.files[0]); });
+fileIn.addEventListener('change', () => { if (fileIn.files[0]) load(fileIn.files[0]); });
+
+function load(f) {
+  if (!f.type.startsWith('video/') && !/\.(mp4|m4v|mov|webm)$/i.test(f.name)) { setStatus('動画ファイルを選択してください。', true); $('editor').classList.remove('hidden'); return; }
+  if (srcUrl) URL.revokeObjectURL(srcUrl);
+  srcName = f.name.replace(/\.[^.]+$/, '') || 'output';
+  srcUrl = URL.createObjectURL(f);
+  video.src = srcUrl;
+  $('result').classList.add('hidden');
+  $('editor').classList.remove('hidden');
+  setStatus('');
+  $('prog').style.width = '0';
+}
+video.addEventListener('loadedmetadata', () => {
+  const d = video.duration || 0;
+  $('start').value = 0;
+  $('end').value = Math.min(d, 10).toFixed(1);
+  $('end').max = $('start').max = d.toFixed(2);
+  $('width').value = Math.min(video.videoWidth, 480);
+  $('meta').innerHTML = `元動画: <b>${video.videoWidth}×${video.videoHeight}</b> / <b>${d.toFixed(1)}</b> 秒`;
+  updateEst();
+});
+video.addEventListener('error', () => setStatus('この動画は読み込めませんでした（ブラウザ非対応のコーデックの可能性）。', true));
+
+function params() {
+  const d = video.duration || 0;
+  let s = Math.max(0, +$('start').value || 0), e = Math.min(d, +$('end').value || d);
+  if (e <= s) e = Math.min(d, s + 0.1);
+  const w = Math.max(16, Math.min(1920, Math.round(+$('width').value || 480)));
+  const h = Math.max(1, Math.round(w * video.videoHeight / video.videoWidth));
+  const fps = +$('fps').value;
+  const n = Math.max(1, Math.floor((e - s) * fps));
+  return { s, e, w, h, fps, n };
+}
+function updateEst() {
+  $('fpsv').textContent = $('fps').value;
+  if (!video.videoWidth) return;
+  const p = params();
+  const mb = p.n * p.w * p.h * 0.35 / 1048576; // rough
+  $('est').innerHTML = `出力: <b>${p.w}×${p.h}</b> / <b>${p.n}</b> フレーム / 約 <b>${mb < 1 ? '<1' : mb.toFixed(0)} MB</b>（目安）` +
+    (p.n > 600 ? ' <span class="err">フレーム数が多いため時間とサイズに注意</span>' : '');
+}
+['start','end','width','fps'].forEach(i => $(i).addEventListener('input', updateEst));
+$('setcur').onclick = () => { $('start').value = video.currentTime.toFixed(1); updateEst(); };
+$('setcure').onclick = () => { $('end').value = video.currentTime.toFixed(1); updateEst(); };
+
+function setStatus(t, err) { const s = $('status'); s.textContent = t; s.classList.toggle('err', !!err); }
+
+/* ---------- Seek helper ---------- */
+function seek(t) {
+  return new Promise(res => {
+    let done = false;
+    const fin = () => { if (done) return; done = true; video.removeEventListener('seeked', fin); clearTimeout(to); res(); };
+    const to = setTimeout(fin, 3000);
+    video.addEventListener('seeked', fin);
+    video.currentTime = t;
+  });
+}
+
+/* ---------- Color quantization (median cut on 15-bit colors) ---------- */
+function buildPalette(px) {
+  const hist = new Uint32Array(32768);
+  for (let i = 0; i < px.length; i += 4) hist[((px[i] >> 3) << 10) | ((px[i + 1] >> 3) << 5) | (px[i + 2] >> 3)]++;
+  const list = [];
+  for (let k = 0; k < 32768; k++) if (hist[k]) list.push({ r: k >> 10, g: (k >> 5) & 31, b: k & 31, c: hist[k] });
+  const mk = arr => {
+    let r0 = 31, r1 = 0, g0 = 31, g1 = 0, b0 = 31, b1 = 0;
+    for (const o of arr) {
+      if (o.r < r0) r0 = o.r; if (o.r > r1) r1 = o.r;
+      if (o.g < g0) g0 = o.g; if (o.g > g1) g1 = o.g;
+      if (o.b < b0) b0 = o.b; if (o.b > b1) b1 = o.b;
+    }
+    const dr = r1 - r0, dg = g1 - g0, db = b1 - b0, m = Math.max(dr, dg, db);
+    return { arr, range: arr.length > 1 ? m : 0, axis: m === dr ? 'r' : m === dg ? 'g' : 'b' };
+  };
+  const boxes = [mk(list)];
+  while (boxes.length < 256) {
+    let bi = -1, best = 0;
+    for (let i = 0; i < boxes.length; i++) if (boxes[i].range > best) { best = boxes[i].range; bi = i; }
+    if (bi < 0) break;
+    const bx = boxes[bi], ax = bx.axis;
+    bx.arr.sort((a, b) => a[ax] - b[ax]);
+    let tot = 0; for (const o of bx.arr) tot += o.c;
+    let acc = 0, cut = 1;
+    for (let i = 0; i < bx.arr.length - 1; i++) { acc += bx.arr[i].c; cut = i + 1; if (acc >= tot / 2) break; }
+    boxes.splice(bi, 1, mk(bx.arr.slice(0, cut)), mk(bx.arr.slice(cut)));
+  }
+  const pal = new Uint8Array(768);
+  boxes.forEach((bx, i) => {
+    let r = 0, g = 0, b = 0, t = 0;
+    for (const o of bx.arr) { r += o.r * o.c; g += o.g * o.c; b += o.b * o.c; t += o.c; }
+    const up = v => { v = Math.round(v / t); return (v << 3) | (v >> 2); };
+    pal[i * 3] = up(r); pal[i * 3 + 1] = up(g); pal[i * 3 + 2] = up(b);
+  });
+  return { pal, count: boxes.length };
+}
+
+function mapPixels(px, w, h, pal, count, dither) {
+  const out = new Uint8Array(w * h);
+  const cache = new Int16Array(32768).fill(-1);
+  const nearest = (r, g, b) => {
+    const key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+    let c = cache[key];
+    if (c >= 0) return c;
+    let bd = 1e9; c = 0;
+    for (let i = 0; i < count; i++) {
+      const dr = r - pal[i * 3], dg = g - pal[i * 3 + 1], db = b - pal[i * 3 + 2];
+      const d = dr * dr * 3 + dg * dg * 4 + db * db * 2;
+      if (d < bd) { bd = d; c = i; }
+    }
+    return (cache[key] = c);
+  };
+  if (!dither) {
+    for (let i = 0, p = 0; i < out.length; i++, p += 4) out[i] = nearest(px[p], px[p + 1], px[p + 2]);
+    return out;
+  }
+  // Floyd–Steinberg
+  const buf = new Float32Array(w * h * 3);
+  for (let i = 0, p = 0; i < w * h; i++, p += 4) { buf[i * 3] = px[p]; buf[i * 3 + 1] = px[p + 1]; buf[i * 3 + 2] = px[p + 2]; }
+  const clamp = v => v < 0 ? 0 : v > 255 ? 255 : v;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, o = i * 3;
+    const r = clamp(buf[o]), g = clamp(buf[o + 1]), b = clamp(buf[o + 2]);
+    const c = nearest(r | 0, g | 0, b | 0);
+    out[i] = c;
+    const er = r - pal[c * 3], eg = g - pal[c * 3 + 1], eb = b - pal[c * 3 + 2];
+    const add = (xx, yy, f) => {
+      if (xx < 0 || xx >= w || yy >= h) return;
+      const q = (yy * w + xx) * 3;
+      buf[q] += er * f; buf[q + 1] += eg * f; buf[q + 2] += eb * f;
+    };
+    add(x + 1, y, 7 / 16); add(x - 1, y + 1, 3 / 16); add(x, y + 1, 5 / 16); add(x + 1, y + 1, 1 / 16);
+  }
+  return out;
+}
+
+/* ---------- GIF encoding ---------- */
+function lzw(idx) {
+  const out = [];
+  let cur = 0, bits = 0, cs = 9, next = 258;
+  const emit = c => {
+    cur |= c << bits; bits += cs;
+    while (bits >= 8) { out.push(cur & 255); cur >>= 8; bits -= 8; }
+  };
+  let dict = new Map();
+  emit(256);
+  let prefix = idx[0];
+  for (let i = 1; i < idx.length; i++) {
+    const k = idx[i], key = (prefix << 8) | k, v = dict.get(key);
+    if (v !== undefined) { prefix = v; continue; }
+    emit(prefix);
+    if (next === 4096) { emit(256); dict = new Map(); next = 258; cs = 9; }
+    else { dict.set(key, next++); if (next > (1 << cs) && cs < 12) cs++; }
+    prefix = k;
+  }
+  emit(prefix); emit(257);
+  if (bits > 0) out.push(cur & 255);
+  return out;
+}
+
+function frameBytes(idx, pal, w, h, delay) {
+  const data = lzw(idx);
+  const parts = [];
+  parts.push(0x21, 0xF9, 4, 0x08, delay & 255, delay >> 8, 0, 0); // GCE: no transparency, restore none
+  parts.push(0x2C, 0, 0, 0, 0, w & 255, w >> 8, h & 255, h >> 8, 0x87); // local color table, 256 entries
+  const head = Uint8Array.from(parts);
+  const subs = Math.ceil(data.length / 255);
+  const res = new Uint8Array(head.length + 768 + 1 + data.length + subs + 1);
+  let o = 0;
+  res.set(head, o); o += head.length;
+  res.set(pal, o); o += 768;
+  res[o++] = 8;
+  for (let i = 0; i < data.length; i += 255) {
+    const n = Math.min(255, data.length - i);
+    res[o++] = n;
+    for (let j = 0; j < n; j++) res[o++] = data[i + j];
+  }
+  res[o++] = 0;
+  return res;
+}
+
+/* ---------- Convert ---------- */
+$('go').onclick = async () => {
+  if (!video.videoWidth) return;
+  const p = params();
+  cancelled = false;
+  $('go').disabled = true; $('cancel').classList.remove('hidden');
+  $('result').classList.add('hidden');
+  video.pause();
+  const cv = document.createElement('canvas');
+  cv.width = p.w; cv.height = p.h;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingQuality = 'high';
+  const delay = Math.max(2, Math.round(100 / p.fps));
+  const chunks = [];
+  chunks.push(Uint8Array.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, p.w & 255, p.w >> 8, p.h & 255, p.h >> 8, 0x00, 0, 0]));
+  if ($('loop').checked) chunks.push(Uint8Array.from([0x21, 0xFF, 11, ...[...'NETSCAPE2.0'].map(c => c.charCodeAt(0)), 3, 1, 0, 0, 0]));
+  try {
+    for (let i = 0; i < p.n; i++) {
+      if (cancelled) throw new Error('cancel');
+      await seek(Math.min(p.s + i / p.fps, Math.max(0, p.e - 0.001)));
+      ctx.drawImage(video, 0, 0, p.w, p.h);
+      const px = ctx.getImageData(0, 0, p.w, p.h).data;
+      const { pal, count } = buildPalette(px);
+      const idx = mapPixels(px, p.w, p.h, pal, count, $('dither').checked);
+      chunks.push(frameBytes(idx, pal, p.w, p.h, delay));
+      $('prog').style.width = ((i + 1) / p.n * 100) + '%';
+      setStatus(`変換中… ${i + 1} / ${p.n} フレーム`);
+      if (i % 2) await new Promise(r => setTimeout(r));
+    }
+    chunks.push(Uint8Array.from([0x3B]));
+    const blob = new Blob(chunks, { type: 'image/gif' });
+    if (gifUrl) URL.revokeObjectURL(gifUrl);
+    gifUrl = URL.createObjectURL(blob);
+    $('gif').src = gifUrl;
+    $('dl').href = gifUrl;
+    $('dl').download = srcName + '.gif';
+    $('rinfo').innerHTML = `<b>${p.w}×${p.h}</b> / ${p.n} フレーム / <b>${(blob.size / 1048576).toFixed(2)} MB</b>`;
+    $('result').classList.remove('hidden');
+    setStatus('完了しました。');
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) {
+    $('prog').style.width = '0';
+    setStatus(e.message === 'cancel' ? 'キャンセルしました。' : '変換に失敗しました: ' + e.message, e.message !== 'cancel');
+  } finally {
+    $('go').disabled = false; $('cancel').classList.add('hidden');
+  }
+};
+$('cancel').onclick = () => { cancelled = true; };
+})();
+</script>
+</body>
+</html>
