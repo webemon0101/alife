@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /util/
 
 Sitemap: https://hamzworkerz.com/sitemap.xml
