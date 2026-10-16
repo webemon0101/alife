@@ -619,8 +619,19 @@
   const playBtn = document.getElementById('playpause');
   playBtn.addEventListener('click', ()=>setPaused(!paused));
 
+  // The page title follows the active model, and the URL carries ?mode=pl so
+  // each model has its own shareable address.
+  const BASE_TITLE = document.title;
+  function setModeMeta(m){
+    document.title = m==='pl' ? 'Particle Life シミュレーター | ALIFE図鑑' : BASE_TITLE;
+    try{
+      const u = new URL(location.href);
+      if(m==='pl') u.searchParams.set('mode','pl'); else u.searchParams.delete('mode');
+      history.replaceState(null,'',u);
+    }catch(e){}
+  }
   function activateBoids(){
-    mode='boids'; gpuEpoch++; updateComputeStatus();
+    mode='boids'; gpuEpoch++; updateComputeStatus(); setModeMeta('boids');
     document.getElementById('stageRandomizeMatrix').hidden=true;
     document.getElementById('saveState').disabled=true;savedWorld=null;resize();document.getElementById('worldSize').textContent='';
     document.getElementById('modeBoids').classList.add('active');
@@ -633,7 +644,7 @@
     refreshBoidsLabels(); initParticles();
   }
   function activatePL(){
-    mode='pl'; gpuEpoch++; updateComputeStatus();
+    mode='pl'; gpuEpoch++; updateComputeStatus(); setModeMeta('pl');
     document.getElementById('stageRandomizeMatrix').hidden=false;
     document.getElementById('saveState').disabled=false;savedWorld??={width:canvas.width,height:canvas.height};
     document.getElementById('modePL').classList.add('active');
