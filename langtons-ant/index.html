@@ -112,7 +112,7 @@
 <div class="card"><h2>表示と速度 / View &amp; Speed</h2><label for="speed">速度 / Steps per second: <span id="speedValue"></span></label><input id="speed" type="range" min="0" max="4" step="0.1" value="2.5"><label for="zoom">セルの大きさ / Cell size</label><input id="zoom" type="range" min="1" max="24" value="6"><label class="check"><input id="follow" type="checkbox" checked> アリを追う / Follow ant</label><div class="btnrow"><button id="fit">全体を見る / Fit</button><button id="save">PNG保存 / Save</button></div></div>
 <div class="card"><h2>操作 / Interaction</h2><label for="tool">キャンバス操作 / Canvas tool</label><select id="tool"><option value="pan">ドラッグで移動 / Pan</option><option value="draw">色を描く / Paint</option><option value="erase">消す / Erase</option></select><p class="note">描画すると一時停止。色は状態1です。ホイールで拡大縮小。<br>Painting pauses the simulation and sets state 1. Scroll to zoom.</p></div>
 <div class="card"><h2>仕組み / How it works</h2><p class="note">今いるセルの色で90°回転 → 色を次へ → 1歩進む。基本のRLでは白で右、黒で左。表示は暗い背景と明るい軌跡で表現しています。<br>Turn, change the cell’s color, then move forward. The classic rule turns right on white, left on black.</p></div>
-<div class="footer-note">hamzALIFE — Langton’s Ant · <a href="../privacy.html">Privacy</a></div>
+<div class="footer-note">hamzWorkerz — Langton’s Ant · <a href="../privacy.html">Privacy</a></div>
 </aside></div><script>class AntWorld {
   constructor(rule='RL'){if(!/^[RL]{2,12}$/.test(rule))throw Error('Invalid rule');this.rule=rule;this.cells=new Map();this.x=0;this.y=0;this.dir=0;this.steps=0;}
   get(x,y){return this.cells.get(`${x},${y}`)||0;}
