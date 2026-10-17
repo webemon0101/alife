@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>グレイ・ウォルターの亀 / Grey Walter's Tortoise — ALIFE図鑑</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="Grey Walter's tortoise simulator: a robot with one light sensor and one touch sensor wanders, seeks moderate light, avoids glare and obstacles, and recharges in its hutch. グレイ・ウォルターの亀ロボットをブラウザで実験。">
+<link rel="canonical" href="https://hamzworkerz.com/tortoise/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hamzworkerz.com/tortoise/">
+<meta property="og:title" content="グレイ・ウォルターの亀 / Grey Walter's Tortoise — ALIFE図鑑">
+<meta property="og:description" content="Grey Walter's tortoise simulator: lifelike behavior from a light sensor, a touch sensor and a few simple rules. グレイ・ウォルターの亀ロボットをブラウザで実験。">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="グレイ・ウォルターの亀 / Grey Walter's Tortoise — ALIFE図鑑">
+<meta name="twitter:description" content="Grey Walter's tortoise simulator: lifelike behavior from a light sensor, a touch sensor and a few simple rules. グレイ・ウォルターの亀ロボットをブラウザで実験。">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a; --danger:#e0665a;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; overflow:hidden;
+  }
+  #app{ display:flex; height:100vh; height:100dvh; width:100vw; }
+  #stage{ flex:1; position:relative; min-width:0; background:#07080b; }
+  #canvas{ display:block; width:100%; height:100%; touch-action:none; cursor:grab; }
+  #canvas.add{ cursor:crosshair; }
+  #stats{ position:absolute; top:14px; left:14px; right:64px; color:var(--text-dim); font-size:12px; line-height:1.7; pointer-events:none; }
+  #stats b{ color:var(--text); font-weight:600; }
+  #transport{ position:absolute; bottom:18px; left:50%; transform:translateX(-50%); display:flex; gap:8px; width:min(90%,340px); }
+  #transport button{ min-height:44px; }
+  #sidebar{
+    width:340px; flex-shrink:0; background:var(--panel); border-left:1px solid var(--panel-border);
+    padding:20px 18px 24px; overflow-y:auto; display:flex; flex-direction:column; gap:16px;
+  }
+  #menuToggle{
+    display:none; position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%;
+    background:var(--panel); border:1px solid var(--panel-border);
+    color:var(--text); font-size:19px; align-items:center; justify-content:center; cursor:pointer;
+  }
+  #sidebarBackdrop{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:40; }
+  @media (max-width: 760px){
+    #menuToggle{ display:flex; }
+    #sidebar{
+      position:fixed; top:0; right:0; height:100%; width:82vw; max-width:340px;
+      transform:translateX(100%); transition:transform .25s ease; z-index:50; box-shadow:-10px 0 30px rgba(0,0,0,0.5);
+    }
+    #sidebar.open{ transform:translateX(0); }
+    #sidebarBackdrop.open{ display:block; }
+  }
+  h1{ font-size:15px; font-weight:600; margin:0 0 2px; letter-spacing:0.02em; }
+  .sub{ font-size:11.5px; color:var(--text-dim); margin:0 0 4px; line-height:1.5; }
+  .links{ display:flex; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .links a, .footer-note a{ font-size:11px; color:var(--accent); text-decoration:none; }
+  .card{ background:#0f1219; border:1px solid var(--panel-border); border-radius:8px; padding:12px 14px; }
+  .card h2{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:0 0 10px; font-weight:600; }
+  label{ display:block; font-size:12px; margin:10px 0 6px; }
+  label:first-of-type{ margin-top:0; }
+  label .val{ color:var(--accent); font-variant-numeric:tabular-nums; float:right; }
+  input[type=range]{ display:block; width:100%; margin:0; accent-color:var(--accent); }
+  .check{ display:flex; align-items:center; gap:8px; margin:8px 0 0; }
+  select, button{
+    background:#171b24; color:var(--text); border:1px solid var(--panel-border);
+    border-radius:6px; padding:8px 10px; font-size:12.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  select:hover, button:hover{ border-color:#3a4152; }
+  button.primary{ background:var(--accent); color:#06201e; border-color:var(--accent); font-weight:600; }
+  button.primary:hover{ filter:brightness(1.08); }
+  button:focus-visible, select:focus-visible, input:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .btnrow{ display:flex; gap:8px; margin-top:8px; }
+  .note{ font-size:11px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+  .note b{ color:var(--text); }
+  .footer-note{ font-size:10.5px; color:#5b6272; text-align:center; margin-top:auto; padding-top:8px; }
+  .legend{ display:flex; gap:10px; flex-wrap:wrap; font-size:11px; color:var(--text-dim); margin-top:6px; }
+  .legend i{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div id="app">
+<button id="menuToggle" aria-label="設定 / Settings" aria-controls="sidebar" aria-expanded="false">⚙</button><div id="sidebarBackdrop"></div>
+<main id="stage"><canvas id="canvas" aria-label="グレイ・ウォルターの亀ロボットのシミュレーション / Grey Walter's tortoise robot simulation"></canvas><div id="stats"></div><div id="transport"><button id="play" class="primary">⏸ Pause / 一時停止</button><button id="step">1 step / 1歩</button></div></main>
+<aside id="sidebar">
+<div>
+  <div class="links"><a href="../index.html">← 図鑑 / Gallery</a><a href="about.html">解説 / About →</a></div>
+  <h1>グレイ・ウォルターの亀</h1>
+  <p class="sub" lang="en">Grey Walter's Tortoise</p>
+  <p class="sub">光センサー1つと接触センサー1つ、ごく簡単な規則だけで、探索し、光に近づき、障害物をよけ、電池が減ると小屋へ帰ります。</p>
+  <p class="sub" lang="en">One light sensor, one touch sensor and a few simple rules: it explores, approaches light, avoids obstacles, and returns to its hutch when the battery runs low.</p>
+</div>
+
+<div class="card"><h2>シナリオ / Scenario</h2>
+  <label for="scen">場面 / Setting</label>
+  <select id="scen">
+    <option value="basic">光と岩 / A lamp and rocks</option>
+    <option value="dark">暗闇の探索 / Exploring in the dark</option>
+    <option value="hutch">電池と小屋 / Battery and hutch</option>
+    <option value="pair">エルマーとエルジー / Elmer and Elsie</option>
+    <option value="rocks">岩の原っぱ / Rock field</option>
+  </select>
+  <div class="btnrow"><button id="reset">最初から / Reset</button><button id="save">PNG保存 / Save PNG</button></div>
+</div>
+
+<div class="card"><h2>亀のようす / Status</h2>
+  <div class="legend" aria-hidden="true"><span><i style="background:#5ad1c7"></i>亀1 / Tortoise 1</span><span><i style="background:#e0a55a"></i>亀2 / Tortoise 2</span></div>
+  <p class="note">左上に、いまの状態・光の強さ・電池が出ます。<br><span lang="en">The top-left readout shows the current state, light level and battery.</span></p>
+</div>
+
+<div class="card"><h2>感覚と動き / Senses &amp; motion</h2>
+  <label for="lo">暗さのしきい値 / Dark threshold <span class="val" id="loV"></span></label>
+  <input id="lo" type="range" min="0.002" max="0.1" step="0.002" value="0.008">
+  <label for="hi">まぶしさのしきい値 / Glare threshold <span class="val" id="hiV"></span></label>
+  <input id="hi" type="range" min="0.2" max="1.2" step="0.01" value="0.55">
+  <label for="cone">光センサーの視野 / Sensor view (°) <span class="val" id="coneV"></span></label>
+  <input id="cone" type="range" min="6" max="45" step="1" value="30">
+  <label for="scan">探索のまわり方 / Scan rate (rad/s) <span class="val" id="scanV"></span></label>
+  <input id="scan" type="range" min="0.4" max="3" step="0.05" value="1.3">
+  <label for="style">接近のしかた / Approach style</label>
+  <select id="style"><option value="track">光を追い続ける / Keep the light centered</option><option value="walter">ウォルター式：舵を止める / Walter: hold the steering</option></select>
+  <label for="drain">電池の減り方 / Battery drain ×<span class="val" id="drainV"></span></label>
+  <input id="drain" type="range" min="0" max="3" step="0.1" value="0">
+  <p class="note">値を変えて、動き方の変化を見てみましょう。0にすると電池は減りません。<br><span lang="en">Change the values and watch how the behavior shifts. At 0 the battery never drains.</span></p>
+</div>
+
+<div class="card"><h2>表示と速度 / View &amp; speed</h2>
+  <label for="sp">速度 / Speed</label>
+  <select id="sp"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select>
+  <label class="check"><input id="showCone" type="checkbox" checked> センサーの視野を表示 / Show sensor view</label>
+  <label class="check"><input id="showTrail" type="checkbox" checked> 軌跡を表示 / Show trails</label>
+  <label class="check"><input id="headlamp" type="checkbox"> ヘッドランプ / Headlamp (lit while scanning)</label>
+</div>
+
+<div class="card"><h2>道具 / Tools</h2>
+  <label for="tool">キャンバスの操作 / Canvas tool</label>
+  <select id="tool">
+    <option value="move">ドラッグで動かす / Move things</option>
+    <option value="lamp">光を置く / Add lamp</option>
+    <option value="rock">岩を置く / Add rock</option>
+    <option value="erase">光・岩を消す / Erase lamp or rock</option>
+  </select>
+  <p class="note">光・岩・小屋・亀は、ドラッグで動かせます。<br><span lang="en">Drag lamps, rocks, the hutch and the tortoises to move them.</span></p>
+</div>
+
+<div class="card"><h2>仕組み / How it works</h2>
+  <p class="note">
+    光センサーは前を向いた細い視野で光を見ます。<b>暗い</b>と、ハンドルを回し続けて探索。<b>ちょうどよい明るさ</b>だと、ハンドルを止めて全速で近づく。<b>まぶしすぎる</b>と、また回って避ける。ぶつかると、さがって向きを変える。電池が減ると「まぶしさ」を感じにくくなり、明るい小屋に入って充電します。<br>
+    <span lang="en">The light sensor looks through a narrow forward view. In the <b>dark</b> it keeps turning its steering to scan. In <b>moderate light</b> it holds the steering and approaches at full speed. In <b>glare</b> it turns away again. On contact it backs off and turns. As its battery drains it stops minding glare, enters the bright hutch and recharges.</span>
+  </p>
+</div>
+<div class="footer-note">hamzWorkerz — Grey Walter's Tortoise · <a href="../privacy.html">Privacy</a></div>
+</aside></div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id), canvas = $('canvas'), ctx = canvas.getContext('2d');
+const W = 1000, H = 640, R0 = 60, BR = 14, WHEELBASE = 22, HUTCH_L = 2.2, TAU = Math.PI * 2, PRESENT = ['#5ad1c7', '#e0a55a'];
+const wrap = a => { a %= TAU; if (a > Math.PI) a -= TAU; if (a < -Math.PI) a += TAU; return a; };
+const P = { lo: .008, hi: .55, cone: 30, scan: 1.3, slow: 36, fast: 72, drain: 0, track: true };
+const STATE = {
+  scan: '探索 Scanning', seek: '接近 Approaching', repel: '回避 Avoiding glare',
+  bump: '衝突 Bump', charge: '充電 Charging', dead: '電池切れ Flat battery'
+};
+let S = { lamps: [], rocks: [], hutch: null, tortoises: [] };
+let paused = matchMedia('(prefers-reduced-motion: reduce)').matches, simSpeed = 1, last = 0, acc = 0, frameNo = 0;
+let view = { s: 1, ox: 0, oy: 0 }, drag = null;
+
+/* ---------- シナリオ ---------- */
+const rocksField = [[260,120,24],[330,500,30],[430,300,26],[520,90,22],[560,470,34],[650,250,28],[720,540,24],[790,130,30],[830,400,26],[600,360,20]];
+const SCENARIOS = {
+  basic: () => ({ lamps: [{ x: 780, y: 330, L: 1 }], rocks: [{ x: 480, y: 210, r: 28 }, { x: 520, y: 450, r: 32 }, { x: 310, y: 330, r: 24 }], hutch: null, tort: [{ x: 140, y: 330, th: 0 }], drain: 0, head: false }),
+  dark: () => ({ lamps: [], rocks: [], hutch: null, tort: [{ x: 500, y: 320, th: 0 }], drain: 0, head: false }),
+  hutch: () => ({ lamps: [], rocks: [{ x: 520, y: 340, r: 36 }, { x: 330, y: 200, r: 26 }], hutch: { x: 140, y: 480 }, tort: [{ x: 520, y: 110, th: 1.2 }], drain: 1, head: false }),
+  pair: () => ({ lamps: [], rocks: [{ x: 500, y: 320, r: 32 }], hutch: { x: 120, y: 320 }, tort: [{ x: 720, y: 160, th: 2.4 }, { x: 760, y: 480, th: -2.2 }], drain: 1, head: true }),
+  rocks: () => ({ lamps: [{ x: 910, y: 320, L: 1 }], rocks: rocksField.map(([x, y, r]) => ({ x, y, r })), hutch: null, tort: [{ x: 90, y: 320, th: 0 }], drain: 0, head: false })
+};
+function makeTortoise(o, i) {
+  return { x: o.x, y: o.y, th: o.th, phi: 0, v: 0, b: 1, state: 'scan', I: 0, bump: 0, bumpSign: 1, cool: 0, lampOn: false, charging: false, ph: Math.random() * TAU, dir: 1, flip: 3 + Math.random() * 6, trail: [], col: PRESENT[i % 2], id: i + 1 };
+}
+function load(name) {
+  const sc = SCENARIOS[name]();
+  S = { lamps: sc.lamps, rocks: sc.rocks, hutch: sc.hutch ? { x: sc.hutch.x, y: sc.hutch.y, r: 42 } : null, tortoises: sc.tort.map(makeTortoise) };
+  P.drain = sc.drain; $('drain').value = sc.drain; $('headlamp').checked = sc.head;
+  syncVals(); draw(); stats(true);
+}
+
+/* ---------- 感覚 ---------- */
+function blocked(x1, y1, x2, y2) {
+  for (const r of S.rocks) {
+    const dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy || 1;
+    const u = Math.max(0, Math.min(1, ((r.x - x1) * dx + (r.y - y1) * dy) / l2));
+    const px = x1 + u * dx - r.x, py = y1 + u * dy - r.y;
+    if (px * px + py * py < r.r * r.r) return true;
+  }
+  return false;
+}
+function sense(t) {
+  const dir = t.th + t.phi, hw = P.cone * Math.PI / 180;
+  const src = S.lamps.map(l => ({ x: l.x, y: l.y, L: l.L }));
+  if (S.hutch) src.push({ x: S.hutch.x, y: S.hutch.y, L: HUTCH_L });
+  for (const o of S.tortoises) if (o !== t && o.lampOn) src.push({ x: o.x, y: o.y, L: .2 });
+  let I = 0, best = 0;
+  t.bearing = null;
+  for (const s of src) {
+    const dx = s.x - t.x, dy = s.y - t.y, d2 = dx * dx + dy * dy, ang = Math.atan2(dy, dx);
+    if (Math.abs(wrap(ang - dir)) > hw) continue;
+    if (blocked(t.x, t.y, s.x, s.y)) continue;
+    const e = s.L / (1 + d2 / (R0 * R0));
+    I += e; if (e > best) { best = e; t.bearing = ang; }
+  }
+  return I;
+}
+
+/* ---------- 制御（ウォルターの規則を簡略化） ---------- */
+function control(t, dt) {
+  t.cool = Math.max(0, t.cool - dt);
+  t.lampOn = false;
+  if (t.b <= 0) { t.state = 'dead'; t.v = 0; return; }
+  if (t.bump > 0) { t.bump -= dt; t.state = 'bump'; t.v = -38; t.phi = t.bumpSign * 0.9; return; }
+  const I = t.I = sense(t);
+  const hiEff = P.hi * (1 + 8 * Math.max(0, 0.6 - t.b) / 0.6);          // 電池が減ると、まぶしさを感じにくくなる
+  if (S.hutch && P.drain > 0) {                                         // 小屋の中：「まぶしすぎない」間に入ったら、ほぼ満タンまで充電する
+    const d = Math.hypot(t.x - S.hutch.x, t.y - S.hutch.y);
+    if (d < S.hutch.r && (t.charging || HUTCH_L / (1 + d * d / (R0 * R0)) <= hiEff) && t.b < .98) {
+      t.charging = true; t.state = 'charge'; t.v = 0; t.b = Math.min(1, t.b + 0.09 * dt); return;
+    }
+  }
+  t.charging = false;
+  if (I < P.lo) {                                                       // 探索：ハンドルを回し続ける（回り方にゆらぎを入れて、同じ所に留まらないようにする）
+    t.state = 'scan'; t.ph += 0.55 * dt; t.flip -= dt;
+    if (t.flip <= 0) { t.dir = -t.dir; t.flip = 3 + Math.random() * 7; }
+    t.phi = wrap(t.phi + t.dir * P.scan * (1 + 0.45 * Math.sin(t.ph)) * dt); t.v = P.slow * (1 + 0.25 * Math.sin(t.ph * 1.7));
+  }
+  else if (I <= hiEff) { t.state = 'seek'; t.v = P.fast; if (P.track && t.bearing !== null) t.phi = wrap(t.bearing - t.th); }
+  else { t.state = 'repel'; t.phi = wrap(t.phi + P.scan * 1.6 * dt); t.v = P.slow * 1.4; }
+  t.lampOn = $('headlamp').checked && t.state === 'scan';
+}
+function move(t, dt) {
+  const c = Math.cos(t.phi);
+  t.x += t.v * c * Math.cos(t.th) * dt;
+  t.y += t.v * c * Math.sin(t.th) * dt;
+  t.th = wrap(t.th + t.v * Math.sin(t.phi) / WHEELBASE * dt);
+  if (P.drain > 0) t.b = Math.max(0, t.b - P.drain * (0.006 + 0.00022 * Math.abs(t.v)) * dt);
+}
+function collide() {
+  for (const t of S.tortoises) {
+    let hit = false;
+    for (const r of S.rocks) {
+      const dx = t.x - r.x, dy = t.y - r.y, d = Math.hypot(dx, dy), m = r.r + BR;
+      if (d < m) { const k = (m - d) / (d || 1); t.x += dx * k; t.y += dy * k; hit = true; }
+    }
+    if (t.x < BR) { t.x = BR; hit = true; } if (t.x > W - BR) { t.x = W - BR; hit = true; }
+    if (t.y < BR) { t.y = BR; hit = true; } if (t.y > H - BR) { t.y = H - BR; hit = true; }
+    for (const o of S.tortoises) {
+      if (o === t) continue;
+      const dx = t.x - o.x, dy = t.y - o.y, d = Math.hypot(dx, dy), m = BR * 2;
+      if (d < m) { const k = (m - d) / (d || 1) / 2; t.x += dx * k; t.y += dy * k; o.x -= dx * k; o.y -= dy * k; hit = true; }
+    }
+    if (hit && t.bump <= 0 && t.cool <= 0 && t.state !== 'charge' && t.state !== 'dead') {
+      t.bump = .7; t.bumpSign = Math.random() < .5 ? -1 : 1; t.cool = 1.3;
+    }
+  }
+}
+function tick(dt) {
+  for (const t of S.tortoises) control(t, dt);
+  for (const t of S.tortoises) move(t, dt);
+  collide();
+  frameNo++;
+  if (frameNo % 3 === 0) for (const t of S.tortoises) {
+    const p = t.trail[t.trail.length - 1];
+    if (!p || Math.hypot(p[0] - t.x, p[1] - t.y) > 1.5) { t.trail.push([t.x, t.y]); if (t.trail.length > 1400) t.trail.shift(); }
+  }
+}
+
+/* ---------- 描画 ---------- */
+function resize() {
+  const dpr = devicePixelRatio || 1;
+  canvas.width = Math.round(canvas.clientWidth * dpr); canvas.height = Math.round(canvas.clientHeight * dpr); draw();
+}
+new ResizeObserver(resize).observe($('stage'));
+function glow(x, y, rad, L, color) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+  g.addColorStop(0, `rgba(${color},${Math.min(.9, .55 * L)})`); g.addColorStop(1, `rgba(${color},0)`);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill();
+}
+function draw() {
+  const dpr = devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = '#07080b'; ctx.fillRect(0, 0, w, h);
+  const s = Math.min(w / W, h / H); view = { s, ox: (w - W * s) / 2, oy: (h - H * s) / 2 };
+  ctx.save(); ctx.translate(view.ox, view.oy); ctx.scale(s, s);
+  ctx.fillStyle = '#0e1118'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#161a24'; ctx.lineWidth = 1; ctx.beginPath();
+  for (let x = 0; x <= W; x += 80) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+  for (let y = 0; y <= H; y += 80) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+  ctx.stroke(); ctx.strokeStyle = '#2a3040'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, W - 2, H - 2);
+  ctx.globalCompositeOperation = 'lighter';
+  for (const l of S.lamps) glow(l.x, l.y, 150, l.L, '255,226,150');
+  if (S.hutch) glow(S.hutch.x, S.hutch.y, 170, 1.2, '255,214,140');
+  for (const t of S.tortoises) if (t.lampOn) glow(t.x, t.y, 70, .2, '255,226,150');
+  ctx.globalCompositeOperation = 'source-over';
+  if (S.hutch) {
+    const h0 = S.hutch; ctx.fillStyle = '#2a2417'; ctx.strokeStyle = '#e0a55a'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(h0.x - h0.r, h0.y - h0.r * .8, h0.r * 2, h0.r * 1.6, 10); else ctx.rect(h0.x - h0.r, h0.y - h0.r * .8, h0.r * 2, h0.r * 1.6);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffe29a'; ctx.beginPath(); ctx.arc(h0.x, h0.y, 7, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#8b93a3'; ctx.font = '11px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('小屋 / Hutch', h0.x, h0.y + h0.r + 16);
+  }
+  for (const l of S.lamps) { ctx.fillStyle = '#fff3c4'; ctx.beginPath(); ctx.arc(l.x, l.y, 7, 0, TAU); ctx.fill(); }
+  for (const r of S.rocks) {
+    const g = ctx.createRadialGradient(r.x - r.r * .3, r.y - r.r * .3, 2, r.x, r.y, r.r);
+    g.addColorStop(0, '#4a5163'); g.addColorStop(1, '#262b38'); ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, TAU); ctx.fill();
+  }
+  if ($('showTrail').checked) for (const t of S.tortoises) {
+    if (t.trail.length < 2) continue;
+    ctx.strokeStyle = t.col; ctx.globalAlpha = .35; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.beginPath();
+    ctx.moveTo(t.trail[0][0], t.trail[0][1]); for (const p of t.trail) ctx.lineTo(p[0], p[1]); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  for (const t of S.tortoises) drawTortoise(t);
+  ctx.restore();
+}
+function drawTortoise(t) {
+  ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(t.th);
+  if ($('showCone').checked && t.state !== 'dead') {
+    const hw = P.cone * Math.PI / 180; ctx.save(); ctx.translate(12, 0); ctx.rotate(t.phi);
+    ctx.fillStyle = t.state === 'seek' ? 'rgba(255,226,150,.16)' : t.state === 'repel' ? 'rgba(224,102,90,.14)' : 'rgba(255,255,255,.06)';
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 190, -hw, hw); ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  ctx.fillStyle = '#10141c'; ctx.fillRect(-12, -15, 8, 4); ctx.fillRect(-12, 11, 8, 4);
+  const g = ctx.createLinearGradient(0, -12, 0, 12); g.addColorStop(0, t.col); g.addColorStop(1, '#1b2a2b');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, 17, 12, 0, 0, TAU); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.save(); ctx.translate(13, 0); ctx.rotate(t.phi); ctx.fillStyle = '#e6e9ef'; ctx.fillRect(-6, -2, 12, 4);
+  ctx.fillStyle = '#ffe29a'; ctx.beginPath(); ctx.arc(6, 0, 2.5, 0, TAU); ctx.fill(); ctx.restore();
+  ctx.restore();
+  if (P.drain > 0) {
+    ctx.fillStyle = '#1b2029'; ctx.fillRect(t.x - 16, t.y - 26, 32, 4);
+    ctx.fillStyle = t.b > .35 ? '#79cf95' : '#e0665a'; ctx.fillRect(t.x - 16, t.y - 26, 32 * t.b, 4);
+  }
+}
+function stats(force) {
+  if (!force && frameNo % 6) return;
+  $('stats').innerHTML = S.tortoises.map(t =>
+    `<div><b style="color:${t.col}">亀${t.id} / Tortoise ${t.id}</b> ・ ${STATE[t.state]} ・ 光 / Light <b>${t.I.toFixed(2)}</b>${P.drain > 0 ? ` ・ 電池 / Battery <b>${Math.round(t.b * 100)}%</b>` : ''}</div>`).join('');
+}
+
+/* ---------- 操作 ---------- */
+function syncVals() {
+  P.lo = +$('lo').value; P.hi = +$('hi').value; P.cone = +$('cone').value; P.scan = +$('scan').value; P.drain = +$('drain').value; P.track = $('style').value === 'track';
+  $('loV').textContent = P.lo.toFixed(3); $('hiV').textContent = P.hi.toFixed(2); $('coneV').textContent = P.cone + '°';
+  $('scanV').textContent = P.scan.toFixed(2); $('drainV').textContent = P.drain.toFixed(1);
+}
+['lo', 'hi', 'cone', 'scan', 'drain'].forEach(id => $(id).oninput = () => { syncVals(); draw(); });
+$('style').onchange = () => { P.track = $('style').value === 'track'; };
+['showCone', 'showTrail'].forEach(id => $(id).onchange = draw);
+$('sp').onchange = () => { simSpeed = +$('sp').value; };
+function setPaused(v) { paused = v; acc = 0; $('play').textContent = paused ? '▶ Play / 再生' : '⏸ Pause / 一時停止'; }
+$('play').onclick = () => setPaused(!paused);
+$('step').onclick = () => { setPaused(true); for (let i = 0; i < 6; i++) tick(1 / 60); draw(); stats(true); };
+$('reset').onclick = () => load($('scen').value);
+$('scen').onchange = () => load($('scen').value);
+$('tool').onchange = () => canvas.classList.toggle('add', $('tool').value === 'lamp' || $('tool').value === 'rock');
+$('save').onclick = () => { draw(); canvas.toBlob(b => { if (!b) return; const u = URL.createObjectURL(b), a = document.createElement('a'); a.href = u; a.download = 'grey-walter-tortoise.png'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1000); }); };
+
+function toWorld(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left - view.ox) / view.s, y: (e.clientY - r.top - view.oy) / view.s }; }
+function pick(p) {
+  let best = null, bd = 1e9;
+  const test = (o, rad, kind) => { const d = Math.hypot(o.x - p.x, o.y - p.y); if (d < rad && d < bd) { bd = d; best = { o, kind }; } };
+  for (const t of S.tortoises) test(t, 24, 'tort');
+  for (const l of S.lamps) test(l, 22, 'lamp');
+  for (const r of S.rocks) test(r, r.r + 6, 'rock');
+  if (S.hutch) test(S.hutch, S.hutch.r, 'hutch');
+  return best;
+}
+canvas.onpointerdown = e => {
+  if (e.button !== 0) return; const p = toWorld(e), tool = $('tool').value;
+  if (tool === 'lamp') { if (S.lamps.length < 8) S.lamps.push({ x: p.x, y: p.y, L: 1 }); draw(); return; }
+  if (tool === 'rock') { if (S.rocks.length < 24) S.rocks.push({ x: p.x, y: p.y, r: 24 }); draw(); return; }
+  const hit = pick(p);
+  if (tool === 'erase') { if (hit && hit.kind === 'lamp') S.lamps.splice(S.lamps.indexOf(hit.o), 1); if (hit && hit.kind === 'rock') S.rocks.splice(S.rocks.indexOf(hit.o), 1); draw(); return; }
+  if (hit) { canvas.setPointerCapture(e.pointerId); drag = { o: hit.o, dx: hit.o.x - p.x, dy: hit.o.y - p.y, kind: hit.kind }; }
+};
+canvas.onpointermove = e => {
+  if (!drag) return; const p = toWorld(e);
+  drag.o.x = Math.max(10, Math.min(W - 10, p.x + drag.dx)); drag.o.y = Math.max(10, Math.min(H - 10, p.y + drag.dy));
+  if (drag.kind === 'tort') { drag.o.v = 0; drag.o.bump = 0; }
+  draw();
+};
+canvas.onpointerup = canvas.onpointercancel = () => { drag = null; };
+
+function menu(open) {
+  $('sidebar').classList.toggle('open', open); $('sidebarBackdrop').classList.toggle('open', open); $('menuToggle').setAttribute('aria-expanded', String(open));
+  $('sidebar').inert = matchMedia('(max-width:760px)').matches && !open;
+}
+$('menuToggle').onclick = () => menu(!$('sidebar').classList.contains('open')); $('sidebarBackdrop').onclick = () => menu(false);
+window.addEventListener('keydown', e => { if (e.key === 'Escape') { menu(false); $('menuToggle').focus(); } });
+window.addEventListener('resize', () => menu(false)); menu(false);
+document.addEventListener('visibilitychange', () => { last = 0; acc = 0; });
+
+function frame(t) {
+  const dt = last ? Math.min((t - last) / 1000, .1) : 0; last = t;
+  if (!paused && !document.hidden) { acc += dt * simSpeed; let n = 0; while (acc >= 1 / 60 && n++ < 40) { tick(1 / 60); acc -= 1 / 60; } if (acc > 1) acc = 0; draw(); stats(false); }
+  requestAnimationFrame(frame);
+}
+setPaused(paused); load('basic'); resize(); requestAnimationFrame(frame);
+</script></body></html>

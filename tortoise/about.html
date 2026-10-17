@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>グレイ・ウォルターの亀 / Grey Walter's Tortoise — 使い方・理論背景</title>
+<meta name="google-adsense-account" content="ca-pub-8860612143084575">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8860612143084575"
+     crossorigin="anonymous"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6SYSH72RB4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6SYSH72RB4');
+</script>
+<meta name="description" content="グレイ・ウォルターの亀ロボット(1948年)の使い方と背景。光センサー1つと接触センサー1つの簡単な規則から、探索・接近・回避・充電が生まれるしくみを解説。 / How to use the Grey Walter tortoise simulator, and the history and rules behind the 1948 robot.">
+<link rel="canonical" href="https://hamzworkerz.com/tortoise/about.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://hamzworkerz.com/tortoise/about.html">
+<meta property="og:title" content="グレイ・ウォルターの亀 / Grey Walter's Tortoise — 使い方・理論背景">
+<meta property="og:description" content="1948年の亀ロボットが、なぜ生き物のように見えるのか。規則と歴史を解説。 / Why the 1948 tortoise robot looks alive: its rules and history.">
+<meta property="og:image" content="https://hamzworkerz.com/og-image.png">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="グレイ・ウォルターの亀 / Grey Walter's Tortoise — 使い方・理論背景">
+<meta name="twitter:image" content="https://hamzworkerz.com/og-image.png">
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#12151c; --panel-border:#232833;
+    --text:#e6e9ef; --text-dim:#8b93a3; --accent:#5ad1c7; --accent2:#e0a55a;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI",system-ui,-apple-system,sans-serif; line-height:1.8; }
+  nav{ max-width:760px; margin:0 auto; padding:28px 24px 0; display:flex; gap:16px; }
+  nav a{ font-size:12px; color:var(--text-dim); text-decoration:none; }
+  nav a:hover{ color:var(--accent); }
+  article{ max-width:760px; margin:0 auto; padding:24px 24px 100px; }
+  h1{ font-size:26px; margin:8px 0 4px; font-weight:700; }
+  .lead{ color:var(--text-dim); font-size:14px; margin:0 0 12px; }
+  h2{ font-size:18px; margin:48px 0 14px; padding-top:10px; border-top:1px solid var(--panel-border); font-weight:600; }
+  h2:first-of-type{ border-top:none; margin-top:8px; }
+  h3{ font-size:14.5px; margin:26px 0 8px; color:var(--accent); }
+  p, li{ font-size:13.5px; color:#d3d7e0; }
+  ul, ol{ padding-left:22px; }
+  li{ margin-bottom:6px; }
+  table{ width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
+  th, td{ border-bottom:1px solid var(--panel-border); padding:8px; text-align:left; vertical-align:top; color:#d3d7e0; }
+  th{ color:var(--text-dim); font-weight:600; font-size:12px; }
+  .note{ font-size:12px; color:var(--text-dim); background:#0f1219; border-left:2px solid var(--accent); padding:10px 14px; border-radius:4px; }
+  .model-origin{ font-size:12px; background:#0f1219; border:1px solid var(--panel-border); border-left:2px solid var(--accent2); border-radius:6px; padding:8px 14px; margin:14px 0 20px; }
+  .model-origin p{ font-size:12px; margin:6px 0; }
+  .origin-note{ color:var(--text-dim); }
+  a.inline{ color:var(--accent); }
+  code{ background:#0a0c11; padding:1px 6px; border-radius:4px; font-size:12.5px; border:1px solid var(--panel-border); }
+  .refs{ font-size:12px; color:var(--text-dim); }
+  .refs li{ margin-bottom:8px; }
+</style>
+</head>
+<body>
+<nav><a href="../index.html">← 図鑑 / Gallery</a><a href="index.html">実験する / Simulator →</a></nav>
+<article>
+  <h1>グレイ・ウォルターの亀 / Grey Walter's Tortoise</h1>
+  <p class="lead">光センサー1つと接触センサー1つ、ごく簡単な規則だけで、生き物のように探索し、光に近づき、障害物をよけ、電池が減ると小屋へ帰るロボットです。</p>
+  <p lang="en">A robot with one light sensor and one touch sensor, and only a few simple rules, that explores like an animal, approaches light, avoids obstacles, and returns to its hutch when its battery runs low.</p>
+  <aside class="model-origin" aria-label="モデルの位置づけ / Model provenance"><p><strong>アレンジ版 / Adaptation</strong></p><p>ウォルターが1950年ごろに記した亀ロボットの規則を基に、連続的な力学で簡略化したものです。真空管の回路そのものを再現したものではなく、しきい値や速度は図鑑向けに調整しています。「光を追い続ける」接近方式は、この図鑑独自の追加です。</p><p lang="en">A simplified adaptation, using continuous kinematics, of the rules Walter described around 1950 for his tortoise robots. It does not reproduce the vacuum-tube circuits, and thresholds and speeds are tuned for this collection. The "keep the light centered" approach style is this collection's own addition.</p><p class="origin-note">この表示は既存の考え方との関係を示し、研究上の新規性を主張するものではありません。<br><span lang="en">This describes the relationship to existing work, not a claim of scientific novelty.</span></p></aside>
+
+  <h2>使い方 / How to use</h2>
+  <ul>
+    <li><b>シナリオ / Scenario</b>：「光と岩」で基本の動きを見て、「暗闇の探索」で、光がないときの動きを見ます。「電池と小屋」と「エルマーとエルジー」では、電池の減少と充電を観察できます。 / Start with "A lamp and rocks" for the basic behavior, and "Exploring in the dark" to see what the tortoise does with no light. "Battery and hutch" and "Elmer and Elsie" let you watch the battery drain and recharge.</li>
+    <li><b>ドラッグ / Drag</b>：光、岩、小屋、亀を、ドラッグで動かせます。亀を持ち上げて、別の場所に置くこともできます。 / Drag lamps, rocks, the hutch and the tortoises. You can pick up a tortoise and put it somewhere else.</li>
+    <li><b>光・岩を置く／消す / Add or erase</b>：「道具」で「光を置く」「岩を置く」「消す」を選び、クリックします。光は8個、岩は24個まで置けます。 / Under Tools, choose Add lamp, Add rock or Erase and click. Up to 8 lamps and 24 rocks.</li>
+    <li><b>しきい値と視野 / Thresholds and view</b>：スライダーで、暗さ・まぶしさのしきい値、センサーの視野、探索のまわり方、電池の減り方を変えられます。 / The sliders change the dark and glare thresholds, the sensor's field of view, the scanning rate and the battery drain.</li>
+    <li><b>接近のしかた / Approach style</b>：「ウォルター式」と「光を追い続ける」を切り替えて、違いを比べられます(下の説明を参照)。 / Switch between "Walter" and "Keep the light centered" and compare (see below).</li>
+    <li><b>スマートフォン / Mobile</b>：右上の歯車で設定を開閉します。 / Use the gear icon at the top right to open or close the settings.</li>
+  </ul>
+
+  <h2>グレイ・ウォルターと亀 / Grey Walter and the tortoises</h2>
+  <p>
+    ウィリアム・グレイ・ウォルター(1910〜1977)は、イギリス・ブリストルのバーデン神経学研究所で働いた神経生理学者です。
+    1948〜49年ごろ、彼は、エルマー(Elmer)とエルジー(Elsie)という2台の小さなロボットを作りました。
+    亀のような丸い殻を持ち、光センサー、接触センサー、2つのモーター(走る、舵を切る)、バッテリー、そして、小さな真空管を使った回路だけで動きます。
+    ウォルターは、これを「Machina speculatrix(探索する機械)」と呼びました。
+    名前の「ELMER」と「ELSIE」は、それぞれ電気機械式ロボットの頭文字を使った略称とされています。
+  </p>
+  <p lang="en">
+    William Grey Walter (1910–1977) was a neurophysiologist at the Burden Neurological Institute in Bristol, England.
+    Around 1948–49 he built two small robots, Elmer and Elsie.
+    Each had a rounded, tortoise-like shell, a light sensor, a touch sensor, two motors (one for driving and one for steering), a battery, and a circuit built from just a couple of small vacuum tubes.
+    Walter called this kind of machine <i>Machina speculatrix</i>, the "speculative" or exploring machine.
+    The names ELMER and ELSIE are said to be acronyms built from "electro-mechanical robot."
+  </p>
+  <p>
+    ウォルターは、「脳の複雑さは、細胞の数よりも、つながり方の豊かさから生まれるのではないか」と考え、ごく少数の部品でも、複雑に見える振る舞いが出せるかどうかを確かめようとしました。
+    その成果は、1950年にScientific American誌の記事「An Imitation of Life(生命の模倣)」で紹介され、1953年の著書『The Living Brain』でも広く知られるようになりました。
+  </p>
+  <p lang="en">
+    Walter suspected that the brain's complexity comes less from the number of cells than from the richness of their connections, and he set out to test whether even a handful of components could produce complex-looking behavior.
+    The work was presented in a 1950 <i>Scientific American</i> article, "An Imitation of Life," and became widely known through his 1953 book <i>The Living Brain</i>.
+  </p>
+
+  <h2>亀の規則 / The tortoise's rules</h2>
+  <p>この図鑑の亀は、次の規則で動きます。光センサーは、走る車輪と一緒に回る、細い視野を持っています。</p>
+  <p lang="en">The tortoise in this collection follows the rules below. The light sensor has a narrow field of view and turns together with the drive wheel.</p>
+  <table>
+    <thead><tr><th>光センサーが見る光 / What the sensor sees</th><th>動き / Behavior</th><th>状態 / State</th></tr></thead>
+    <tbody>
+      <tr><td>暗い(ほぼ見えない) / Dark (almost nothing)</td><td>舵を回し続けて、ゆっくり進む。ふらふらと探し回る。 / Keeps turning the steering and creeps forward, wandering as it searches.</td><td>探索 Scanning</td></tr>
+      <tr><td>ちょうどよい明るさ / Moderate light</td><td>光に向かって、全速で進む。 / Heads for the light at full speed.</td><td>接近 Approaching</td></tr>
+      <tr><td>まぶしすぎる / Too bright</td><td>また舵を回して、光から離れる。 / Turns the steering again and moves away from the light.</td><td>回避 Avoiding glare</td></tr>
+      <tr><td>障害物に触れた / Touches an obstacle</td><td>少しさがって、向きを変える。 / Backs up a little and turns.</td><td>衝突 Bump</td></tr>
+      <tr><td>電池が減った / Battery low</td><td>「まぶしすぎる」と感じにくくなり、明るい小屋にも入っていく。 / Stops minding glare and goes into the bright hutch.</td><td>充電 Charging</td></tr>
+    </tbody>
+  </table>
+  <p>
+    これだけの規則で、「光が好きだが、近づきすぎるのは嫌い」「ぶつかったらよける」「おなかがすいたら、食べ物(小屋)へ行く」という、動物のような行動の流れが見えてきます。
+    しかも、これらの規則は、どれも「いま見えている光」と「触れたかどうか」だけで決まります。地図も、記憶も、目的の理解もありません。
+  </p>
+  <p lang="en">
+    From just these rules you can see an animal-like sequence of behavior: "likes light but dislikes getting too close," "avoids what it bumps into," and "goes to its food (the hutch) when hungry."
+    And each rule depends only on the light currently seen and on whether something has been touched. There is no map, no memory and no understanding of any goal.
+  </p>
+
+  <h2>電池と小屋 / Battery and hutch</h2>
+  <p>
+    ウォルターの亀は、電池が減ると、それまで「まぶしすぎる」と避けていた小屋の光に近づくようになります。小屋の中には充電の接点があり、そこに入ると電池が回復します。
+    電池が満ちると、小屋の光がまた「まぶしすぎる」ものに戻り、亀は小屋を出て、探索を再開します。
+    この図鑑では、電池が減るほど「まぶしさのしきい値」が高くなる、という形で、これを再現しています。
+    小屋に入るのも、出るのも、亀が「判断」しているのではなく、電池の量でセンサーの感じ方が変わるだけです。
+  </p>
+  <p lang="en">
+    When its battery runs low, Walter's tortoise begins to approach the hutch light that it used to avoid as too bright. The hutch has charging contacts, and entering it restores the battery.
+    Once the battery is full, the hutch light becomes "too bright" again, so the tortoise leaves and resumes exploring.
+    This collection reproduces it by raising the glare threshold as the battery drains.
+    Neither entering nor leaving the hutch is a "decision": the battery level simply changes how the sensor responds.
+  </p>
+
+  <h2>2台の亀 / Two tortoises</h2>
+  <p>
+    「エルマーとエルジー」のシナリオでは、2台の亀が動きます。「ヘッドランプ」をオンにすると、探索中の亀の頭に小さな灯りがつき、もう1台がそれを光として見つけることがあります。
+    ウォルターは、亀が鏡に映った自分の灯りに反応して、ふらふらと「踊る」様子(「鏡のダンス」)も記録しました。
+    こうした、亀同士の予想外の関わりも、規則を増やさなくても出てきます。
+  </p>
+  <p lang="en">
+    In the "Elmer and Elsie" scenario two tortoises move around. With the "Headlamp" option on, a tortoise that is scanning lights a small lamp on its head, which the other tortoise may pick up as a light.
+    Walter also recorded a tortoise "dancing" as it reacted to its own lamp reflected in a mirror (the "mirror dance").
+    Unexpected interactions between the tortoises appear without adding any new rules.
+  </p>
+
+  <h2>2つの接近のしかた / Two approach styles</h2>
+  <p>
+    ウォルター式では、光が視野に入った瞬間に舵を止めて、そのまま進みます。車体が回るため、光がすぐ視野から外れて、再び探索が始まります。
+    その繰り返しで、亀は光に向かって、ジグザグに(ホタテ貝のふちのような、波打つ軌跡で)近づきます。
+    ただし、この図鑑の広さでは、光までたどり着くのに時間がかかることがあります。
+  </p>
+  <p>
+    「光を追い続ける」方式では、光が視野に入ったあとも、舵を、光の方向に合わせ続けます。亀はほぼまっすぐ光に向かいます。
+    動き方を比べると、「単純な規則だけで、どこまで目的に近づけるのか」が分かります。
+  </p>
+  <p lang="en">
+    In the Walter style, the steering stops as soon as the light enters the field of view and the tortoise drives on. Because the body turns, the light soon leaves the view and scanning starts again.
+    By repeating this, the tortoise approaches the light in a zigzag, along a wavy, scalloped path.
+    In an arena of this size, though, it can take a while to reach the light.
+  </p>
+  <p lang="en">
+    In the "keep the light centered" style, the steering keeps aiming at the light even after it has entered the view, and the tortoise heads nearly straight for it.
+    Comparing the two shows how far simple rules alone can take a robot toward a goal.
+  </p>
+
+  <h2>試してみる実験 / Experiments to try</h2>
+  <ol>
+    <li>「暗闇の探索」で、軌跡の形を見る。舵を回し続けるだけで、どのような道すじになるか？ / In "Exploring in the dark," look at the shape of the trail. What path comes from simply turning the steering?</li>
+    <li>「光と岩」で、まぶしさのしきい値を下げる。亀は、光からどのくらい離れて回るようになるか？ / In "A lamp and rocks," lower the glare threshold. How far from the lamp does the tortoise end up circling?</li>
+    <li>光と亀のあいだに岩を置く。岩が光をさえぎると、亀の動きはどう変わるか？ / Put a rock between the lamp and the tortoise. How does the behavior change when the rock blocks the light?</li>
+    <li>「電池と小屋」で、電池の減り方を大きくする。亀は、小屋を見つけられるか？ / In "Battery and hutch," increase the battery drain. Can the tortoise still find the hutch?</li>
+    <li>視野を狭くする、広くする。探索の効率は、どう変わるか？ / Make the field of view narrower or wider. How does the efficiency of the search change?</li>
+  </ol>
+
+  <h2>のちの研究へのつながり / Later influence</h2>
+  <p>
+    ウォルターの亀は、「単純な反応の組み合わせで、複雑に見える振る舞いが出る」ことを、実際の機械で示した、初期の例です。
+    1980年代には、ヴァレンティノ・ブライテンベルクが『Vehicles』で、センサーとモーターを直接つなぐだけの思考実験の乗り物を示し、
+    ロドニー・ブルックスは、複雑な内部地図を持たず、反応を積み重ねて動く「サブサンプション・アーキテクチャ」を提案しました。
+    いずれも、ウォルターの亀と通じる考え方です。ただし、これらがウォルターに直接影響を受けたかどうかは、ここでは断定しません。
+  </p>
+  <p lang="en">
+    Walter's tortoises are an early demonstration, in a real machine, that simple reactions can combine into behavior that looks complex.
+    In the 1980s Valentino Braitenberg's <i>Vehicles</i> described thought-experiment vehicles in which sensors are wired directly to motors, and Rodney Brooks proposed the "subsumption architecture," in which behavior is built from layered reactions rather than a complex internal map.
+    Both share ideas with Walter's tortoises. This page does not claim that either was directly influenced by Walter.
+  </p>
+
+  <h2>簡略化している点 / What is simplified</h2>
+  <ul>
+    <li>真空管の回路は再現していません。センサーの値は、光源までの距離と、視野の中にあるかどうかだけで決めています。 / The vacuum-tube circuits are not reproduced. The sensor value depends only on distance to the light and whether it is inside the field of view.</li>
+    <li>光の強さ、しきい値、速度などの数値は、ウォルターの機械のものではなく、見やすさを基準にした、この図鑑独自の値です。 / The values for brightness, thresholds and speeds are not those of Walter's machines; they are this collection's own, chosen for clarity.</li>
+    <li>岩は光をさえぎり、亀は岩に触れると「衝突」の動きをします。壁も同じです。 / Rocks block light, and touching a rock triggers the bump behavior. Walls do too.</li>
+    <li>動きには、乱れ(揺らぎ)を加えています。同じシナリオでも、毎回、少しずつ違う動きになります。 / Some variation is added to the motion, so the same scenario plays out slightly differently each time.</li>
+  </ul>
+
+  <h2>参考文献 / References</h2>
+  <ul class="refs">
+    <li>W. Grey Walter (1950), "An Imitation of Life," <i>Scientific American</i>, 182(5), 42–45.</li>
+    <li>W. Grey Walter (1951), "A Machine That Learns," <i>Scientific American</i>, 185(2), 60–63.</li>
+    <li>W. Grey Walter (1953), <i>The Living Brain</i>. Duckworth.</li>
+    <li>Owen Holland (1997), "Grey Walter: the pioneer of real artificial life," in <i>Artificial Life V</i>, MIT Press.</li>
+    <li>Valentino Braitenberg (1984), <i>Vehicles: Experiments in Synthetic Psychology</i>. MIT Press.</li>
+    <li>Rodney A. Brooks (1986), "A robust layered control system for a mobile robot," <i>IEEE Journal of Robotics and Automation</i>, RA-2(1), 14–23.</li>
+  </ul>
+  <p><a class="inline" href="index.html">シミュレーターで試す / Try the simulator →</a></p>
+  <p class="refs">hamzWorkerz ・ <a class="inline" href="../privacy.html">プライバシーポリシー / Privacy</a></p>
+</article>
+</body>
+</html>
