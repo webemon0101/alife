@@ -105,24 +105,25 @@
 </head>
 <body>
 <nav>
-  <a href="../index.html">← 図鑑トップ</a>
-  <a href="index.html">シミュレーターに戻る →</a>
+  <a href="../index.html">← 図鑑トップ / Gallery</a>
+  <a href="index.html">シミュレーターに戻る / Simulator →</a>
 </nav>
 <article>
-  <h1>Gray-Scott 散逸構造</h1>
+  <h1>Gray-Scott 散逸構造 / Dissipative structures</h1>
   <p class="lead">反応拡散系シミュレーターの使い方と、背景にある非平衡熱力学・散逸構造理論の解説。</p>
+  <p lang="en">How to use the reaction–diffusion simulator, and an introduction to the non-equilibrium thermodynamics and dissipative-structure theory behind it.</p>
 
-  <h2>使い方</h2>
+  <h2>使い方 / How to use</h2>
   <ul>
-    <li><b>プリセット</b>：Mitosis・Coral・Worms など、Pearsonの分類にある代表的なパターンにワンクリックで切り替えられます。</li>
-    <li><b>Feed rate F / Kill rate k</b>：反応の根本パラメータ。スライダーで自由に動かせます。境界線のすぐ近くで劇的にパターンが変わることがあります。</li>
-    <li><b>キャンバス上のドラッグ</b>：クリックしたまま動かすと、その場所に新しい"種"（v成分）を追加できます。</li>
-    <li><b>系を閉じる</b>：ONにするとFを強制的に0にし、外部からの物質流入を止めます。パターンが崩壊していく様子は、開放系であることが構造維持の必要条件であることの直接的な観察です。</li>
-    <li><b>エントロピー / 散逸パネル</b>：下記「HとDの意味」を参照。</li>
-    <li><b>🔬 全プリセットを自動計測</b>：8つのプリセットを自動で切り替えながら、定常状態のH・Dを計測してテーブル化・CSV出力します。</li>
+    <li><b>プリセット / Presets</b>：Mitosis・Coral・Worms など、Pearsonの分類にある代表的なパターンにワンクリックで切り替えられます。 / Switch with one click to representative patterns from Pearson's classification, such as Mitosis, Coral and Worms.</li>
+    <li><b>Feed rate F / Kill rate k</b>：反応の根本パラメータ。スライダーで自由に動かせます。境界線のすぐ近くで劇的にパターンが変わることがあります。 / The fundamental parameters of the reaction. Move them freely with the sliders; the pattern can change dramatically right next to a boundary line.</li>
+    <li><b>キャンバス上のドラッグ / Drag on the canvas</b>：クリックしたまま動かすと、その場所に新しい"種"（v成分）を追加できます。 / Hold and move to add a new "seed" (component v) wherever you drag.</li>
+    <li><b>系を閉じる / Close the system</b>：ONにするとFを強制的に0にし、外部からの物質流入を止めます。パターンが崩壊していく様子は、開放系であることが構造維持の必要条件であることの直接的な観察です。 / When on, F is forced to 0 and the inflow of material from outside stops. Watching the pattern collapse is a direct observation that being an open system is a necessary condition for keeping the structure.</li>
+    <li><b>エントロピー / 散逸パネル / Entropy and dissipation panel</b>：下記「HとDの意味」を参照。 / See "H and D" below.</li>
+    <li><b>🔬 全プリセットを自動計測 / Auto-measure all presets</b>：8つのプリセットを自動で切り替えながら、定常状態のH・Dを計測してテーブル化・CSV出力します。 / Cycles through the 8 presets automatically, measures H and D in the steady state, and outputs a table and CSV.</li>
   </ul>
 
-  <h2>Gray-Scott方程式とは</h2>
+  <h2>Gray-Scott方程式とは / The Gray–Scott equations</h2>
   <div class="eqn">
     ∂u/∂t = Du∇²u − uv² + F(1−u)<br>
     ∂v/∂t = Dv∇²v + uv² − (F+k)v
@@ -130,77 +131,122 @@
   <p>
     u（基質）とv（触媒）という2つの化学物質の濃度場が、拡散しながら反応する系です。<code>uv²</code>という自己触媒的な反応項（vがvを触媒的に増やす）が、Turingパターンと同じ空間パターン形成の駆動力になります。
   </p>
+  <p lang="en">
+    This is a system in which the concentration fields of two chemicals, u (substrate) and v (catalyst), react while diffusing. The autocatalytic reaction term <code>uv²</code> (v catalytically increases v) is the driving force for spatial pattern formation, just as in Turing patterns.
+  </p>
   <p>
     <code>F(1−u)</code>は外部から系にuが流入する速さ（開放系のソース項）、<code>(F+k)v</code>は系からvが排出される速さ（シンク項）です。この<b>FとkがGray-Scott系を非平衡開放系たらしめている核心</b>で、シミュレーターの「系を閉じる」トグルはこのFを0にするだけの操作です。
   </p>
+  <p lang="en">
+    <code>F(1−u)</code> is the rate at which u flows into the system from outside (the source term of an open system), and <code>(F+k)v</code> is the rate at which v is removed from the system (the sink term). <b>These F and k are what make the Gray–Scott system a non-equilibrium open system</b>; the simulator's "Close the system" toggle simply sets this F to 0.
+  </p>
 
-  <h2>なぜ「散逸構造」なのか</h2>
+  <h2>なぜ「散逸構造」なのか / Why "dissipative structures"?</h2>
   <p>
     1977年ノーベル化学賞のIlya Prigogineは、「熱力学的平衡から十分離れた開放系では、非線形な相互作用がエントロピーを環境に捨てながら自己組織化した構造（散逸構造）を安定に維持できる」ことを理論化しました。Bénard対流セルや、後述するベロウソフ・ジャボチンスキー反応が代表例です。
+  </p>
+  <p lang="en">
+    Ilya Prigogine, who won the 1977 Nobel Prize in Chemistry, developed the theory that in an open system far enough from thermodynamic equilibrium, nonlinear interactions can stably maintain self-organized structures (dissipative structures) while discarding entropy into the environment. Bénard convection cells and the Belousov–Zhabotinsky reaction, described below, are classic examples.
   </p>
   <p>
     Gray-Scottのパターンも同じ枠組みで理解できます。<b>開放系(F&gt;0)</b>のときだけパターンが維持され、<b>系を閉じる(F=0)</b>と外部からの物質流入が止まり、パターンは徐々に崩れて熱力学的平衡（一様な状態）に緩和していきます。これはシミュレーター上で実際にトグルを切り替えて確認できます。
   </p>
+  <p lang="en">
+    Gray–Scott patterns can be understood in the same framework. The pattern persists only while the system is <b>open (F&gt;0)</b>; when you <b>close the system (F=0)</b>, the inflow of material stops and the pattern gradually breaks down, relaxing toward thermodynamic equilibrium (a uniform state). You can confirm this yourself by flipping the toggle in the simulator.
+  </p>
 
-  <h3>ベロウソフ・ジャボチンスキー反応との関係</h3>
+  <h3>ベロウソフ・ジャボチンスキー反応との関係 / Relation to the Belousov–Zhabotinsky reaction</h3>
   <p>
     実は、Prigogineが散逸構造理論を作る直接のきっかけになったのが、実際の化学反応である<b>ベロウソフ・ジャボチンスキー反応 (BZ反応)</b>です。シャーレに薄く広げると、ターゲットパターンや回転する渦巻き（スパイラル波）が実際に色の変化として現れます。数学的には「Oregonator」というBZ反応専用の反応拡散モデルがあり、Gray-Scottと同じ「反応項＋拡散項」の枠組みに属します。
+  </p>
+  <p lang="en">
+    In fact, what directly inspired Prigogine to build the theory of dissipative structures was a real chemical reaction, the <b>Belousov–Zhabotinsky (BZ) reaction</b>. Spread thinly in a petri dish, it shows target patterns and rotating spiral waves as actual changes in color. Mathematically there is a reaction–diffusion model devoted to it, the "Oregonator," which belongs to the same "reaction term plus diffusion term" framework as Gray–Scott.
   </p>
   <p>
     そして普通のフラスコ（バッチ反応器）でBZ反応をやると、試薬が消費され尽くして振動が止まります——これはまさに「系を閉じる」トグルと同じ現象です。振動・パターンを永続的に維持するには、試薬を絶えず供給し続ける<b>CSTR（連続撹拌槽型反応器）</b>という装置が必要で、これが化学の世界における<code>F</code>の実体です。
   </p>
+  <p lang="en">
+    And if you run the BZ reaction in an ordinary flask (a batch reactor), the reagents are used up and the oscillations stop. That is exactly the same phenomenon as the "Close the system" toggle. To keep oscillations and patterns going indefinitely you need a device that keeps feeding in reagents, a <b>CSTR (continuous stirred-tank reactor)</b>, which is the chemical counterpart of <code>F</code>.
+  </p>
 
-  <h2>Pearsonの分類とプリセット</h2>
+  <h2>Pearsonの分類とプリセット / Pearson's classification and the presets</h2>
   <p>
     Gray-ScottのF・kパラメータ空間は、Pearson (1993) がギリシャ文字で約12クラスに分類して以来、30年以上にわたって世界中で調べ尽くされています（<a class="inline" href="http://www.mrob.com/pub/comp/xmorphia/" target="_blank" rel="noopener">MROBのアーカイブ</a>に数千点の座標が公開）。このシミュレーターのプリセットはその代表的な座標です。
   </p>
+  <p lang="en">
+    Ever since Pearson (1993) sorted the Gray–Scott F–k parameter space into about twelve classes labeled with Greek letters, it has been explored thoroughly around the world for more than 30 years (thousands of coordinates are published in <a class="inline" href="http://www.mrob.com/pub/comp/xmorphia/" target="_blank" rel="noopener">MROB's archive</a>). The presets in this simulator are representative coordinates from that work.
+  </p>
   <table>
-    <thead><tr><th>プリセット</th><th>F</th><th>k</th><th>特徴</th></tr></thead>
+    <thead><tr><th>プリセット / Preset</th><th>F</th><th>k</th><th>特徴 / Notes</th></tr></thead>
     <tbody>
-      <tr><td>Mitosis</td><td>0.0367</td><td>0.0649</td><td>自己複製スポット（ただし種の形状に敏感）</td></tr>
-      <tr><td>Coral</td><td>0.0545</td><td>0.0620</td><td>珊瑚状の分岐パターン</td></tr>
-      <tr><td>Worms</td><td>0.0580</td><td>0.0650</td><td>虫状・迷路状パターン</td></tr>
-      <tr><td>Solitons</td><td>0.0300</td><td>0.0620</td><td>孤立した安定パターン</td></tr>
-      <tr><td>Spots</td><td>0.0250</td><td>0.0600</td><td>安定した斑点</td></tr>
-      <tr><td>Waves</td><td>0.0140</td><td>0.0410</td><td>波状・空間全体を占拠</td></tr>
-      <tr><td>Holes</td><td>0.0390</td><td>0.0580</td><td>穴状パターン</td></tr>
-      <tr><td>Chaos</td><td>0.0260</td><td>0.0510</td><td>渦巻き・脈動する時空カオス</td></tr>
+      <tr><td>Mitosis</td><td>0.0367</td><td>0.0649</td><td>自己複製スポット（ただし種の形状に敏感） / Self-replicating spots (but sensitive to the shape of the seed)</td></tr>
+      <tr><td>Coral</td><td>0.0545</td><td>0.0620</td><td>珊瑚状の分岐パターン / Coral-like branching patterns</td></tr>
+      <tr><td>Worms</td><td>0.0580</td><td>0.0650</td><td>虫状・迷路状パターン / Worm-like and maze-like patterns</td></tr>
+      <tr><td>Solitons</td><td>0.0300</td><td>0.0620</td><td>孤立した安定パターン / Isolated stable patterns</td></tr>
+      <tr><td>Spots</td><td>0.0250</td><td>0.0600</td><td>安定した斑点 / Stable spots</td></tr>
+      <tr><td>Waves</td><td>0.0140</td><td>0.0410</td><td>波状・空間全体を占拠 / Wave-like, filling the whole space</td></tr>
+      <tr><td>Holes</td><td>0.0390</td><td>0.0580</td><td>穴状パターン / Hole-like patterns</td></tr>
+      <tr><td>Chaos</td><td>0.0260</td><td>0.0510</td><td>渦巻き・脈動する時空カオス / Spirals and pulsating spatiotemporal chaos</td></tr>
     </tbody>
   </table>
   <p class="note">
     同じ(F,k)の値でも、数値計算の離散化（格子解像度・ラプラシアンの重み・時間刻み幅）によって挙動が変わることがあります。これは分野で広く知られた性質で、実装のバグではありません。
   </p>
+  <p lang="en">
+    Even with the same (F, k), the behavior can change with the numerical discretization (grid resolution, Laplacian weights, time step). This is a widely known property in the field and not an implementation bug.
+  </p>
 
-  <h2>HとD：エントロピーと散逸速度の指標</h2>
+  <h2>HとD：エントロピーと散逸速度の指標 / H and D: indicators of entropy and dissipation</h2>
   <p>
     このシミュレーターは2種類の統計量をリアルタイムで計算しています。<b>この2つを混同しないことが重要</b>です。
   </p>
-  <h3>H：パターンのShannonエントロピー</h3>
+  <p lang="en">
+    This simulator computes two kinds of statistics in real time. <b>It is important not to confuse the two.</b>
+  </p>
+  <h3>H：パターンのShannonエントロピー / H: Shannon entropy of the pattern</h3>
   <p>
     v場の値を32ビンのヒストグラムに分け、<code>H = −Σp·log(p)</code>で計算し、log(32)で正規化した空間的な「乱雑さ」の指標です。<b>構造（斑点・渦巻き）が形成されるとHはむしろ下がります</b>——これはSchrödingerの「負のエントロピーを食べて生きる」という話と同じ構図で、局所的な秩序（低エントロピー）は環境側により大きなエントロピー増加を押し付けることで成立します。
   </p>
-  <h3>D：散逸(流束)速度の近似</h3>
+  <p lang="en">
+    The values of the v field are put into a 32-bin histogram, H is computed as <code>H = −Σp·log(p)</code> and normalized by log(32), giving an index of spatial "disorder." <b>When structure (spots, spirals) forms, H actually goes down.</b> This is the same picture as Schrödinger's idea that life "feeds on negative entropy": local order (low entropy) is achieved by pushing a larger increase of entropy onto the environment.
+  </p>
+  <h3>D：散逸(流束)速度の近似 / D: an approximation of the dissipation (flux) rate</h3>
   <p>
     <code>D ≈ 平均[F(1−u) + kv]</code>。系を流れる物質流束の大きさで、非平衡定常状態でのエントロピー生成速度の近似指標です。「系を閉じる」をONにすると<code>F=0</code>になりDは急落します。
+  </p>
+  <p lang="en">
+    <code>D ≈ mean[F(1−u) + kv]</code>. It is the size of the material flux through the system, and serves as an approximate index of the rate of entropy production in a non-equilibrium steady state. Turning on "Close the system" makes <code>F=0</code>, and D drops sharply.
   </p>
   <p>
     実験的には、H（パターンの複雑さ）とD（散逸速度）はプリセット間でおおむね同じ順位で動く傾向が見られました（Waves &gt; Chaos &gt; Holes &gt; Spots &gt; Coral &gt; Solitons≈Worms &gt; Mitosis）。ただしこの2つは根っこでは「ドメイン中でどれだけの割合が反応中か」を反映しているという点で独立ではなく、解釈には注意が必要です。
   </p>
+  <p lang="en">
+    In our experiments, H (pattern complexity) and D (dissipation rate) tended to rank the presets in roughly the same order (Waves &gt; Chaos &gt; Holes &gt; Spots &gt; Coral &gt; Solitons≈Worms &gt; Mitosis). However, at root both reflect "what fraction of the domain is reacting," so they are not independent and should be interpreted with care.
+  </p>
 
-  <h2>Maximum Entropy Production Principle (MEPP) との関連</h2>
+  <h2>Maximum Entropy Production Principle (MEPP) との関連 / Relation to the Maximum Entropy Production Principle (MEPP)</h2>
   <p>
     「非平衡から遠く離れた開放系では、可能な散逸構造のモードのうち、最もエントロピー生成速度が大きいものが安定化・選択される」という仮説（MEPP）が、非平衡熱力学で今も議論されています。Jeremy Englandの"dissipative adaptation"（散逸適応）理論は、これをより厳密な確率論的熱力学から導いた現代的な発展形です。ただしMEPPは証明された法則ではなく、反例や適用限界が指摘されている、あくまで仮説であることには注意が必要です。
   </p>
+  <p lang="en">
+    The hypothesis (MEPP) that "in an open system far from equilibrium, the dissipative-structure mode with the largest rate of entropy production is the one that is stabilized and selected" is still debated in non-equilibrium thermodynamics. Jeremy England's "dissipative adaptation" theory is a modern development that derives a related idea from more rigorous stochastic thermodynamics. Note, however, that MEPP is not a proven law: counterexamples and limits of applicability have been pointed out, and it remains a hypothesis.
+  </p>
 
-  <h2>膜・区画化という視点</h2>
+  <h2>膜・区画化という視点 / Membranes and compartmentalization</h2>
   <p>
     Gray-ScottやLeniaの濃度場は連続的で、境界も同じ物質の濃淡にすぎません。これに対し、生命の本質を「膜で自己を外界から区切り、その膜自体を内部の代謝ネットワークが作り続けるシステム」とする立場が<b>オートポイエーシス理論</b>（Maturana &amp; Varela, 1974）で、ALifeの最初期のモデルの一つでもあります。
+  </p>
+  <p lang="en">
+    The concentration fields of Gray–Scott and Lenia are continuous, and their boundaries are only gradations of the same substance. In contrast, <b>autopoiesis theory</b> (Maturana &amp; Varela, 1974) takes the essence of life to be "a system that separates itself from the outside with a membrane, while its own internal metabolic network keeps producing that membrane." It was also one of the earliest models in ALife.
   </p>
   <p>
     さらに、Zwicker, Seyboldt, Weber, Hyman, Jülicher (2016)は、<b>相分離（液−液相分離、Cahn-Hilliard型のシャープな界面）と非平衡化学反応を組み合わせるだけで、膜がなくても液滴が成長・分裂を繰り返す</b>ことをシミュレーションで示しました（"membraneless protocells"）。生命に必要な"不連続性"は、脂質膜という特別な物質ではなく、相分離が作る鋭い界面＋非平衡の化学反応という、より一般的な組み合わせで実現できる可能性を示唆しています。
   </p>
+  <p lang="en">
+    Furthermore, Zwicker, Seyboldt, Weber, Hyman and Jülicher (2016) showed in simulation that <b>simply combining phase separation (liquid–liquid phase separation, with sharp Cahn–Hilliard-type interfaces) and non-equilibrium chemical reactions makes droplets grow and divide repeatedly, even without a membrane</b> ("membraneless protocells"). This suggests that the "discontinuity" life needs may be achieved not through a special material such as a lipid membrane, but through the more general combination of sharp interfaces created by phase separation and non-equilibrium chemical reactions.
+  </p>
 
-  <h2>参考文献</h2>
+  <h2>参考文献 / References</h2>
   <ul class="refs">
     <li>J. E. Pearson, "Complex Patterns in a Simple System," <i>Science</i>, 1993.</li>
     <li><a class="inline" href="http://www.mrob.com/pub/comp/xmorphia/" target="_blank" rel="noopener">Reaction-Diffusion by the Gray-Scott Model: Pearson's Parameterization (MROB)</a></li>
@@ -211,6 +257,8 @@
     <li>H. Maturana &amp; F. Varela, "Autopoiesis: the organization of living systems," 1974.</li>
     <li>D. Zwicker et al., <a class="inline" href="https://arxiv.org/abs/1603.01571" target="_blank" rel="noopener">"Growth and Division of Active Droplets: A Model for Protocells,"</a> arXiv:1603.01571, 2016.</li>
   </ul>
+  <p><a class="inline" href="index.html">シミュレーターで試す / Try the simulator →</a></p>
+  <p class="refs">hamzWorkerz ・ <a class="inline" href="../privacy.html">プライバシーポリシー / Privacy</a></p>
 </article>
 </body>
 </html>

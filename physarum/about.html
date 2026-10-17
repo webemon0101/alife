@@ -57,58 +57,65 @@
 .model-origin{border:1px solid #3e495c;border-left:3px solid #a4b8de;border-radius:8px;padding:14px 18px;margin:20px 0;background:#141a24}.model-origin p{font-size:13px;line-height:1.8;margin:8px 0}.model-origin strong{color:#c5d6f0}.model-origin .origin-note{font-size:11px;color:#9aa8bc}</style>
 </head>
 <body>
-<nav><a href="../index.html">← 図鑑トップ</a><a href="index.html">シミュレーターに戻る →</a></nav>
+<nav><a href="../index.html">← 図鑑トップ / Gallery</a><a href="index.html">シミュレーターに戻る / Simulator →</a></nav>
 <article>
-  <h1>Physarum 粘菌</h1><aside class="model-origin" aria-label="モデルの位置づけ / Model provenance"><p><strong>アレンジ版 / Adaptation</strong></p><p>Jeff Jonesの粒子ベースの粘菌モデルに着想を得た簡略版です。3方向の感知と旋回、移動、化学物質の放出・拡散・減衰を使います。論文の全条件を再現したものではありません。</p><p lang="en">A simplified adaptation inspired by Jeff Jones’s particle-based Physarum research, using three sensors, turning, movement, deposition, diffusion and decay; not a reproduction of all paper conditions.</p><p class="origin-note">この表示は既存の考え方との関係を示し、研究上の新規性を主張するものではありません。<br><span lang="en">This describes the relationship to existing work, not a claim of scientific novelty.</span></p></aside>
+  <h1>Physarum 粘菌 / Slime mold</h1><aside class="model-origin" aria-label="モデルの位置づけ / Model provenance"><p><strong>アレンジ版 / Adaptation</strong></p><p>Jeff Jonesの粒子ベースの粘菌モデルに着想を得た簡略版です。3方向の感知と旋回、移動、化学物質の放出・拡散・減衰を使います。論文の全条件を再現したものではありません。</p><p lang="en">A simplified adaptation inspired by Jeff Jones’s particle-based Physarum research, using three sensors, turning, movement, deposition, diffusion and decay; not a reproduction of all paper conditions.</p><p class="origin-note">この表示は既存の考え方との関係を示し、研究上の新規性を主張するものではありません。<br><span lang="en">This describes the relationship to existing work, not a claim of scientific novelty.</span></p></aside>
   <p class="lead">「跡を残す」「跡をたどる」という局所的なやり取りから、全体のネットワークが生まれる。粘菌に着想を得た粒子モデルの実験場です。</p>
-  <h2>使い方</h2>
+  <p lang="en">A playground for a slime-mold-inspired particle model: a whole network emerges from purely local exchanges, "leave a trail" and "follow a trail."</p>
+  <h2>使い方 / How to use</h2>
   <ul>
-    <li><b>網目形成</b>：一様に散らした粒子が、自分たちの化学物質の跡に集まって構造を作ります。少し待って模様の成長を観察してください。</li>
-    <li><b>餌場を結ぶ</b>：5つの持続する誘引源を配置します。粒子の集まり方や経路が、餌のない場合からどう変わるか比較できます。</li>
-    <li><b>障害物</b>：壁と餌が置かれた状態から開始します。壁の隙間を広げたり、新しい壁を描いたりして、経路の変化を観察できます。</li>
-    <li><b>餌を置く</b>：クリック／タップで追加します（最大32個）。餌は食べ尽くされず、取り除くまで化学物質を供給し続けます。</li>
-    <li><b>壁・跡・消しゴム</b>：ドラッグして描きます。壁は粒子の移動と化学物質の拡散を遮ります。消しゴムは壁・餌・跡を消します。粒子そのものは消さないので、跡は再び現れることがあります。</li>
-    <li><b>一時停止</b>：停止中も実験場を編集できます。「やり直す」で現在のパラメータのまま、選択中のプリセットの初期配置に戻せます。停止状態は保持されます。</li>
-    <li><b>スマートフォン</b>：右上の歯車で設定を開閉します。動きが重い場合は粒子数や実験速度を下げてください。</li>
-    <li><b>PNGで保存</b>：現在の実験場を画像として保存します。</li>
+    <li><b>網目形成 / Network formation</b>：一様に散らした粒子が、自分たちの化学物質の跡に集まって構造を作ります。少し待って模様の成長を観察してください。 / Particles scattered evenly gather along their own chemical trails and build structure. Wait a little and watch the pattern grow.</li>
+    <li><b>餌場を結ぶ / Linking food sources</b>：5つの持続する誘引源を配置します。粒子の集まり方や経路が、餌のない場合からどう変わるか比較できます。 / Places five persistent attractors. Compare how the particles gather and which routes form against the case with no food.</li>
+    <li><b>障害物 / Obstacles</b>：壁と餌が置かれた状態から開始します。壁の隙間を広げたり、新しい壁を描いたりして、経路の変化を観察できます。 / Starts with walls and food in place. Widen gaps or draw new walls and watch how the routes change.</li>
+    <li><b>餌を置く / Place food</b>：クリック／タップで追加します（最大32個）。餌は食べ尽くされず、取り除くまで化学物質を供給し続けます。 / Click or tap to add (up to 32). Food is never used up; it keeps supplying chemical until you remove it.</li>
+    <li><b>壁・跡・消しゴム / Wall, trail, eraser</b>：ドラッグして描きます。壁は粒子の移動と化学物質の拡散を遮ります。消しゴムは壁・餌・跡を消します。粒子そのものは消さないので、跡は再び現れることがあります。 / Drag to draw. Walls block both particle movement and chemical diffusion. The eraser removes walls, food and trails. It does not remove the particles themselves, so trails can reappear.</li>
+    <li><b>一時停止 / Pause</b>：停止中も実験場を編集できます。「やり直す」で現在のパラメータのまま、選択中のプリセットの初期配置に戻せます。停止状態は保持されます。 / You can keep editing while paused. "Restart" returns to the selected preset's initial layout with the current parameters, and the paused state is kept.</li>
+    <li><b>スマートフォン / Mobile</b>：右上の歯車で設定を開閉します。動きが重い場合は粒子数や実験速度を下げてください。 / Open or close settings with the gear icon at the top right. If it runs slowly, lower the particle count or the speed.</li>
+    <li><b>PNGで保存 / Save as PNG</b>：現在の実験場を画像として保存します。 / Saves the current playground as an image.</li>
   </ul>
-  <h2>粘菌と、このモデルの関係</h2>
+  <h2>粘菌と、このモデルの関係 / Slime mold and this model</h2>
   <p>真正粘菌 <i>Physarum polycephalum</i> の変形体は、多数の核を持つ一つの細胞として広がり、輸送ネットワークを形成します。この画面の粒子は独立した粘菌の個体ではなく、集団的な輸送や走化性を表す計算上の要素です。</p>
+  <p lang="en">The plasmodium of the true slime mold <i>Physarum polycephalum</i> spreads as a single cell with many nuclei and forms a transport network. The particles on this screen are not individual slime molds; they are computational elements that represent collective transport and chemotaxis.</p>
   <p>Jeff Jonesの粒子ベースの研究に着想を得て、3方向の感知、旋回、移動、化学物質の放出、拡散・減衰を組み合わせています。本ページは仕組みを体験するための独自の簡略実装で、論文の全条件を再現したものではありません。</p>
-  <h2>一つの粒子がすること</h2>
+  <p lang="en">Inspired by Jeff Jones's particle-based research, the model combines three-way sensing, turning, movement, chemical deposition, and diffusion and decay. This page is an original simplified implementation for experiencing the mechanism; it does not reproduce all the conditions in the paper.</p>
+  <h2>一つの粒子がすること / What one particle does</h2>
   <ol>
-    <li>進行方向の前方と、左右に角度を付けた位置で化学物質の濃度を読む。</li>
-    <li>前方が最も濃ければ直進。左または右が濃ければ、その方向へ旋回する。前方が両側より薄ければ左右どちらかにランダムに旋回する。</li>
-    <li>1格子分進む。移動先が壁・境界・別の粒子にふさがれていたら、その場で向きを変える。</li>
-    <li>移動に成功した位置に化学物質を放出する。</li>
+    <li>進行方向の前方と、左右に角度を付けた位置で化学物質の濃度を読む。 / Read the chemical concentration straight ahead and at positions angled to the left and right.</li>
+    <li>前方が最も濃ければ直進。左または右が濃ければ、その方向へ旋回する。前方が両側より薄ければ左右どちらかにランダムに旋回する。 / If straight ahead is strongest, go straight. If left or right is stronger, turn that way. If ahead is weaker than both sides, turn randomly to the left or right.</li>
+    <li>1格子分進む。移動先が壁・境界・別の粒子にふさがれていたら、その場で向きを変える。 / Move one grid cell. If the destination is blocked by a wall, the boundary or another particle, change direction on the spot.</li>
+    <li>移動に成功した位置に化学物質を放出する。 / Deposit chemical at the position where the move succeeded.</li>
   </ol>
   <p>濃い跡に粒子が集まり、そこへさらに跡を残す正のフィードバックと、拡散・蒸発による平滑化と忘却が同時に働きます。粒子同士が全体の地図を共有することはありません。</p>
-  <h2>化学物質の更新</h2>
-  <div class="eqn">C̃ = C + 粒子の放出 + 餌からの供給<br>C<sub>次</sub> = (1 − e) × [(1 − d) C̃ + d × 近傍平均(C̃)]</div>
+  <p lang="en">Two forces work at once: positive feedback, in which particles gather on a strong trail and leave still more trail there, and smoothing and forgetting through diffusion and evaporation. The particles never share a map of the whole.</p>
+  <h2>化学物質の更新 / Updating the chemical</h2>
+  <div class="eqn">C̃ = C + 粒子の放出 + 餌からの供給 / C + particle deposit + supply from food<br>C<sub>次 / next</sub> = (1 − e) × [(1 − d) C̃ + d × 近傍平均 / neighborhood mean (C̃)]</div>
   <p><code>d</code> は拡散の強さ、<code>e</code> は1ステップ当たりの蒸発率です。近傍平均には自身と周囲8格子を使います。壁の内部は濃度0とし、壁・外周との境界では流出を抑えます。感知の際も壁の向こう側を直接読まないようにしています。</p>
+  <p lang="en"><code>d</code> is the diffusion strength and <code>e</code> is the evaporation rate per step. The neighborhood mean uses the cell itself and its eight neighbors. The inside of a wall has concentration 0, and outflow is suppressed at the border with walls and the outer edge. Sensing also avoids reading directly across a wall.</p>
   <p class="note">計算は360×360格子、通常速度で1秒当たり30ステップを目標に進みます。処理が追いつかない端末では実時間より遅くなります。粒子数は一定で、繁殖・死・遺伝・進化は扱っていません。</p>
-  <h2>パラメータで何が変わる？</h2>
+  <p lang="en">The grid is 360×360, and at normal speed the target is 30 steps per second. On devices that cannot keep up, it runs slower than real time. The number of particles is constant; reproduction, death, heredity and evolution are not modeled.</p>
+  <h2>パラメータで何が変わる？ / What do the parameters change?</h2>
   <ul>
-    <li><b>センサー距離</b>：どのくらい先の跡を読むか。細かな構造と大きな構造の形成に影響します。</li>
-    <li><b>センサー角度／旋回角度</b>：どの方向を見て、どの程度曲がるか。蛇行、集中、網目などの挙動が変わります。</li>
-    <li><b>拡散</b>：跡が周囲へ広がる強さ。離れた粒子が跡を見つけやすくなる一方、細い模様はぼやけます。</li>
-    <li><b>蒸発</b>：古い跡が消える速さ。小さいほど履歴が残り、大きいほど最近の通り道が強調されます。</li>
-    <li><b>粒子数</b>：混雑と化学物質の供給量が変わります。変更時は粒子と跡を初期化しますが、描いた壁と餌は保持します。</li>
+    <li><b>センサー距離 / Sensor distance</b>：どのくらい先の跡を読むか。細かな構造と大きな構造の形成に影響します。 / How far ahead the trail is read. It affects the formation of fine versus large structures.</li>
+    <li><b>センサー角度／旋回角度 / Sensor angle and turn angle</b>：どの方向を見て、どの程度曲がるか。蛇行、集中、網目などの挙動が変わります。 / Which directions are read and how sharply to turn. Behavior shifts between meandering, clustering and net-like patterns.</li>
+    <li><b>拡散 / Diffusion</b>：跡が周囲へ広がる強さ。離れた粒子が跡を見つけやすくなる一方、細い模様はぼやけます。 / How strongly trails spread outward. Distant particles find trails more easily, while thin patterns become blurred.</li>
+    <li><b>蒸発 / Evaporation</b>：古い跡が消える速さ。小さいほど履歴が残り、大きいほど最近の通り道が強調されます。 / How fast old trails fade. Lower values keep history; higher values emphasize recent paths.</li>
+    <li><b>粒子数 / Particle count</b>：混雑と化学物質の供給量が変わります。変更時は粒子と跡を初期化しますが、描いた壁と餌は保持します。 / Changes crowding and the amount of chemical supplied. Changing it resets particles and trails, but keeps the walls and food you drew.</li>
   </ul>
-  <h2>試してみる実験</h2>
+  <h2>試してみる実験 / Experiments to try</h2>
   <ol>
-    <li>網目が育ったら一時停止し、消しゴムで一本の跡を横切るように消す。再開すると、同じ道が戻るか、別の道ができるか？</li>
-    <li>餌場の一つを消し、別の場所に置く。以前の跡が残る時間は、蒸発率によってどう変わるか？</li>
-    <li>餌への通り道に壁を描く。隙間を開けたとき、どのような経路が育つか？</li>
+    <li>網目が育ったら一時停止し、消しゴムで一本の跡を横切るように消す。再開すると、同じ道が戻るか、別の道ができるか？ / Once a network has grown, pause and erase across one trail. When you resume, does the same path return, or does a different one form?</li>
+    <li>餌場の一つを消し、別の場所に置く。以前の跡が残る時間は、蒸発率によってどう変わるか？ / Remove one food source and place it somewhere else. How long the old trail lingers depends on the evaporation rate; how?</li>
+    <li>餌への通り道に壁を描く。隙間を開けたとき、どのような経路が育つか？ / Draw a wall across the route to the food. What route grows when you open a gap?</li>
   </ol>
   <p class="note">ネットワークができても、最短経路や最適解を保証するものではありません。「餌場を結ぶ」は観察のテーマで、すべての餌場が必ず接続されるという意味ではありません。再編成の結果は初期配置とパラメータによって変わります。</p>
-  <h2>参考文献</h2>
+  <p lang="en">A network forming does not guarantee a shortest path or an optimal solution. "Linking food sources" is an observation theme, not a promise that every food source will be connected. How the network reorganizes depends on the initial layout and the parameters.</p>
+  <h2>参考文献 / References</h2>
   <ul class="refs">
     <li>Jeff Jones (2010), “Characteristics of Pattern Formation and Evolution in Approximations of Physarum Transport Networks,” <i>Artificial Life</i>, 16(2), 127–153. <a class="inline" href="https://doi.org/10.1162/artl.2010.16.2.16202" target="_blank" rel="noopener">DOI</a></li>
-    <li>Jeff Jones, “The Emergence and Dynamical Evolution of Complex Transport Networks from Simple Low-Level Behaviours.” <a class="inline" href="https://arxiv.org/abs/1503.06579" target="_blank" rel="noopener">著者論文（arXiv掲載2015）</a></li>
+    <li>Jeff Jones, “The Emergence and Dynamical Evolution of Complex Transport Networks from Simple Low-Level Behaviours.” <a class="inline" href="https://arxiv.org/abs/1503.06579" target="_blank" rel="noopener">著者論文（arXiv掲載2015）/ author's paper (arXiv, 2015)</a></li>
   </ul>
-  <p><a class="inline" href="index.html">シミュレーターで試す →</a></p>
-  <p class="refs">hamzWorkerz ・ <a class="inline" href="../privacy.html">プライバシーポリシー</a></p>
+  <p><a class="inline" href="index.html">シミュレーターで試す / Try the simulator →</a></p>
+  <p class="refs">hamzWorkerz ・ <a class="inline" href="../privacy.html">プライバシーポリシー / Privacy</a></p>
 </article>
 </body>
 </html>

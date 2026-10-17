@@ -62,68 +62,87 @@
 </head>
 <body>
 <nav>
-  <a href="../index.html">← 図鑑トップ</a>
-  <a href="index.html">シミュレーターに戻る →</a>
+  <a href="../index.html">← 図鑑トップ / Gallery</a>
+  <a href="index.html">シミュレーターに戻る / Simulator →</a>
 </nav>
 <article>
   <h1>Lenia</h1>
   <p class="lead">Conwayのライフゲームを連続化した、生物的な自己組織化パターンが自発的に移動・回転するセルオートマトン。</p>
+  <p lang="en">A cellular automaton that makes Conway's Game of Life continuous. Lifelike self-organizing patterns glide and rotate on their own.</p>
 
-  <h2>使い方</h2>
+  <h2>使い方 / How to use</h2>
   <ul>
-    <li><b>プリセット</b>：Orbium（球虫）の4つの亜種。全て同じ半径R=13のカーネルを使いますが、成長関数のμ・σが少し違うだけで、単尾・双尾・"炎"のような形の違う個体になります。</li>
-    <li><b>μ・σ・dtスライダー</b>：自由に動かせます。プリセットの値から少しでもズラすと、個体が安定して動き続けるか、崩壊して消えるか、分裂するかが大きく変わります。</li>
-    <li><b>キャンバスをクリック</b>：クリックした場所に、現在選択中の生物のコピーを配置します。複数の個体を衝突させたり、追加してみたりできます。</li>
+    <li><b>プリセット / Presets</b>：Orbium（球虫）の4つの亜種。全て同じ半径R=13のカーネルを使いますが、成長関数のμ・σが少し違うだけで、単尾・双尾・"炎"のような形の違う個体になります。 / Four variants of Orbium. All use the same kernel of radius R=13; only a slight difference in the growth function's μ and σ gives single-tailed, double-tailed or "flame"-shaped creatures.</li>
+    <li><b>μ・σ・dtスライダー / μ, σ and dt sliders</b>：自由に動かせます。プリセットの値から少しでもズラすと、個体が安定して動き続けるか、崩壊して消えるか、分裂するかが大きく変わります。 / Move them freely. Even a small shift from a preset's values can decide whether a creature keeps moving stably, collapses and vanishes, or splits.</li>
+    <li><b>キャンバスをクリック / Click the canvas</b>：クリックした場所に、現在選択中の生物のコピーを配置します。複数の個体を衝突させたり、追加してみたりできます。 / Places a copy of the selected creature where you click. You can add several and make them collide.</li>
   </ul>
   <p class="note">
     Leniaの個体は、Gray-Scottの斑点のようにランダムなノイズから自発的に生まれるものではなく、<b>正確な初期パターン（種）を置いて初めて安定して動く</b>ことがほとんどです。今回のOrbiumデータは、Lenia開発者Bert Chan本人のリポジトリ(<a class="inline" href="https://github.com/Chakazul/Lenia" target="_blank" rel="noopener">Chakazul/Lenia</a>)から実際の値を復号して使っています。
   </p>
+  <p lang="en">
+    Unlike the spots in Gray-Scott, Lenia creatures rarely emerge on their own from random noise; in most cases they only move stably once <b>an exact initial pattern (a "seed") is placed</b>. The Orbium data used here was decoded from the actual values in Lenia's author Bert Chan's own repository (<a class="inline" href="https://github.com/Chakazul/Lenia" target="_blank" rel="noopener">Chakazul/Lenia</a>).
+  </p>
 
-  <h2>方程式</h2>
+  <h2>方程式 / Equations</h2>
   <div class="eqn">
     A(t+dt) = clip( A(t) + dt·G(K∗A), 0, 1 )<br>
     G(u) = 2·exp(−(u−μ)²/2σ²) − 1<br>
-    K(r) = exp(4 − 4/(4r(1−r)))&nbsp;&nbsp;(0&lt;r&lt;1、半径Rで正規化)
+    K(r) = exp(4 − 4/(4r(1−r)))&nbsp;&nbsp;(0&lt;r&lt;1、半径Rで正規化 / normalized by the radius R)
   </div>
   <p>
     Aは0〜1の連続値を取る1チャンネルの状態場です。Kは半径R=13のリング状カーネルで、中心(r=0)と外縁(r=1)でゼロ、中間(r≈0.5)でピークを持つ滑らかな山型をしています。K∗Aは近傍の加重平均で、これをuとして成長関数Gに通すと、-1〜+1の"成長率"が得られます。
   </p>
+  <p lang="en">
+    A is a single-channel state field with continuous values from 0 to 1. K is a ring-shaped kernel of radius R=13: it is zero at the center (r=0) and at the outer edge (r=1), with a smooth peak in between (r≈0.5). K∗A is a weighted average over the neighborhood; passing it as u through the growth function G gives a "growth rate" between −1 and +1.
+  </p>
   <p>
     <b>Conwayのライフゲームとの対比が本質</b>です。ライフゲームは状態(0/1)・空間(8近傍)・時間(世代)がすべて離散ですが、Leniaはこの3つすべてを連続化しています。その結果、グライダーのようなカクカクした移動パターンではなく、なめらかに滑空し、回転し、衝突すると弾かれ合ったり合体したりする、生物的な質感を持つ"生物(life form)"が生まれます。
   </p>
+  <p lang="en">
+    <b>The contrast with Conway's Game of Life is the heart of it.</b> In the Game of Life, state (0/1), space (8 neighbors) and time (generations) are all discrete; Lenia makes all three continuous. Instead of the jerky movement of a glider, you get "life forms" that glide smoothly, rotate, and bounce off or merge with each other when they collide, with a distinctly organic feel.
+  </p>
 
-  <h2>プリセットの詳細</h2>
+  <h2>プリセットの詳細 / Presets in detail</h2>
   <table>
-    <thead><tr><th>名前</th><th>μ</th><th>σ</th><th>特徴</th></tr></thead>
+    <thead><tr><th>名前 / Name</th><th>μ</th><th>σ</th><th>特徴 / Notes</th></tr></thead>
     <tbody>
-      <tr><td>Orbium unicaudatus</td><td>0.15</td><td>0.017</td><td>単尾。最も基本的なOrbium、直進しながらゆっくり回転</td></tr>
-      <tr><td>Orbium unicaudatus ignis</td><td>0.119</td><td>0.0148</td><td>"炎"型。中心が窪んだ形状で、より複雑な自己修復挙動</td></tr>
-      <tr><td>Orbium bicaudatus</td><td>0.15</td><td>0.014</td><td>双尾。2本の"尾"を引きずるように移動</td></tr>
-      <tr><td>Orbium bicaudatus ignis</td><td>0.12</td><td>0.0113</td><td>双尾＋炎型の組み合わせ</td></tr>
+      <tr><td>Orbium unicaudatus</td><td>0.15</td><td>0.017</td><td>単尾。最も基本的なOrbium、直進しながらゆっくり回転 / Single tail. The most basic Orbium; moves straight while rotating slowly.</td></tr>
+      <tr><td>Orbium unicaudatus ignis</td><td>0.119</td><td>0.0148</td><td>"炎"型。中心が窪んだ形状で、より複雑な自己修復挙動 / "Flame" type. Hollow in the center, with more complex self-repair behavior.</td></tr>
+      <tr><td>Orbium bicaudatus</td><td>0.15</td><td>0.014</td><td>双尾。2本の"尾"を引きずるように移動 / Double tail. Moves dragging two "tails."</td></tr>
+      <tr><td>Orbium bicaudatus ignis</td><td>0.12</td><td>0.0113</td><td>双尾＋炎型の組み合わせ / Combination of double tail and flame type.</td></tr>
     </tbody>
   </table>
 
-  <h2>今後の発展：Flow-Lenia・ASAL</h2>
+  <h2>今後の発展：Flow-Lenia・ASAL / Further developments: Flow-Lenia and ASAL</h2>
   <p>
-    このシミュレーターはLeniaの最も基本的な単一チャンネル版です。以前話した発展形として：
+    このシミュレーターはLeniaの最も基本的な単一チャンネル版です。発展形としては、次のようなものがあります。
+  </p>
+  <p lang="en">
+    This simulator is the most basic single-channel version of Lenia. Developments beyond it include the following.
   </p>
   <ul>
-    <li><b>Flow-Lenia</b>：質量保存則を導入し、局所的に継承可能なパラメータを持たせることで、種同士が相互作用し進化する仕組みを追加したもの</li>
-    <li><b>ASAL (Sakana AI)</b>：foundation modelを使って、μ・σ・カーネル形状などのパラメータ空間を自動探索し、面白い"生物"を発見する手法</li>
+    <li><b>Flow-Lenia</b>：質量保存則を導入し、局所的に継承可能なパラメータを持たせることで、種同士が相互作用し進化する仕組みを追加したもの / Introduces conservation of mass and locally inheritable parameters, adding a mechanism for species to interact and evolve.</li>
+    <li><b>ASAL (Sakana AI)</b>：foundation modelを使って、μ・σ・カーネル形状などのパラメータ空間を自動探索し、面白い"生物"を発見する手法 / Uses foundation models to automatically search the parameter space (μ, σ, kernel shape and so on) and discover interesting "creatures."</li>
   </ul>
   <p>
     今回のシミュレーターは、あなたが手でμ・σスライダーを動かして探索する"人力版ASAL"とも言えます。面白い個体を見つけたら、パラメータをメモしておくと良いかもしれません。
   </p>
+  <p lang="en">
+    You could think of this simulator as a "human-powered ASAL," where you explore by moving the μ and σ sliders by hand. If you find an interesting creature, it may be worth noting down its parameters.
+  </p>
 
   <h2>データのライセンス / Data license</h2>
   <p>Orbiumの個体データはBert Chanの公開データを復号・再構成したものです。Copyright (c) 2018 Bert Chan。MITライセンスで利用しています。<a class="inline" href="LICENSE-Lenia.txt">ライセンス全文 / MIT license</a> · <a class="inline" href="THIRD_PARTY_NOTICES.md">出典・変更内容 / Attribution and changes</a>。</p>
-  <h2>参考文献</h2>
+  <p lang="en">The Orbium creature data was decoded and reconstructed from Bert Chan's published data. Copyright (c) 2018 Bert Chan, used under the MIT license.</p>
+  <h2>参考文献 / References</h2>
   <ul class="refs">
     <li>B. W. Chan, "Lenia: Biology of Artificial Life," <i>Complex Systems</i>, 2019.</li>
-    <li><a class="inline" href="https://github.com/Chakazul/Lenia" target="_blank" rel="noopener">Chakazul/Lenia — GitHub（本シミュレーターのOrbiumデータの出典）</a></li>
+    <li><a class="inline" href="https://github.com/Chakazul/Lenia" target="_blank" rel="noopener">Chakazul/Lenia — GitHub（本シミュレーターのOrbiumデータの出典 / source of the Orbium data used here）</a></li>
     <li><a class="inline" href="https://arxiv.org/pdf/2412.17799" target="_blank" rel="noopener">Automating the Search for Artificial Life with Foundation Models (ASAL)</a></li>
     <li><a class="inline" href="https://arxiv.org/abs/2506.08569" target="_blank" rel="noopener">Flow-Lenia: Emergent evolutionary dynamics in mass conservative continuous cellular automata</a></li>
   </ul>
+  <p><a class="inline" href="index.html">シミュレーターで試す / Try the simulator →</a></p>
+  <p class="refs">hamzWorkerz ・ <a class="inline" href="../privacy.html">プライバシーポリシー / Privacy</a></p>
 </article>
 </body>
 </html>
