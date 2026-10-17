@@ -133,6 +133,7 @@
   .cardwrap{display:flex;flex-direction:column;gap:8px}.cardwrap>a.card{flex:1}
   .guide{font-size:12px;color:var(--accent);text-decoration:none;padding:0 4px}.guide:hover{text-decoration:underline}.guide:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
   .sitenav{max-width:1080px;margin:0 auto;padding:18px 24px 0;display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12px}.sitenav a{color:var(--text-dim);text-decoration:none}.sitenav a:hover,.sitenav a:focus-visible{color:var(--accent)}
+  .reading{margin:0 0 22px}.reading a{display:block;text-decoration:none;color:var(--text);background:var(--panel);border:1px solid var(--panel-border);border-left:3px solid var(--accent2);border-radius:10px;padding:14px 18px}.reading a:hover,.reading a:focus-visible{border-color:var(--accent2)}.reading-tag{display:block;font-size:10px;letter-spacing:.08em;color:var(--accent2);font-weight:600}.reading strong{display:block;font-size:15px;margin:2px 0 4px;line-height:1.6}.reading-desc{display:block;font-size:12px;line-height:1.8;color:var(--text-dim)}
   .browse-note{color:var(--text-dim);font-size:12px;line-height:1.8;margin:0}
   .category{margin-top:46px;scroll-margin-top:24px}
   .category>h2{font-size:21px;margin:0 0 10px;line-height:1.5}
@@ -151,7 +152,7 @@
 .card .model-kind{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0 0 4px;color:#c5d6f0;font-size:10px;line-height:1.6}.model-kind span{border:1px solid #3e495c;background:#1c2533;border-radius:4px;padding:2px 6px}.model-kind small{font-size:10px;color:#a4b8d1}.label-guide{margin-top:16px;font-size:12px;line-height:1.8;color:var(--text-dim);max-width:760px}.label-guide summary{cursor:pointer;color:#a4b8d1;padding:8px 0}.label-guide summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.label-guide p{margin:10px 0}.label-guide strong{color:var(--text)}</style>
 </head>
 <body>
-<nav class="sitenav" aria-label="サイトメニュー / Site menu"><a href="index.html">ALIFE図鑑</a><a href="about.html">このサイトについて</a><a href="privacy.html">プライバシーポリシー</a><a href="https://forms.gle/bMW94AYhLcrwzMHJ9" target="_blank" rel="noopener">お問い合わせ</a></nav>
+<nav class="sitenav" aria-label="サイトメニュー / Site menu"><a href="index.html">ALIFE図鑑</a><a href="alife-history/">ALIFEヒストリー</a><a href="about.html">このサイトについて</a><a href="privacy.html">プライバシーポリシー</a><a href="https://forms.gle/bMW94AYhLcrwzMHJ9" target="_blank" rel="noopener">お問い合わせ</a></nav>
 <header>
   <h1><span class="title-ja">ALIFE図鑑</span><span class="title-en" lang="en">ALIFE Collection</span></h1>
   <p>人工生命(Artificial Life)の各モデルを、ブラウザで動かして遊べるシミュレーターとしてまとめた標本箱。
@@ -164,6 +165,7 @@
 </header>
 <main>
 <nav class="category-nav" aria-label="分類から探す / Browse categories"><a href="#cellular">セルオートマトン<small lang="en">Cellular Automata</small></a><a href="#fields">連続場・パターン形成<small lang="en">Continuous Fields & Patterns</small></a><a href="#particles">粒子の自己組織化<small lang="en">Particle Self-Organization</small></a><a href="#collective">群れ・生態系<small lang="en">Collective Behavior & Ecosystems</small></a><a href="#growth">成長・形態形成<small lang="en">Growth & Morphogenesis</small></a><a href="#evolution">進化・適応<small lang="en">Evolution & Adaptation</small></a></nav>
+<aside class="reading" aria-label="読みもの / Articles"><a href="alife-history/"><span class="reading-tag">読みもの / ARTICLE</span><strong>ALIFEヒストリー — 人工生命の歴史を年表でたどる</strong><span class="reading-desc">ノイマンの自己複製から、ライフゲーム、1987年の旗揚げ、Lenia、ニューラルセルオートマトンまで。約80年の流れを、この図鑑で動かせるモデルと一緒にたどります。</span></a></aside>
 <p class="browse-note">見どころのタグを目印に探せます。分類をまたぐ特徴もあります。<br><span lang="en">Use the highlight tags to explore. Models can share features across categories.</span></p>
 <details class="label-guide"><summary>モデルのラベルについて / About model labels</summary><p><strong>アレンジ版 / Adaptation</strong>：既存の考え方を基に、仕組みを簡略化・変更した図鑑向けの構成。<br><strong>複合モデル / Hybrid model</strong>：複数の仕組みを組み合わせた構成。</p><p lang="en">Adaptations simplify or modify existing ideas. Hybrid models combine mechanisms. Details and sources are given in each model’s guide.</p><p>出典・変更点・コードの由来は各モデルの解説に記載しています。ラベルは研究上の新規性やライセンスを示すものではなく、ラベルのないモデルが原典と完全に一致することを保証するものでもありません。</p><p lang="en">Labels describe the model’s relationship to prior work, not scientific novelty or licensing. An unlabeled model is not certified as an exact reproduction.</p></details>
 <section class="category" id="cellular" aria-labelledby="cellular-heading"><h2 id="cellular-heading">セルオートマトン<span class="count">4</span><small lang="en">Cellular Automata</small></h2><p class="category-description">マス目と局所ルールから生まれる動きや構造。<br><span lang="en">Patterns and motion from cells and local rules.</span></p><div class="grid">
